@@ -34,7 +34,7 @@ fn update_entities(
     entity_map: &mut HashMap<Uuid, Entity>,
     viewport: &Viewport,
 ) {
-    for (_, entity) in entity_map {
+    for entity in entity_map.values_mut() {
         match entity {
             Entity::Player(ref mut player) => update_player_location(player, &console, &viewport),
         }
@@ -70,7 +70,7 @@ fn check_lower_bounds(boundary: u32, current_location: i32, movement: i32) -> i3
 }
 
 fn draw_entities(console: &mut ConsoleEngine, entity_map: &HashMap<Uuid, Entity>) {
-    for (_, entity) in entity_map {
+    for entity in entity_map.values() {
         match entity {
             Entity::Player(player) => console.print(
                 player.location.x,

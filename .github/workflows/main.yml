@@ -42,20 +42,32 @@ jobs:
     - name: Format Check
       run: cargo fmt -- --check --verbose
     - name: Lint Check
-      run: cargo clippy --verbose
+      run: cargo clippy -p rustybox -- --verbose -D warnings
     - name: Test
       run: cargo test --verbose
     - name: Build Release
       run: cargo build --release --verbose
-    - name: Upload Artifact
-      if: matrix.build == ubuntu || matrix.build == macos
+    - name: Upload Artifact (ubuntu)
+      if: ${{ matrix.build == 'ubuntu' }}
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
         path: target/release/rustybox
-    - name: Upload Artifact
-      if: matrix.build == win32 || matrix.build == win64
+    - name: Upload Artifact (macos)
+      if: ${{ matrix.build == 'macos' }}
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
-        path: target\release\rustybox
+        path: target/release/rustybox
+    - name: Upload Artifact (win32)
+      if: ${{ matrix.build == 'win32' }}
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: rustybox-${{ matrix.build }}
+        path: target\release\rustybox.exe
+    - name: Upload Artifact (win64)
+      if: ${{ matrix.build == 'win64' }}
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: rustybox-${{ matrix.build }}
+        path: target\release\rustybox.exe
