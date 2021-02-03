@@ -63,11 +63,11 @@ jobs:
       if: ${{ matrix.build == 'win32' }}
       uses: actions/upload-artifact@v2.2.2
       with:
-        name: rustybox-${{ matrix.build }}.exe
+        name: rustybox-${{ matrix.build }}
         path: target\release\rustybox.exe
     - name: Upload Artifact (win64)
       if: ${{ matrix.build == 'win64' }}
       uses: actions/upload-artifact@v2.2.2
       with:
-        name: rustybox-${{ matrix.build }}.exe
+        name: rustybox-${{ matrix.build }}
         path: target\release\rustybox.exe
