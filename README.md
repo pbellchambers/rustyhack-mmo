@@ -7,6 +7,8 @@ Mostly a sandbox for learning rust. Currently produces a console program that al
 
 
 ## Usage
-Run `rustybox` from the command line.
+1. Download the relevant OS version from [Releases](https://github.com/pbellchambers/rustybox/releases)
+2. Unzip
+3. Run `rustybox` from the command line.
 
 Use arrow keys to move around.
