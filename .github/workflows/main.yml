@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Pipeline
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build: [ubuntu, macos, win32, win64]
+        include:
+          - build: ubuntu
+            os: ubuntu-latest
+            rust: stable
+          - build: macos
+            os: macos-latest
+            rust: stable
+          - build: win32
+            os: windows-latest
+            rust: stable-i686
+          - build: win64
+            os: windows-latest
+            rust: stable-x86_64
+    steps:
+    - uses: actions/checkout@v2.3.4
+    - name: Install Rust (rustup)
+      run: |
+        rustup update ${{ matrix.rust }} --no-self-update
+        rustup default ${{ matrix.rust }}
+        rustup component add rustfmt
+        rustup component add clippy
+    - name: Build
+      run: cargo build --verbose
+    - name: Format Check
+      run: cargo fmt -- --check --verbose
+    - name: Lint Check
+      run: cargo clippy --verbose
+    - name: Test
+      run: cargo test --verbose
+    - name: Build Release
+      run: cargo build --release --verbose
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: rustybox-${{ matrix.build }}
+        path: target/release/rustybox
