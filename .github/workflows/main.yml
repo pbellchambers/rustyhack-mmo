@@ -47,15 +47,15 @@ jobs:
       run: cargo test --verbose
     - name: Build Release
       run: cargo build --release --verbose
-    - name: Upload Artifact
-      if: (${{ matrix.build }} -eq 'ubuntu') || (${{ matrix.build }} -eq 'macos')
+    - name: Upload Artifact (nix)
+      if: ${{ matrix.build == ('ubuntu' || 'macos') }}
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
         path: target/release/rustybox
-    - name: Upload Artifact
-      if: (${{ matrix.build }} -eq 'win32') || (${{ matrix.build }} -eq 'win64')
+    - name: Upload Artifact (win)
+      if: ${{ matrix.build == ('win32' || 'win64') }}
       uses: actions/upload-artifact@v2.2.2
       with:
-        name: rustybox-${{ matrix.build }}
-        path: target\release\rustybox
+        name: rustybox-${{ matrix.build }}.exe
+        path: target\release\rustybox.exe
