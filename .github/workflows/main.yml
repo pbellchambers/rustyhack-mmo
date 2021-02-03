@@ -48,7 +48,14 @@ jobs:
     - name: Build Release
       run: cargo build --release --verbose
     - name: Upload Artifact
+      if: matrix.build == ubuntu || matrix.build == macos
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
         path: target/release/rustybox
+    - name: Upload Artifact
+      if: matrix.build == win32 || matrix.build == win64
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: rustybox-${{ matrix.build }}
+        path: target\release\rustybox
