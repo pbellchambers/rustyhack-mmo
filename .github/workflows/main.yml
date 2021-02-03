@@ -42,7 +42,7 @@ jobs:
     - name: Format Check
       run: cargo fmt -- --check --verbose
     - name: Lint Check
-      run: cargo clippy -p rustybox -- --no-deps --verbose -D warnings
+      run: cargo clippy -p rustybox -- --verbose -D warnings
     - name: Test
       run: cargo test --verbose
     - name: Build Release
