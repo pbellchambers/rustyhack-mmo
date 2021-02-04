@@ -1,21 +1,18 @@
 use crate::entity::{Collidable, Location};
-use console_engine::Color;
 
 #[derive(Clone, Copy)]
-pub struct Player {
+pub struct Wall {
     pub location: Location,
     pub character_icon: char,
     pub collidable: Collidable,
-    pub colour: Color,
 }
 
-impl Player {
-    pub fn new(x: i32, y: i32) -> Player {
-        Player {
+impl Wall {
+    pub fn new(x: i32, y: i32, character_icon: char) -> Wall {
+        Wall {
             location: Location { x, y },
-            character_icon: '@',
+            character_icon,
             collidable: Collidable::True,
-            colour: Color::Magenta,
         }
     }
 }

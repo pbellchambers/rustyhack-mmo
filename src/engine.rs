@@ -1,6 +1,7 @@
 use crate::entity::player::Player;
 use crate::entity::Entity;
 use crate::viewport::Viewport;
+use crate::world_map::WorldMap;
 use console_engine::{pixel, ConsoleEngine, KeyCode, KeyModifiers};
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -10,6 +11,8 @@ pub fn run(width: u32, height: u32, target_fps: u32) {
     let mut console =
         console_engine::ConsoleEngine::init(viewport.width, viewport.height, viewport.target_fps);
     let mut entity_map = HashMap::new();
+    let mut world_map = WorldMap::new(String::from("default.txt"));
+    info!("Initialised default map.");
 
     create_player(&mut entity_map);
     loop {
@@ -26,7 +29,7 @@ pub fn run(width: u32, height: u32, target_fps: u32) {
 }
 
 fn create_player(entity_map: &mut HashMap<Uuid, Entity>) {
-    entity_map.insert(Uuid::new_v4(), Entity::Player(Player::new()));
+    entity_map.insert(Uuid::new_v4(), Entity::Player(Player::new(5, 5)));
 }
 
 fn update_entities(
@@ -37,25 +40,26 @@ fn update_entities(
     for entity in entity_map.values_mut() {
         match entity {
             Entity::Player(ref mut player) => update_player_location(player, &console, &viewport),
+            _ => {}
         }
     }
 }
 
 fn update_player_location(player: &mut Player, console: &ConsoleEngine, viewport: &Viewport) {
-    if console.is_key_pressed(KeyCode::Up) {
+    if console.is_key_held(KeyCode::Up) {
         player.location.y = check_lower_bounds(0, player.location.y, -1);
-    } else if console.is_key_pressed(KeyCode::Down) {
+    } else if console.is_key_held(KeyCode::Down) {
         player.location.y = check_upper_bounds(viewport.height, player.location.y, 1);
-    } else if console.is_key_pressed(KeyCode::Left) {
+    } else if console.is_key_held(KeyCode::Left) {
         player.location.x = check_lower_bounds(0, player.location.x, -1);
-    } else if console.is_key_pressed(KeyCode::Right) {
+    } else if console.is_key_held(KeyCode::Right) {
         player.location.x = check_upper_bounds(viewport.width, player.location.x, 1);
     }
 }
 
 fn check_upper_bounds(boundary: u32, current_location: i32, movement: i32) -> i32 {
     if current_location + movement >= (boundary - 1) as i32 {
-        info!("Entity hit the boundary.");
+        info!("Player hit the viewport boundary.");
         return current_location;
     }
     current_location + movement
@@ -63,7 +67,7 @@ fn check_upper_bounds(boundary: u32, current_location: i32, movement: i32) -> i3
 
 fn check_lower_bounds(boundary: u32, current_location: i32, movement: i32) -> i32 {
     if current_location + movement <= boundary as i32 {
-        info!("Entity hit the boundary.");
+        info!("Player hit the viewport boundary.");
         return current_location;
     }
     current_location + movement
@@ -72,11 +76,12 @@ fn check_lower_bounds(boundary: u32, current_location: i32, movement: i32) -> i3
 fn draw_entities(console: &mut ConsoleEngine, entity_map: &HashMap<Uuid, Entity>) {
     for entity in entity_map.values() {
         match entity {
-            Entity::Player(player) => console.print(
+            Entity::Player(player) => console.set_pxl(
                 player.location.x,
                 player.location.y,
-                &player.character_icon.to_string(),
+                pixel::pxl_fg(player.character_icon, player.colour),
             ),
+            _ => {}
         }
     }
     console.draw();

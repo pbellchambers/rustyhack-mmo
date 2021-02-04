@@ -52,22 +52,30 @@ jobs:
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
-        path: target/release/rustybox
+        path: |
+          target/release/rustybox
+          assets/**/*
     - name: Upload Artifact (macos)
       if: ${{ matrix.build == 'macos' }}
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
-        path: target/release/rustybox
+        path: |
+          target/release/rustybox
+          assets/**/*
     - name: Upload Artifact (win32)
       if: ${{ matrix.build == 'win32' }}
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
-        path: target\release\rustybox.exe
+        path: |
+          target\release\rustybox.exe
+          assets\**\*
     - name: Upload Artifact (win64)
       if: ${{ matrix.build == 'win64' }}
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
-        path: target\release\rustybox.exe
+        path: |
+          target\release\rustybox.exe
+          assets\**\*
