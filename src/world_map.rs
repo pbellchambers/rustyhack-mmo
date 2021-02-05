@@ -52,7 +52,7 @@ fn process_map_data(data: &str) -> Vec<Vec<Entity>> {
                 row_data.clear();
                 current_x = 0;
                 current_y += 1;
-            },
+            }
             Entity::CarriageReturn => {
                 //do nothing - handles builds on windows
             }
