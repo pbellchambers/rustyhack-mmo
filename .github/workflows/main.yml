@@ -40,9 +40,13 @@ jobs:
     - name: Build
       run: cargo build --verbose
     - name: Format Check
-      run: cargo fmt -- --check --verbose
+      run: |
+        cargo fmt --version
+        cargo fmt -- --check --verbose
     - name: Lint Check
-      run: cargo clippy -p rustybox -- --verbose -D warnings
+      run: |
+        cargo clippy --version
+        cargo clippy -p rustybox -- --verbose -D warnings
     - name: Test
       run: cargo test --verbose
     - name: Build Release
