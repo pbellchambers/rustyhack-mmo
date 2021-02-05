@@ -40,34 +40,58 @@ jobs:
     - name: Build
       run: cargo build --verbose
     - name: Format Check
-      run: cargo fmt -- --check --verbose
+      run: |
+        cargo fmt --version
+        cargo fmt -- --check --verbose
     - name: Lint Check
-      run: cargo clippy -p rustybox -- --verbose -D warnings
+      run: |
+        cargo clippy --version
+        cargo clippy -p rustybox -- --verbose -D warnings
     - name: Test
       run: cargo test --verbose
     - name: Build Release
       run: cargo build --release --verbose
+    - name: Move Artifacts (ubuntu)
+      if: ${{ matrix.build == 'ubuntu' }}
+      run: cp target/release/rustybox rustybox
+    - name: Move Artifacts (macos)
+      if: ${{ matrix.build == 'macos' }}
+      run: cp target/release/rustybox rustybox
+    - name: Move Artifacts (win32)
+      if: ${{ matrix.build == 'win32' }}
+      run: copy target\release\rustybox.exe rustybox.exe
+    - name: Move Artifacts (win64)
+      if: ${{ matrix.build == 'win64' }}
+      run: copy target\release\rustybox.exe rustybox.exe
     - name: Upload Artifact (ubuntu)
       if: ${{ matrix.build == 'ubuntu' }}
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
-        path: target/release/rustybox
+        path: |
+          rustybox
+          assets/**/*
     - name: Upload Artifact (macos)
       if: ${{ matrix.build == 'macos' }}
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
-        path: target/release/rustybox
+        path: |
+          rustybox
+          assets/**/*
     - name: Upload Artifact (win32)
       if: ${{ matrix.build == 'win32' }}
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
-        path: target\release\rustybox.exe
+        path: |
+          rustybox.exe
+          assets\**\*
     - name: Upload Artifact (win64)
       if: ${{ matrix.build == 'win64' }}
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
-        path: target\release\rustybox.exe
+        path: |
+          rustybox.exe
+          assets\**\*
