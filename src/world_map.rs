@@ -38,7 +38,7 @@ fn initialise_map(filename: String) -> WorldMap {
     }
 }
 
-fn process_map_data(data: &String) -> Vec<Vec<Entity>> {
+fn process_map_data(data: &str) -> Vec<Vec<Entity>> {
     let mut processed_data: Vec<Vec<Entity>> = Vec::new();
     let mut row_data: Vec<Entity> = Vec::new();
     let mut entity: Entity;
@@ -51,12 +51,12 @@ fn process_map_data(data: &String) -> Vec<Vec<Entity>> {
                 processed_data.push(row_data.clone());
                 row_data.clear();
                 current_x = 0;
-                current_y = current_y + 1;
+                current_y += 1;
             }
             Entity::EndOfFile => processed_data.push(row_data.clone()),
             _ => {
                 row_data.push(entity);
-                current_x = current_x + 1;
+                current_x += 1;
             }
         }
     }

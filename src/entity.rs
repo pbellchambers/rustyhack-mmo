@@ -40,11 +40,8 @@ impl Entity {
         world_map: &WorldMap,
     ) {
         for entity in entity_map.values_mut() {
-            match entity {
-                Entity::Player(ref mut player) => {
-                    Player::update_player_location(player, &console, &world_map)
-                }
-                _ => {}
+            if let Entity::Player(ref mut player) = entity {
+                Player::update_player_location(player, &console, &world_map)
             }
         }
     }

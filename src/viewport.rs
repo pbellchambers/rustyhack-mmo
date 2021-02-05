@@ -65,9 +65,9 @@ fn draw_viewable_map(
             } else {
                 console.print(viewport_print_x_loc, viewport_print_y_loc, " ");
             }
-            viewport_print_x_loc = viewport_print_x_loc + 1;
+            viewport_print_x_loc += 1;
         }
-        viewport_print_y_loc = viewport_print_y_loc + 1;
+        viewport_print_y_loc += 1;
     }
 }
 
@@ -90,14 +90,11 @@ fn draw_viewable_entities(
     viewport: &Viewport,
 ) {
     for entity in entity_map.values() {
-        match entity {
-            Entity::Player(player) => console.set_pxl(
-                (viewport.width / 2) as i32,
-                (viewport.height / 2) as i32,
-                pixel::pxl_fg(player.character_icon, player.colour),
-            ),
-            _ => {}
-        }
+        if let Entity::Player(player) = entity { console.set_pxl(
+            (viewport.width / 2) as i32,
+            (viewport.height / 2) as i32,
+            pixel::pxl_fg(player.character_icon, player.colour),
+        ) }
     }
 }
 
