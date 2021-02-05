@@ -30,7 +30,7 @@ jobs:
             os: windows-latest
             rust: stable-x86_64
     steps:
-      - uses: actions/checkout@v2.3.4
+    - uses: actions/checkout@v2.3.4
     - name: Install Rust (rustup)
       run: |
         rustup update ${{ matrix.rust }} --no-self-update
