@@ -5,6 +5,7 @@ use crate::entity::{Entity, OpenState};
 pub fn map_character_to_entity(x: i32, y: i32, character: char) -> Entity {
     match character {
         '\n' => Entity::NewLine,
+        '\r' => Entity::CarriageReturn,
         '%' => Entity::EndOfFile,
         '#' => Entity::Boundary,
         ' ' => Entity::EmptySpace,

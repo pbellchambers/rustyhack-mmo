@@ -18,6 +18,7 @@ pub enum Entity {
     EmptySpace,
     Boundary,
     NewLine,
+    CarriageReturn,
     EndOfFile,
 }
 
@@ -30,6 +31,7 @@ impl Entity {
             Entity::EmptySpace => ' ',
             Entity::Boundary => '#',
             Entity::NewLine => ' ',
+            Entity::CarriageReturn => ' ',
             Entity::EndOfFile => ' ',
         }
     }
