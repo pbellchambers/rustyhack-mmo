@@ -13,7 +13,7 @@ use std::{env, process};
 
 fn main() {
     initialise_log();
-    engine::run(40, 15, 15);
+    engine::run(41, 15, 15);
     info!("Program terminated.");
 }
 

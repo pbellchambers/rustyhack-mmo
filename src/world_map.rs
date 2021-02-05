@@ -4,21 +4,33 @@ use std::{env, fs, process};
 
 pub struct WorldMap {
     data: Vec<Vec<Entity>>,
-    boundary_x: i32,
-    boundary_y: i32,
+    boundary_x: u32,
+    boundary_y: u32,
 }
 
 impl WorldMap {
     pub fn new(filename: String) -> WorldMap {
         initialise_map(filename)
     }
+
+    pub fn data(&self) -> &Vec<Vec<Entity>> {
+        &self.data
+    }
+
+    pub fn boundary_x(&self) -> &u32 {
+        &self.boundary_x
+    }
+
+    pub fn boundary_y(&self) -> &u32 {
+        &self.boundary_y
+    }
 }
 
 fn initialise_map(filename: String) -> WorldMap {
-    let unprocessed_map_data = get_map_data_from_file(filename);
+    let unprocessed_map_data = load_map_data_from_file(filename);
     let data = process_map_data(&unprocessed_map_data);
-    let boundary_x = data[0].len() as i32;
-    let boundary_y = data.len() as i32;
+    let boundary_x = data[0].len() as u32;
+    let boundary_y = data.len() as u32;
     WorldMap {
         data,
         boundary_x,
@@ -51,7 +63,7 @@ fn process_map_data(data: &String) -> Vec<Vec<Entity>> {
     processed_data
 }
 
-fn get_map_data_from_file(filename: String) -> String {
+fn load_map_data_from_file(filename: String) -> String {
     let mut file_location = env::current_exe().unwrap_or_else(|err| {
         error!("Problem getting current executable location: {}", err);
         process::exit(1);
