@@ -72,6 +72,7 @@ fn load_map_data_from_file(filename: String) -> String {
         process::exit(1);
     });
     file_location.pop();
+    file_location.push("assets");
     file_location.push("maps");
     file_location.push(filename);
     fs::read_to_string(&file_location.as_path()).unwrap_or_else(|err| {

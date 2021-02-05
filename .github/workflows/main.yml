@@ -30,7 +30,7 @@ jobs:
             os: windows-latest
             rust: stable-x86_64
     steps:
-    - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.4
     - name: Install Rust (rustup)
       run: |
         rustup update ${{ matrix.rust }} --no-self-update
@@ -51,13 +51,25 @@ jobs:
       run: cargo test --verbose
     - name: Build Release
       run: cargo build --release --verbose
+    - name: Move Artifacts (ubuntu)
+      if: ${{ matrix.build == 'ubuntu' }}
+      run: cp target/release/rustybox rustybox
+    - name: Move Artifacts (macos)
+      if: ${{ matrix.build == 'macos' }}
+      run: cp target/release/rustybox rustybox
+    - name: Move Artifacts (win32)
+      if: ${{ matrix.build == 'win32' }}
+      run: copy target\release\rustybox.exe rustybox.exe
+    - name: Move Artifacts (win64)
+      if: ${{ matrix.build == 'win64' }}
+      run: copy target\release\rustybox.exe rustybox.exe
     - name: Upload Artifact (ubuntu)
       if: ${{ matrix.build == 'ubuntu' }}
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
         path: |
-          target/release/rustybox
+          rustybox
           assets/**/*
     - name: Upload Artifact (macos)
       if: ${{ matrix.build == 'macos' }}
@@ -65,7 +77,7 @@ jobs:
       with:
         name: rustybox-${{ matrix.build }}
         path: |
-          target/release/rustybox
+          rustybox
           assets/**/*
     - name: Upload Artifact (win32)
       if: ${{ matrix.build == 'win32' }}
@@ -73,7 +85,7 @@ jobs:
       with:
         name: rustybox-${{ matrix.build }}
         path: |
-          target\release\rustybox.exe
+          rustybox.exe
           assets\**\*
     - name: Upload Artifact (win64)
       if: ${{ matrix.build == 'win64' }}
@@ -81,5 +93,5 @@ jobs:
       with:
         name: rustybox-${{ matrix.build }}
         path: |
-          target\release\rustybox.exe
+          rustybox.exe
           assets\**\*
