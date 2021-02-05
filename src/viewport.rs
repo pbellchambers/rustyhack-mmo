@@ -90,11 +90,13 @@ fn draw_viewable_entities(
     viewport: &Viewport,
 ) {
     for entity in entity_map.values() {
-        if let Entity::Player(player) = entity { console.set_pxl(
-            (viewport.width / 2) as i32,
-            (viewport.height / 2) as i32,
-            pixel::pxl_fg(player.character_icon, player.colour),
-        ) }
+        if let Entity::Player(player) = entity {
+            console.set_pxl(
+                (viewport.width / 2) as i32,
+                (viewport.height / 2) as i32,
+                pixel::pxl_fg(player.character_icon, player.colour),
+            )
+        }
     }
 }
 
