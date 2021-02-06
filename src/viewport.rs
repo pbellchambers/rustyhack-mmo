@@ -1,7 +1,8 @@
-use crate::entity::{Entity, Location};
-use crate::world_map::WorldMap;
+use crate::background_map::tiles::Location;
+use crate::background_map::BackgroundMap;
+use crate::ecs::components::{Character, EntityColour, PlayerId, Position, VisibleState};
 use console_engine::{pixel, ConsoleEngine};
-use std::collections::HashMap;
+use legion::{IntoQuery, World};
 use uuid::Uuid;
 
 pub struct Viewport {
@@ -20,24 +21,24 @@ impl Viewport {
     }
 
     pub fn draw_viewport_contents(
+        &self,
         console: &mut ConsoleEngine,
-        entity_map: &HashMap<Uuid, Entity>,
-        viewport: &Viewport,
-        world_map: &WorldMap,
+        world: &World,
+        background_map: &BackgroundMap,
         current_player_uuid: &Uuid,
     ) {
         let viewable_map_coords: Location =
-            calculate_viewable_map_coords(&viewport, entity_map.get(&current_player_uuid).unwrap());
-        draw_viewable_map(console, &world_map, &viewable_map_coords, &viewport);
-        draw_viewport_frame(console, &viewport);
-        draw_viewable_entities(console, &entity_map, &viewport);
+            calculate_viewable_map_coords(&self, &current_player_uuid, &world);
+        draw_viewable_map(console, &background_map, &viewable_map_coords, &self);
+        draw_viewport_frame(console, &self);
+        draw_viewable_entities(console, &world, &self, &current_player_uuid);
         console.draw();
     }
 }
 
 fn draw_viewable_map(
     console: &mut ConsoleEngine,
-    world_map: &WorldMap,
+    world_map: &BackgroundMap,
     viewable_map_topleft: &Location,
     viewport: &Viewport,
 ) {
@@ -51,7 +52,7 @@ fn draw_viewable_map(
             };
             //NOTE: This will panic if the map file doesn't have half a viewport size
             // of empty characters to print at the bottom of the map:
-            // current_map.print_loc.y can be out of bounds of world_map.data()[]
+            // current_map.print_loc.y can be out of bounds of background_map.data()[]
             if (current_map_print_loc.x >= 0)
                 && (current_map_print_loc.y >= 0)
                 && (current_map_print_loc.x
@@ -75,30 +76,57 @@ fn draw_viewable_map(
     }
 }
 
-fn calculate_viewable_map_coords(viewport: &Viewport, player_entity: &Entity) -> Location {
-    if let Entity::Player(player) = player_entity {
-        let x_view_distance = viewport.width / 2;
-        let y_view_distance = viewport.height / 2;
-        Location {
-            x: player.location.x - x_view_distance as i32,
-            y: player.location.y - y_view_distance as i32,
+fn calculate_viewable_map_coords(
+    viewport: &Viewport,
+    current_player_uuid: &Uuid,
+    world: &World,
+) -> Location {
+    let x_view_distance = viewport.width / 2;
+    let y_view_distance = viewport.height / 2;
+    let mut viewable_map_coords: Location = Location { x: 0, y: 0 };
+
+    let mut query = <(&Position, &PlayerId)>::query();
+
+    for (position, player_id) in query.iter(world) {
+        if player_id.uuid == *current_player_uuid {
+            viewable_map_coords = Location {
+                x: position.x - x_view_distance as i32,
+                y: position.y - y_view_distance as i32,
+            };
+            break;
+        } else {
+            // do nothing
         }
-    } else {
-        panic!("Current player uuid is not an Entity:Player. This should not be possible.");
     }
+    viewable_map_coords
 }
 
 fn draw_viewable_entities(
     console: &mut ConsoleEngine,
-    entity_map: &HashMap<Uuid, Entity>,
+    world: &World,
     viewport: &Viewport,
+    current_player_uuid: &Uuid,
 ) {
-    for entity in entity_map.values() {
-        if let Entity::Player(player) = entity {
+    let mut query = <(
+        &Position,
+        &Character,
+        &EntityColour,
+        &VisibleState,
+        &PlayerId,
+    )>::query();
+
+    for (position, character, entity_colour, visible_state, player_id) in query.iter(world) {
+        if player_id.uuid == *current_player_uuid {
             console.set_pxl(
                 (viewport.width / 2) as i32,
                 (viewport.height / 2) as i32,
-                pixel::pxl_fg(player.character_icon, player.colour),
+                pixel::pxl_fg(character.icon, entity_colour.colour),
+            )
+        } else if visible_state.visible {
+            console.set_pxl(
+                position.x,
+                position.y,
+                pixel::pxl_fg(character.icon, entity_colour.colour),
             )
         }
     }

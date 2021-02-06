@@ -1,7 +1,7 @@
+mod background_map;
+mod ecs;
 mod engine;
-mod entity;
 mod viewport;
-mod world_map;
 
 #[macro_use]
 extern crate log;
