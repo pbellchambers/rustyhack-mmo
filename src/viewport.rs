@@ -56,7 +56,7 @@ fn draw_viewable_map(
             if (current_map_print_loc.x >= 0)
                 && (current_map_print_loc.y >= 0)
                 && (current_map_print_loc.x
-                < world_map.data()[current_map_print_loc.y as usize].len() as i32)
+                    < world_map.data()[current_map_print_loc.y as usize].len() as i32)
                 && (current_map_print_loc.y < world_map.data().len() as i32)
             {
                 console.print(
