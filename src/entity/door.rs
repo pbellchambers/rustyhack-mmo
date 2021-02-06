@@ -13,8 +13,8 @@ impl Door {
         Door {
             location: Location { x, y },
             character_icon: match open_state {
-                OpenState::Open => '+',
-                OpenState::Closed => 'x',
+                OpenState::Open => '/',
+                OpenState::Closed => '+',
             },
             collidable: match open_state {
                 OpenState::Open => Collidable::False,
