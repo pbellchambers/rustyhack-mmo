@@ -1,30 +1,32 @@
-use crate::entity::player::Player;
-use crate::entity::Entity;
+use crate::background_map::tiles::{Collidable, Tile};
+use crate::background_map::BackgroundMap;
+use crate::ecs::components;
+use crate::ecs::components::*;
 use crate::viewport::Viewport;
-use crate::world_map::WorldMap;
-use console_engine::{ConsoleEngine, KeyCode, KeyModifiers};
-use std::collections::HashMap;
+use console_engine::{Color, ConsoleEngine, KeyCode, KeyModifiers};
+use legion::*;
+use uuid::Uuid;
 
 pub fn run(width: u32, height: u32, target_fps: u32) {
     let viewport = Viewport::new(width, height, target_fps);
     let mut console =
         console_engine::ConsoleEngine::init(viewport.width, viewport.height, viewport.target_fps);
-    let mut entity_map = HashMap::new();
-    let world_map = WorldMap::new(String::from("default.txt"));
+    let mut world = World::default();
+    let background_map = BackgroundMap::new(String::from("default.txt"));
     info!("Initialised default map.");
 
-    let current_player_uuid = Player::create_player(&mut entity_map);
+    let current_player_uuid = create_player(&mut world);
     info!("Initialised player: {}", &current_player_uuid);
 
     loop {
         console.wait_frame();
         console.clear_screen();
-        Entity::update_entities(&console, &mut entity_map, &world_map);
-        Viewport::draw_viewport_contents(
+        world = update_player_input(world, &console, &current_player_uuid);
+        world = update_entities(world, &background_map);
+        viewport.draw_viewport_contents(
             &mut console,
-            &entity_map,
-            &viewport,
-            &world_map,
+            &world,
+            &background_map,
             &current_player_uuid,
         );
         if should_quit(&console) {
@@ -36,4 +38,74 @@ pub fn run(width: u32, height: u32, target_fps: u32) {
 
 fn should_quit(console: &ConsoleEngine) -> bool {
     console.is_key_pressed_with_modifier(KeyCode::Char('q'), KeyModifiers::CONTROL)
+}
+
+fn create_player(world: &mut World) -> Uuid {
+    let uuid = Uuid::new_v4();
+    let player = world.push((
+        IsPlayer { is_player: true },
+        Position { x: 5, y: 5 },
+        components::Velocity { x: 0, y: 0 },
+        CollisionState { collidable: true },
+        Character { icon: '@' },
+        EntityColour {
+            colour: Color::Magenta,
+        },
+        VisibleState { visible: true },
+        PlayerId { uuid },
+    ));
+    info!("Created player: {:?}, with uuid: {:?}", player, uuid);
+    uuid
+}
+
+fn update_player_input(
+    mut world: World,
+    console: &ConsoleEngine,
+    current_player_uuid: &Uuid,
+) -> World {
+    let mut query = <(&mut Velocity, &PlayerId)>::query();
+
+    for (velocity, player_id) in query.iter_mut(&mut world) {
+        if player_id.uuid == *current_player_uuid {
+            if console.is_key_held(KeyCode::Up) {
+                velocity.y = -1;
+            } else if console.is_key_held(KeyCode::Down) {
+                velocity.y = 1;
+            } else if console.is_key_held(KeyCode::Left) {
+                velocity.x = -1;
+            } else if console.is_key_held(KeyCode::Right) {
+                velocity.x = 1;
+            }
+            break;
+        } else {
+            // do nothing
+        }
+    }
+    world
+}
+
+fn update_entities(mut world: World, background_map: &BackgroundMap) -> World {
+    let mut query = <(&mut Velocity, &mut Position)>::query();
+
+    for (velocity, position) in query.iter_mut(&mut world) {
+        if !entity_is_colliding(background_map.get_tile_at(
+            (position.x + velocity.x) as usize,
+            (position.y + velocity.y) as usize,
+        )) {
+            position.x += velocity.x;
+            position.y += velocity.y;
+        }
+        velocity.x = 0;
+        velocity.y = 0;
+    }
+    world
+}
+
+fn entity_is_colliding(tile: Tile) -> bool {
+    match tile {
+        Tile::Door(door) => door.collidable == Collidable::True,
+        Tile::Wall(wall) => wall.collidable == Collidable::True,
+        Tile::Boundary => true,
+        _ => false,
+    }
 }

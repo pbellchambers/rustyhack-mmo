@@ -1,4 +1,4 @@
-use crate::entity::{Collidable, Location};
+use crate::background_map::tiles::{Collidable, Location};
 
 #[derive(Clone, Copy)]
 pub struct Wall {

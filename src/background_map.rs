@@ -1,62 +1,52 @@
 mod character_map;
-use crate::entity::Entity;
+pub(crate) mod tiles;
+
+use crate::background_map::tiles::Tile;
 use std::{env, fs, process};
 
-pub struct WorldMap {
-    data: Vec<Vec<Entity>>,
-    boundary_x: u32,
-    boundary_y: u32,
+pub struct BackgroundMap {
+    data: Vec<Vec<Tile>>,
 }
 
-impl WorldMap {
-    pub fn new(filename: String) -> WorldMap {
+impl BackgroundMap {
+    pub fn new(filename: String) -> BackgroundMap {
         initialise_map(filename)
     }
 
-    pub fn data(&self) -> &Vec<Vec<Entity>> {
+    pub fn data(&self) -> &Vec<Vec<Tile>> {
         &self.data
     }
 
-    pub fn boundary_x(&self) -> &u32 {
-        &self.boundary_x
-    }
-
-    pub fn boundary_y(&self) -> &u32 {
-        &self.boundary_y
+    pub fn get_tile_at(&self, x: usize, y: usize) -> Tile {
+        self.data[y][x]
     }
 }
 
-fn initialise_map(filename: String) -> WorldMap {
+fn initialise_map(filename: String) -> BackgroundMap {
     let unprocessed_map_data = load_map_data_from_file(filename);
     let data = process_map_data(&unprocessed_map_data);
-    let boundary_x = data[0].len() as u32;
-    let boundary_y = data.len() as u32;
-    WorldMap {
-        data,
-        boundary_x,
-        boundary_y,
-    }
+    BackgroundMap { data }
 }
 
-fn process_map_data(data: &str) -> Vec<Vec<Entity>> {
-    let mut processed_data: Vec<Vec<Entity>> = Vec::new();
-    let mut row_data: Vec<Entity> = Vec::new();
-    let mut entity: Entity;
+fn process_map_data(data: &str) -> Vec<Vec<Tile>> {
+    let mut processed_data: Vec<Vec<Tile>> = Vec::new();
+    let mut row_data: Vec<Tile> = Vec::new();
+    let mut entity: Tile;
     let mut current_x = 0;
     let mut current_y = 0;
     for character in data.chars() {
-        entity = character_map::map_character_to_entity(current_x, current_y, character);
+        entity = character_map::map_character_to_tile(current_x, current_y, character);
         match entity {
-            Entity::NewLine => {
+            Tile::NewLine => {
                 processed_data.push(row_data.clone());
                 row_data.clear();
                 current_x = 0;
                 current_y += 1;
             }
-            Entity::CarriageReturn => {
+            Tile::CarriageReturn => {
                 //do nothing - handles builds on windows
             }
-            Entity::EndOfFile => processed_data.push(row_data.clone()),
+            Tile::EndOfFile => processed_data.push(row_data.clone()),
             _ => {
                 row_data.push(entity);
                 current_x += 1;
