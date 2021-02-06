@@ -39,7 +39,7 @@ pub struct Location {
     pub y: i32,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum Collidable {
     True,
     False,
@@ -49,4 +49,13 @@ pub enum Collidable {
 pub enum OpenState {
     Open,
     Closed,
+}
+
+#[derive(Clone, Copy)]
+pub enum Velocity {
+    Up(i32),
+    Down(i32),
+    Left(i32),
+    Right(i32),
+    Stationary,
 }

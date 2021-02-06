@@ -1,4 +1,4 @@
-use crate::entity::{Collidable, Location};
+use crate::entity::{Collidable, Location, Velocity};
 use console_engine::Color;
 
 #[derive(Clone, Copy)]
@@ -7,6 +7,7 @@ pub struct Player {
     pub character_icon: char,
     pub collidable: Collidable,
     pub colour: Color,
+    pub velocity: Velocity,
 }
 
 impl Player {
@@ -16,6 +17,7 @@ impl Player {
             character_icon: '@',
             collidable: Collidable::True,
             colour: Color::Magenta,
+            velocity: Velocity::Stationary,
         }
     }
 }

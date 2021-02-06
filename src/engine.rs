@@ -1,5 +1,5 @@
 use crate::entity::player::Player;
-use crate::entity::Entity;
+use crate::entity::{Collidable, Entity, Velocity};
 use crate::viewport::Viewport;
 use crate::world_map::WorldMap;
 use console_engine::{ConsoleEngine, KeyCode, KeyModifiers};
@@ -45,32 +45,16 @@ fn create_player(entity_map: &mut HashMap<Uuid, Entity>) -> Uuid {
     uuid
 }
 
-fn update_player_location(player: &mut Player, console: &ConsoleEngine, world_map: &WorldMap) {
+fn update_player_input(player: &mut Player, console: &ConsoleEngine) {
     if console.is_key_held(KeyCode::Up) {
-        player.location.y = check_lower_bounds(0, player.location.y, -1);
+        player.velocity = Velocity::Up(1);
     } else if console.is_key_held(KeyCode::Down) {
-        player.location.y = check_upper_bounds(world_map.boundary_y(), player.location.y, 1);
+        player.velocity = Velocity::Down(1);
     } else if console.is_key_held(KeyCode::Left) {
-        player.location.x = check_lower_bounds(0, player.location.x, -1);
+        player.velocity = Velocity::Left(1);
     } else if console.is_key_held(KeyCode::Right) {
-        player.location.x = check_upper_bounds(world_map.boundary_x(), player.location.x, 1);
+        player.velocity = Velocity::Right(1);
     }
-}
-
-fn check_upper_bounds(boundary: &u32, current_location: i32, movement: i32) -> i32 {
-    if current_location + movement >= (boundary - 1) as i32 {
-        info!("Player hit the map boundary.");
-        return current_location;
-    }
-    current_location + movement
-}
-
-fn check_lower_bounds(boundary: u32, current_location: i32, movement: i32) -> i32 {
-    if current_location + movement <= boundary as i32 {
-        info!("Player hit the map boundary.");
-        return current_location;
-    }
-    current_location + movement
 }
 
 fn update_entities(
@@ -80,7 +64,59 @@ fn update_entities(
 ) {
     for entity in entity_map.values_mut() {
         if let Entity::Player(ref mut player) = entity {
-            update_player_location(player, &console, &world_map)
+            update_player_input(player, &console);
+            resolve_movement(player, &world_map);
         }
+    }
+}
+
+fn resolve_movement(player: &mut Player, world_map: &WorldMap) {
+    match player.velocity {
+        Velocity::Up(distance) => {
+            if !entity_is_colliding(world_map.get_entity_at(
+                player.location.x as usize,
+                (player.location.y - distance) as usize,
+            )) {
+                player.location.y -= distance;
+                player.velocity = Velocity::Stationary;
+            }
+        }
+        Velocity::Down(distance) => {
+            if !entity_is_colliding(world_map.get_entity_at(
+                player.location.x as usize,
+                (player.location.y + distance) as usize,
+            )) {
+                player.location.y += distance;
+                player.velocity = Velocity::Stationary;
+            }
+        }
+        Velocity::Left(distance) => {
+            if !entity_is_colliding(world_map.get_entity_at(
+                (player.location.x - distance) as usize,
+                player.location.y as usize,
+            )) {
+                player.location.x -= distance;
+                player.velocity = Velocity::Stationary;
+            }
+        }
+        Velocity::Right(distance) => {
+            if !entity_is_colliding(world_map.get_entity_at(
+                (player.location.x + distance) as usize,
+                player.location.y as usize,
+            )) {
+                player.location.x += distance;
+                player.velocity = Velocity::Stationary;
+            }
+        }
+        Velocity::Stationary => {}
+    }
+}
+
+fn entity_is_colliding(entity: Entity) -> bool {
+    match entity {
+        Entity::Door(door) => door.collidable == Collidable::True,
+        Entity::Wall(wall) => wall.collidable == Collidable::True,
+        Entity::Boundary => true,
+        _ => false,
     }
 }

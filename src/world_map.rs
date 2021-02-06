@@ -4,8 +4,6 @@ use std::{env, fs, process};
 
 pub struct WorldMap {
     data: Vec<Vec<Entity>>,
-    boundary_x: u32,
-    boundary_y: u32,
 }
 
 impl WorldMap {
@@ -17,25 +15,15 @@ impl WorldMap {
         &self.data
     }
 
-    pub fn boundary_x(&self) -> &u32 {
-        &self.boundary_x
-    }
-
-    pub fn boundary_y(&self) -> &u32 {
-        &self.boundary_y
+    pub fn get_entity_at(&self, x: usize, y: usize) -> Entity {
+        self.data[y][x]
     }
 }
 
 fn initialise_map(filename: String) -> WorldMap {
     let unprocessed_map_data = load_map_data_from_file(filename);
     let data = process_map_data(&unprocessed_map_data);
-    let boundary_x = data[0].len() as u32;
-    let boundary_y = data.len() as u32;
-    WorldMap {
-        data,
-        boundary_x,
-        boundary_y,
-    }
+    WorldMap { data }
 }
 
 fn process_map_data(data: &str) -> Vec<Vec<Entity>> {
