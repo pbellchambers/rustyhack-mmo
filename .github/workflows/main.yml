@@ -53,10 +53,16 @@ jobs:
       run: cargo build --release --verbose
     - name: Move Artifacts (ubuntu)
       if: ${{ matrix.build == 'ubuntu' }}
-      run: cp target/release/rustybox rustybox
+      run: |
+        cp target/release/rustybox rustybox
+        chmod +x rustybox
+        tar -cvzf rustybox-ubuntu.tar.gz rustybox assets
     - name: Move Artifacts (macos)
       if: ${{ matrix.build == 'macos' }}
-      run: cp target/release/rustybox rustybox
+      run: |
+        cp target/release/rustybox rustybox
+        chmod +x rustybox
+        tar -cvzf rustybox-macos.tar.gz rustybox assets
     - name: Move Artifacts (win32)
       if: ${{ matrix.build == 'win32' }}
       run: copy target\release\rustybox.exe rustybox.exe
@@ -68,17 +74,13 @@ jobs:
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
-        path: |
-          rustybox
-          assets/**/*
+        path: rustybox-ubuntu.tar.gz
     - name: Upload Artifact (macos)
       if: ${{ matrix.build == 'macos' }}
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustybox-${{ matrix.build }}
-        path: |
-          rustybox
-          assets/**/*
+        path: rustybox-macos.tar.gz
     - name: Upload Artifact (win32)
       if: ${{ matrix.build == 'win32' }}
       uses: actions/upload-artifact@v2.2.2
