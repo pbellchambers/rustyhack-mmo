@@ -49,9 +49,13 @@ fn draw_viewable_map(
                 x: viewable_map_topleft.x + viewport_print_x_loc,
                 y: viewable_map_topleft.y + viewport_print_y_loc,
             };
+            //NOTE: This will panic if the map file doesn't have half a viewport size
+            // of empty characters to print at the bottom of the map:
+            // current_map.print_loc.y can be out of bounds of world_map.data()[]
             if (current_map_print_loc.x >= 0)
                 && (current_map_print_loc.y >= 0)
-                && (current_map_print_loc.x < world_map.data()[0].len() as i32)
+                && (current_map_print_loc.x
+                < world_map.data()[current_map_print_loc.y as usize].len() as i32)
                 && (current_map_print_loc.y < world_map.data().len() as i32)
             {
                 console.print(
