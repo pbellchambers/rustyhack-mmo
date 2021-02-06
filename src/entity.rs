@@ -1,10 +1,6 @@
 use crate::entity::door::Door;
 use crate::entity::player::Player;
 use crate::entity::wall::Wall;
-use crate::world_map::WorldMap;
-use console_engine::ConsoleEngine;
-use std::collections::HashMap;
-use uuid::Uuid;
 
 pub(crate) mod door;
 pub(crate) mod player;
@@ -33,18 +29,6 @@ impl Entity {
             Entity::NewLine => ' ',
             Entity::CarriageReturn => ' ',
             Entity::EndOfFile => ' ',
-        }
-    }
-
-    pub fn update_entities(
-        console: &ConsoleEngine,
-        entity_map: &mut HashMap<Uuid, Entity>,
-        world_map: &WorldMap,
-    ) {
-        for entity in entity_map.values_mut() {
-            if let Entity::Player(ref mut player) = entity {
-                Player::update_player_location(player, &console, &world_map)
-            }
         }
     }
 }
