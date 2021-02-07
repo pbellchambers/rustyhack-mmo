@@ -1,13 +1,6 @@
-[package]
-name = "rustybox"
-version = "0.1.0"
-authors = ["pbellchambers <pbellchambers@users.noreply.github.com>"]
-edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-log = "0.4.14"
-simplelog = "0.9.0"
-console_engine = "1.4.2"
-legion = "0.3.1"
+[workspace]
+members = [
+    "rustyhack_client",
+    "rustyhack_lib",
+    "rustyhack_server",
+]
