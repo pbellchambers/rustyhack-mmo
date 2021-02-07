@@ -1,4 +1,4 @@
-use crate::background_map::tiles::TilePosition;
+use crate::background_map::tiles::{Tile, TilePosition};
 use crate::background_map::BackgroundMap;
 use crate::ecs::components::{Character, EntityColour, PlayerId, Position, VisibleState};
 use console_engine::{pixel, ConsoleEngine};
@@ -50,20 +50,25 @@ fn draw_viewable_map(
                 x: viewable_map_topleft.x + viewport_print_x_loc,
                 y: viewable_map_topleft.y + viewport_print_y_loc,
             };
-            //NOTE: This will panic if the map file doesn't have half a viewport size
-            // of empty characters to print at the bottom of the map:
-            // current_map.print_loc.y can be out of bounds of background_map.data()[]
             if (current_map_print_loc.x >= 0)
                 && (current_map_print_loc.y >= 0)
                 && (current_map_print_loc.x
-                    < world_map.data()[current_map_print_loc.y as usize].len() as i32)
+                    < world_map
+                        .data()
+                        .get(current_map_print_loc.y as usize)
+                        .unwrap_or(&vec![Tile::EmptySpace])
+                        .len() as i32)
                 && (current_map_print_loc.y < world_map.data().len() as i32)
             {
                 console.print(
                     viewport_print_x_loc,
                     viewport_print_y_loc,
-                    &world_map.data()[current_map_print_loc.y as usize]
-                        [current_map_print_loc.x as usize]
+                    &world_map
+                        .data()
+                        .get(current_map_print_loc.y as usize)
+                        .unwrap_or(&vec![Tile::EmptySpace])
+                        .get(current_map_print_loc.x as usize)
+                        .unwrap_or(&Tile::EmptySpace)
                         .character()
                         .to_string(),
                 );
