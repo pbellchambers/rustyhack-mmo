@@ -3,7 +3,7 @@ Mostly a sandbox for learning rust. Currently produces a console program that al
 
 [![Build status](https://img.shields.io/github/workflow/status/pbellchambers/rustybox/CI/main)](https://github.com/pbellchambers/rustybox/actions)
 [![Downloads](https://img.shields.io/github/downloads/pbellchambers/rustybox/total)](https://github.com/pbellchambers/rustybox/releases)
-[![License](https://img.shields.io/github/license/pbellchambers/rustybox?color=blue)](https://github.com/pbellchambers/rustybox/blob/main/LICENSE)
+[![License](https://img.shields.io/github/license/pbellchambers/rustyhack-mmo)](https://github.com/pbellchambers/rustybox/blob/main/LICENSE)
 
 
 ## Usage
