@@ -54,39 +54,39 @@ jobs:
     - name: Move Artifacts Client (ubuntu)
       if: ${{ matrix.build == 'ubuntu' }}
       run: |
-        cp target/release/rustyhack_client rustyhack_client
-        chmod +x rustyhack_client
-        tar -cvzf rustyhack_client-ubuntu.tar.gz rustyhack_client
+        cp target/release/rustyhack_client rustyhack-client
+        chmod +x rustyhack-client
+        tar -cvzf rustyhack_client-ubuntu.tar.gz rustyhack-client
     - name: Move Artifacts Server (ubuntu)
       if: ${{ matrix.build == 'ubuntu' }}
       run: |
-        cp target/release/rustyhack_server rustyhack_server
-        chmod +x rustyhack_server
-        tar -cvzf rustyhack_server-ubuntu.tar.gz rustyhack_server assets
+        cp target/release/rustyhack_server rustyhack-server
+        chmod +x rustyhack-server
+        tar -cvzf rustyhack_server-ubuntu.tar.gz rustyhack-server assets
     - name: Move Artifacts Client (macos)
       if: ${{ matrix.build == 'macos' }}
       run: |
-        cp target/release/rustyhack_client rustyhack_client
-        chmod +x rustyhack_client
-        tar -cvzf rustyhack_client-macos.tar.gz rustyhack_client
+        cp target/release/rustyhack_client rustyhack-client
+        chmod +x rustyhack-client
+        tar -cvzf rustyhack_client-macos.tar.gz rustyhack-client
     - name: Move Artifacts Server (macos)
       if: ${{ matrix.build == 'macos' }}
       run: |
-        cp target/release/rustyhack_server rustyhack_server
-        chmod +x rustyhack_server
-        tar -cvzf rustyhack_server-macos.tar.gz rustyhack_server assets
+        cp target/release/rustyhack_server rustyhack-server
+        chmod +x rustyhack-server
+        tar -cvzf rustyhack_server-macos.tar.gz rustyhack-server assets
     - name: Move Artifacts Client (win32)
       if: ${{ matrix.build == 'win32' }}
-      run: copy target\release\rustyhack_client.exe rustyhack_client.exe
+      run: copy target\release\rustyhack_client.exe rustyhack-client.exe
     - name: Move Artifacts Client (win64)
       if: ${{ matrix.build == 'win64' }}
-      run: copy target\release\rustyhack_client.exe rustyhack_client.exe
+      run: copy target\release\rustyhack_client.exe rustyhack-client.exe
     - name: Move Artifacts Server (win32)
       if: ${{ matrix.build == 'win32' }}
-      run: copy target\release\rustyhack_server.exe rustyhack_server.exe
+      run: copy target\release\rustyhack_server.exe rustyhack-server.exe
     - name: Move Artifacts Server (win64)
       if: ${{ matrix.build == 'win64' }}
-      run: copy target\release\rustyhack_server.exe rustyhack_server.exe
+      run: copy target\release\rustyhack_server.exe rustyhack-server.exe
     - name: Upload Artifact Client (ubuntu)
       if: ${{ matrix.build == 'ubuntu' }}
       uses: actions/upload-artifact@v2.2.2
@@ -105,14 +105,14 @@ jobs:
       with:
         name: rustyhack_client-${{ matrix.build }}
         path: |
-          rustyhack_client.exe
+          rustyhack-client.exe
     - name: Upload Artifact Client (win64)
       if: ${{ matrix.build == 'win64' }}
       uses: actions/upload-artifact@v2.2.2
       with:
         name: rustyhack_client-${{ matrix.build }}
         path: |
-          rustyhack_client.exe
+          rustyhack-client.exe
     - name: Upload Artifact Server (ubuntu)
       if: ${{ matrix.build == 'ubuntu' }}
       uses: actions/upload-artifact@v2.2.2
@@ -131,13 +131,13 @@ jobs:
       with:
         name: rustyhack_server-${{ matrix.build }}
         path: |
-          rustyhack_server.exe
+          rustyhack-server.exe
           assets\**\*
     - name: Upload Artifact Server (win64)
       if: ${{ matrix.build == 'win64' }}
       uses: actions/upload-artifact@v2.2.2
       with:
-        name: rustyhack_server-${{ matrix.build }}
+        name: rustyhack-server-${{ matrix.build }}
         path: |
           rustyhack_server.exe
           assets\**\*
