@@ -1,8 +1,8 @@
-use crate::background_map::tiles::{Collidable, Location, OpenState};
+use crate::background_map::tiles::{Collidable, OpenState, TilePosition};
 
 #[derive(Clone, Copy)]
 pub struct Door {
-    pub location: Location,
+    pub tile_position: TilePosition,
     pub character_icon: char,
     pub collidable: Collidable,
     pub open_state: OpenState,
@@ -11,7 +11,7 @@ pub struct Door {
 impl Door {
     pub fn new(x: i32, y: i32, open_state: OpenState) -> Door {
         Door {
-            location: Location { x, y },
+            tile_position: TilePosition { x, y },
             character_icon: match open_state {
                 OpenState::Open => '/',
                 OpenState::Closed => '+',

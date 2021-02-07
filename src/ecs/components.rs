@@ -1,10 +1,10 @@
 use console_engine::Color;
-use uuid::Uuid;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
+    pub map: String,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -41,9 +41,4 @@ pub struct IsPlayer {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct VisibleState {
     pub visible: bool,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct PlayerId {
-    pub uuid: Uuid,
 }

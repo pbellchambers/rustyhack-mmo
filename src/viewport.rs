@@ -1,9 +1,8 @@
-use crate::background_map::tiles::Location;
+use crate::background_map::tiles::{Tile, TilePosition};
 use crate::background_map::BackgroundMap;
-use crate::ecs::components::{Character, EntityColour, PlayerId, Position, VisibleState};
+use crate::ecs::components::{Character, EntityColour, IsPlayer, Position, VisibleState};
 use console_engine::{pixel, ConsoleEngine};
 use legion::{IntoQuery, World};
-use uuid::Uuid;
 
 pub struct Viewport {
     pub width: u32,
@@ -25,13 +24,11 @@ impl Viewport {
         console: &mut ConsoleEngine,
         world: &World,
         background_map: &BackgroundMap,
-        current_player_uuid: &Uuid,
     ) {
-        let viewable_map_coords: Location =
-            calculate_viewable_map_coords(&self, &current_player_uuid, &world);
+        let viewable_map_coords: TilePosition = calculate_viewable_map_coords(&self, &world);
         draw_viewable_map(console, &background_map, &viewable_map_coords, &self);
         draw_viewport_frame(console, &self);
-        draw_viewable_entities(console, &world, &self, &current_player_uuid);
+        draw_viewable_entities(console, &world, &self);
         console.draw();
     }
 }
@@ -39,31 +36,36 @@ impl Viewport {
 fn draw_viewable_map(
     console: &mut ConsoleEngine,
     world_map: &BackgroundMap,
-    viewable_map_topleft: &Location,
+    viewable_map_topleft: &TilePosition,
     viewport: &Viewport,
 ) {
     let mut viewport_print_y_loc: i32 = 0;
     while viewport_print_y_loc < viewport.height as i32 {
         let mut viewport_print_x_loc: i32 = 0;
         while viewport_print_x_loc < viewport.width as i32 {
-            let current_map_print_loc = Location {
+            let current_map_print_loc = TilePosition {
                 x: viewable_map_topleft.x + viewport_print_x_loc,
                 y: viewable_map_topleft.y + viewport_print_y_loc,
             };
-            //NOTE: This will panic if the map file doesn't have half a viewport size
-            // of empty characters to print at the bottom of the map:
-            // current_map.print_loc.y can be out of bounds of background_map.data()[]
             if (current_map_print_loc.x >= 0)
                 && (current_map_print_loc.y >= 0)
                 && (current_map_print_loc.x
-                    < world_map.data()[current_map_print_loc.y as usize].len() as i32)
+                    < world_map
+                        .data()
+                        .get(current_map_print_loc.y as usize)
+                        .unwrap_or(&vec![Tile::EmptySpace])
+                        .len() as i32)
                 && (current_map_print_loc.y < world_map.data().len() as i32)
             {
                 console.print(
                     viewport_print_x_loc,
                     viewport_print_y_loc,
-                    &world_map.data()[current_map_print_loc.y as usize]
-                        [current_map_print_loc.x as usize]
+                    &world_map
+                        .data()
+                        .get(current_map_print_loc.y as usize)
+                        .unwrap_or(&vec![Tile::EmptySpace])
+                        .get(current_map_print_loc.x as usize)
+                        .unwrap_or(&Tile::EmptySpace)
                         .character()
                         .to_string(),
                 );
@@ -76,20 +78,16 @@ fn draw_viewable_map(
     }
 }
 
-fn calculate_viewable_map_coords(
-    viewport: &Viewport,
-    current_player_uuid: &Uuid,
-    world: &World,
-) -> Location {
+fn calculate_viewable_map_coords(viewport: &Viewport, world: &World) -> TilePosition {
     let x_view_distance = viewport.width / 2;
     let y_view_distance = viewport.height / 2;
-    let mut viewable_map_coords: Location = Location { x: 0, y: 0 };
+    let mut viewable_map_coords: TilePosition = TilePosition { x: 0, y: 0 };
 
-    let mut query = <(&Position, &PlayerId)>::query();
+    let mut query = <(&Position, &IsPlayer)>::query();
 
-    for (position, player_id) in query.iter(world) {
-        if player_id.uuid == *current_player_uuid {
-            viewable_map_coords = Location {
+    for (position, is_player) in query.iter(world) {
+        if is_player.is_player {
+            viewable_map_coords = TilePosition {
                 x: position.x - x_view_distance as i32,
                 y: position.y - y_view_distance as i32,
             };
@@ -101,22 +99,17 @@ fn calculate_viewable_map_coords(
     viewable_map_coords
 }
 
-fn draw_viewable_entities(
-    console: &mut ConsoleEngine,
-    world: &World,
-    viewport: &Viewport,
-    current_player_uuid: &Uuid,
-) {
+fn draw_viewable_entities(console: &mut ConsoleEngine, world: &World, viewport: &Viewport) {
     let mut query = <(
         &Position,
         &Character,
         &EntityColour,
         &VisibleState,
-        &PlayerId,
+        &IsPlayer,
     )>::query();
 
-    for (position, character, entity_colour, visible_state, player_id) in query.iter(world) {
-        if player_id.uuid == *current_player_uuid {
+    for (position, character, entity_colour, visible_state, is_player) in query.iter(world) {
+        if is_player.is_player {
             console.set_pxl(
                 (viewport.width / 2) as i32,
                 (viewport.height / 2) as i32,
