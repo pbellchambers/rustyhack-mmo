@@ -10,31 +10,15 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    name: Pipeline
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        build: [ubuntu, macos, win32, win64]
-        include:
-          - build: ubuntu
-            os: ubuntu-latest
-            rust: stable
-          - build: macos
-            os: macos-latest
-            rust: stable
-          - build: win32
-            os: windows-latest
-            rust: stable-i686
-          - build: win64
-            os: windows-latest
-            rust: stable-x86_64
+  build_ubuntu:
+    name: Ubuntu Build
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.3.4
+    - uses: actions/checkout@v2
     - name: Install Rust (rustup)
       run: |
-        rustup update ${{ matrix.rust }} --no-self-update
-        rustup default ${{ matrix.rust }}
+        rustup update stable --no-self-update
+        rustup default stable
         rustup component add rustfmt
         rustup component add clippy
     - name: Build
@@ -51,96 +35,155 @@ jobs:
       run: cargo test --verbose
     - name: Build Release
       run: cargo build --release --verbose
-    - name: Move Artifacts Client (ubuntu)
-      if: ${{ matrix.build == 'ubuntu' }}
+    - name: Move Artifacts
       run: |
+        ls target/release
         cp target/release/rustyhack_client rustyhack-client
-        chmod +x rustyhack-client
-        tar -cvzf rustyhack_client-ubuntu.tar.gz rustyhack-client
-    - name: Move Artifacts Server (ubuntu)
-      if: ${{ matrix.build == 'ubuntu' }}
-      run: |
+        ls target/release
         cp target/release/rustyhack_server rustyhack-server
-        chmod +x rustyhack-server
-        tar -cvzf rustyhack_server-ubuntu.tar.gz rustyhack-server assets
-    - name: Move Artifacts Client (macos)
-      if: ${{ matrix.build == 'macos' }}
-      run: |
-        cp target/release/rustyhack_client rustyhack-client
         chmod +x rustyhack-client
-        tar -cvzf rustyhack_client-macos.tar.gz rustyhack-client
-    - name: Move Artifacts Server (macos)
-      if: ${{ matrix.build == 'macos' }}
-      run: |
-        cp target/release/rustyhack_server rustyhack-server
         chmod +x rustyhack-server
-        tar -cvzf rustyhack_server-macos.tar.gz rustyhack-server assets
-    - name: Move Artifacts Client (win32)
-      if: ${{ matrix.build == 'win32' }}
-      run: copy target\release\rustyhack_client.exe rustyhack-client.exe
-    - name: Move Artifacts Client (win64)
-      if: ${{ matrix.build == 'win64' }}
-      run: copy target\release\rustyhack_client.exe rustyhack-client.exe
-    - name: Move Artifacts Server (win32)
-      if: ${{ matrix.build == 'win32' }}
-      run: copy target\release\rustyhack_server.exe rustyhack-server.exe
-    - name: Move Artifacts Server (win64)
-      if: ${{ matrix.build == 'win64' }}
-      run: copy target\release\rustyhack_server.exe rustyhack-server.exe
-    - name: Upload Artifact Client (ubuntu)
-      if: ${{ matrix.build == 'ubuntu' }}
-      uses: actions/upload-artifact@v2.2.2
+        tar -cvzf rustyhack-client-ubuntu.tar.gz rustyhack-client
+        tar -cvzf rustyhack-server-ubuntu.tar.gz rustyhack-server
+    - name: Upload Artifact Client
+      uses: actions/upload-artifact@v2
       with:
-        name: rustyhack_client-${{ matrix.build }}
-        path: rustyhack_client-ubuntu.tar.gz
-    - name: Upload Artifact Client (macos)
-      if: ${{ matrix.build == 'macos' }}
-      uses: actions/upload-artifact@v2.2.2
+        name: rustyhack-client-ubuntu
+        path: rustyhack-client-ubuntu.tar.gz
+    - name: Upload Artifact Server
+      uses: actions/upload-artifact@v2
       with:
-        name: rustyhack_client-${{ matrix.build }}
-        path: rustyhack_client-macos.tar.gz
-    - name: Upload Artifact Client (win32)
-      if: ${{ matrix.build == 'win32' }}
-      uses: actions/upload-artifact@v2.2.2
-      with:
-        name: rustyhack_client-${{ matrix.build }}
-        path: |
-          rustyhack-client.exe
-    - name: Upload Artifact Client (win64)
-      if: ${{ matrix.build == 'win64' }}
-      uses: actions/upload-artifact@v2.2.2
-      with:
-        name: rustyhack_client-${{ matrix.build }}
-        path: |
-          rustyhack-client.exe
-    - name: Upload Artifact Server (ubuntu)
-      if: ${{ matrix.build == 'ubuntu' }}
-      uses: actions/upload-artifact@v2.2.2
-      with:
-        name: rustyhack_server-${{ matrix.build }}
-        path: rustyhack_server-ubuntu.tar.gz
-    - name: Upload Artifact Server (macos)
-      if: ${{ matrix.build == 'macos' }}
-      uses: actions/upload-artifact@v2.2.2
-      with:
-        name: rustyhack_server-${{ matrix.build }}
-        path: rustyhack_server-macos.tar.gz
-    - name: Upload Artifact Server (win32)
-      if: ${{ matrix.build == 'win32' }}
-      uses: actions/upload-artifact@v2.2.2
-      with:
-        name: rustyhack_server-${{ matrix.build }}
-        path: |
-          rustyhack-server.exe
-          assets\**\*
-    - name: Upload Artifact Server (win64)
-      if: ${{ matrix.build == 'win64' }}
-      uses: actions/upload-artifact@v2.2.2
-      with:
-        name: rustyhack-server-${{ matrix.build }}
-        path: |
-          rustyhack_server.exe
-          assets\**\*
+        name: rustyhack-server-ubuntu
+        path: rustyhack-server-ubuntu.tar.gz
+
+#  build:
+#    name: Pipeline
+#    runs-on: ${{ matrix.os }}
+#    strategy:
+#      matrix:
+#        build: [macos, win32, win64]
+#        include:
+#          - build: macos
+#            os: macos-latest
+#            rust: stable
+#          - build: win32
+#            os: windows-latest
+#            rust: stable-i686
+#          - build: win64
+#            os: windows-latest
+#            rust: stable-x86_64
+#    steps:
+#    - uses: actions/checkout@v2.3.4
+#    - name: Install Rust (rustup)
+#      run: |
+#        rustup update ${{ matrix.rust }} --no-self-update
+#        rustup default ${{ matrix.rust }}
+#        rustup component add rustfmt
+#        rustup component add clippy
+#    - name: Build
+#      run: cargo build --verbose
+#    - name: Format Check
+#      run: |
+#        cargo fmt --version
+#        cargo fmt -- --check --verbose
+#    - name: Lint Check
+#      run: |
+#        cargo clippy --version
+#        cargo clippy -- --verbose -D warnings
+#    - name: Test
+#      run: cargo test --verbose
+#    - name: Build Release
+#      run: cargo build --release --verbose
+#    - name: Move Artifacts Client (ubuntu)
+#      if: ${{ matrix.build == 'ubuntu' }}
+#      run: |
+#        cp target/release/rustyhack_client rustyhack-client
+#        chmod +x rustyhack-client
+#        tar -cvzf rustyhack_client-ubuntu.tar.gz rustyhack-client
+#    - name: Move Artifacts Server (ubuntu)
+#      if: ${{ matrix.build == 'ubuntu' }}
+#      run: |
+#        cp target/release/rustyhack_server rustyhack-server
+#        chmod +x rustyhack-server
+#        tar -cvzf rustyhack_server-ubuntu.tar.gz rustyhack-server assets
+#    - name: Move Artifacts Client (macos)
+#      if: ${{ matrix.build == 'macos' }}
+#      run: |
+#        cp target/release/rustyhack_client rustyhack-client
+#        chmod +x rustyhack-client
+#        tar -cvzf rustyhack_client-macos.tar.gz rustyhack-client
+#    - name: Move Artifacts Server (macos)
+#      if: ${{ matrix.build == 'macos' }}
+#      run: |
+#        cp target/release/rustyhack_server rustyhack-server
+#        chmod +x rustyhack-server
+#        tar -cvzf rustyhack_server-macos.tar.gz rustyhack-server assets
+#    - name: Move Artifacts Client (win32)
+#      if: ${{ matrix.build == 'win32' }}
+#      run: copy target\release\rustyhack_client.exe rustyhack-client.exe
+#    - name: Move Artifacts Client (win64)
+#      if: ${{ matrix.build == 'win64' }}
+#      run: copy target\release\rustyhack_client.exe rustyhack-client.exe
+#    - name: Move Artifacts Server (win32)
+#      if: ${{ matrix.build == 'win32' }}
+#      run: copy target\release\rustyhack_server.exe rustyhack-server.exe
+#    - name: Move Artifacts Server (win64)
+#      if: ${{ matrix.build == 'win64' }}
+#      run: copy target\release\rustyhack_server.exe rustyhack-server.exe
+#    - name: Upload Artifact Client (ubuntu)
+#      if: ${{ matrix.build == 'ubuntu' }}
+#      uses: actions/upload-artifact@v2.2.2
+#      with:
+#        name: rustyhack_client-${{ matrix.build }}
+#        path: rustyhack_client-ubuntu.tar.gz
+#    - name: Upload Artifact Client (macos)
+#      if: ${{ matrix.build == 'macos' }}
+#      uses: actions/upload-artifact@v2.2.2
+#      with:
+#        name: rustyhack_client-${{ matrix.build }}
+#        path: rustyhack_client-macos.tar.gz
+#    - name: Upload Artifact Client (win32)
+#      if: ${{ matrix.build == 'win32' }}
+#      uses: actions/upload-artifact@v2.2.2
+#      with:
+#        name: rustyhack_client-${{ matrix.build }}
+#        path: |
+#          rustyhack-client.exe
+#    - name: Upload Artifact Client (win64)
+#      if: ${{ matrix.build == 'win64' }}
+#      uses: actions/upload-artifact@v2.2.2
+#      with:
+#        name: rustyhack_client-${{ matrix.build }}
+#        path: |
+#          rustyhack-client.exe
+#    - name: Upload Artifact Server (ubuntu)
+#      if: ${{ matrix.build == 'ubuntu' }}
+#      uses: actions/upload-artifact@v2.2.2
+#      with:
+#        name: rustyhack_server-${{ matrix.build }}
+#        path: rustyhack_server-ubuntu.tar.gz
+#    - name: Upload Artifact Server (macos)
+#      if: ${{ matrix.build == 'macos' }}
+#      uses: actions/upload-artifact@v2.2.2
+#      with:
+#        name: rustyhack_server-${{ matrix.build }}
+#        path: rustyhack_server-macos.tar.gz
+#    - name: Upload Artifact Server (win32)
+#      if: ${{ matrix.build == 'win32' }}
+#      uses: actions/upload-artifact@v2.2.2
+#      with:
+#        name: rustyhack_server-${{ matrix.build }}
+#        path: |
+#          rustyhack-server.exe
+#          assets\**\*
+#    - name: Upload Artifact Server (win64)
+#      if: ${{ matrix.build == 'win64' }}
+#      uses: actions/upload-artifact@v2.2.2
+#      with:
+#        name: rustyhack-server-${{ matrix.build }}
+#        path: |
+#          rustyhack_server.exe
+#          assets\**\*
 
   update_release_draft:
     runs-on: ubuntu-latest
