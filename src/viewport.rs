@@ -1,4 +1,4 @@
-use crate::background_map::tiles::Location;
+use crate::background_map::tiles::TilePosition;
 use crate::background_map::BackgroundMap;
 use crate::ecs::components::{Character, EntityColour, PlayerId, Position, VisibleState};
 use console_engine::{pixel, ConsoleEngine};
@@ -27,7 +27,7 @@ impl Viewport {
         background_map: &BackgroundMap,
         current_player_uuid: &Uuid,
     ) {
-        let viewable_map_coords: Location =
+        let viewable_map_coords: TilePosition =
             calculate_viewable_map_coords(&self, &current_player_uuid, &world);
         draw_viewable_map(console, &background_map, &viewable_map_coords, &self);
         draw_viewport_frame(console, &self);
@@ -39,14 +39,14 @@ impl Viewport {
 fn draw_viewable_map(
     console: &mut ConsoleEngine,
     world_map: &BackgroundMap,
-    viewable_map_topleft: &Location,
+    viewable_map_topleft: &TilePosition,
     viewport: &Viewport,
 ) {
     let mut viewport_print_y_loc: i32 = 0;
     while viewport_print_y_loc < viewport.height as i32 {
         let mut viewport_print_x_loc: i32 = 0;
         while viewport_print_x_loc < viewport.width as i32 {
-            let current_map_print_loc = Location {
+            let current_map_print_loc = TilePosition {
                 x: viewable_map_topleft.x + viewport_print_x_loc,
                 y: viewable_map_topleft.y + viewport_print_y_loc,
             };
@@ -80,16 +80,16 @@ fn calculate_viewable_map_coords(
     viewport: &Viewport,
     current_player_uuid: &Uuid,
     world: &World,
-) -> Location {
+) -> TilePosition {
     let x_view_distance = viewport.width / 2;
     let y_view_distance = viewport.height / 2;
-    let mut viewable_map_coords: Location = Location { x: 0, y: 0 };
+    let mut viewable_map_coords: TilePosition = TilePosition { x: 0, y: 0 };
 
     let mut query = <(&Position, &PlayerId)>::query();
 
     for (position, player_id) in query.iter(world) {
         if player_id.uuid == *current_player_uuid {
-            viewable_map_coords = Location {
+            viewable_map_coords = TilePosition {
                 x: position.x - x_view_distance as i32,
                 y: position.y - y_view_distance as i32,
             };

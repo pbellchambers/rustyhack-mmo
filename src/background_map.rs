@@ -2,6 +2,8 @@ mod character_map;
 pub(crate) mod tiles;
 
 use crate::background_map::tiles::Tile;
+use std::collections::HashMap;
+use std::path::PathBuf;
 use std::{env, fs, process};
 
 pub struct BackgroundMap {
@@ -9,10 +11,6 @@ pub struct BackgroundMap {
 }
 
 impl BackgroundMap {
-    pub fn new(filename: String) -> BackgroundMap {
-        initialise_map(filename)
-    }
-
     pub fn data(&self) -> &Vec<Vec<Tile>> {
         &self.data
     }
@@ -22,10 +20,46 @@ impl BackgroundMap {
     }
 }
 
-fn initialise_map(filename: String) -> BackgroundMap {
-    let unprocessed_map_data = load_map_data_from_file(filename);
+pub fn initialise_all_maps() -> HashMap<String, BackgroundMap> {
+    let mut all_maps = HashMap::new();
+    let file_location = get_maps_directory_location();
+    let paths = fs::read_dir(file_location.as_path()).unwrap();
+    for path in paths {
+        let unwrapped_path = path.unwrap();
+        let filename = String::from(unwrapped_path.file_name().to_str().unwrap());
+        let map = initialise_map(&unwrapped_path.path());
+        info!("Initialised map: {:?}", &filename);
+        all_maps.insert(filename, map);
+    }
+    info!("Finished initialising all maps.");
+    all_maps
+}
+
+fn get_maps_directory_location() -> PathBuf {
+    let mut file_location = env::current_exe().unwrap_or_else(|err| {
+        error!("Problem getting current executable location: {}", err);
+        process::exit(1);
+    });
+    file_location.pop();
+    file_location.push("assets");
+    file_location.push("maps");
+    file_location
+}
+
+fn initialise_map(path: &PathBuf) -> BackgroundMap {
+    let unprocessed_map_data = load_map_data_from_file(path);
     let data = process_map_data(&unprocessed_map_data);
     BackgroundMap { data }
+}
+
+fn load_map_data_from_file(path: &PathBuf) -> String {
+    fs::read_to_string(path.as_path()).unwrap_or_else(|err| {
+        error!(
+            "Problem getting map data from file: {:?}, error: {}",
+            path, err
+        );
+        process::exit(1);
+    })
 }
 
 fn process_map_data(data: &str) -> Vec<Vec<Tile>> {
@@ -54,22 +88,4 @@ fn process_map_data(data: &str) -> Vec<Vec<Tile>> {
         }
     }
     processed_data
-}
-
-fn load_map_data_from_file(filename: String) -> String {
-    let mut file_location = env::current_exe().unwrap_or_else(|err| {
-        error!("Problem getting current executable location: {}", err);
-        process::exit(1);
-    });
-    file_location.pop();
-    file_location.push("assets");
-    file_location.push("maps");
-    file_location.push(filename);
-    fs::read_to_string(&file_location.as_path()).unwrap_or_else(|err| {
-        error!(
-            "Problem getting map data from file: {:?}, error: {}",
-            file_location, err
-        );
-        process::exit(1);
-    })
 }

@@ -1,4 +1,5 @@
 mod background_map;
+mod consts;
 mod ecs;
 mod engine;
 mod viewport;

@@ -1,10 +1,13 @@
+use crate::background_map;
 use crate::background_map::tiles::{Collidable, Tile};
 use crate::background_map::BackgroundMap;
+use crate::consts::{DEFAULT_MAP, DEFAULT_PLAYER_POSITION};
 use crate::ecs::components;
 use crate::ecs::components::*;
 use crate::viewport::Viewport;
 use console_engine::{Color, ConsoleEngine, KeyCode, KeyModifiers};
 use legion::*;
+use std::collections::HashMap;
 use uuid::Uuid;
 
 pub fn run(width: u32, height: u32, target_fps: u32) {
@@ -12,8 +15,7 @@ pub fn run(width: u32, height: u32, target_fps: u32) {
     let mut console =
         console_engine::ConsoleEngine::init(viewport.width, viewport.height, viewport.target_fps);
     let mut world = World::default();
-    let background_map = BackgroundMap::new(String::from("default.txt"));
-    info!("Initialised default map.");
+    let all_maps: HashMap<String, BackgroundMap> = background_map::initialise_all_maps();
 
     let current_player_uuid = create_player(&mut world);
     info!("Initialised player: {}", &current_player_uuid);
@@ -22,11 +24,11 @@ pub fn run(width: u32, height: u32, target_fps: u32) {
         console.wait_frame();
         console.clear_screen();
         world = update_player_input(world, &console, &current_player_uuid);
-        world = update_entities(world, &background_map);
+        world = update_entities(world, all_maps.get(DEFAULT_MAP).unwrap());
         viewport.draw_viewport_contents(
             &mut console,
             &world,
-            &background_map,
+            all_maps.get(DEFAULT_MAP).unwrap(),
             &current_player_uuid,
         );
         if should_quit(&console) {
@@ -44,7 +46,7 @@ fn create_player(world: &mut World) -> Uuid {
     let uuid = Uuid::new_v4();
     let player = world.push((
         IsPlayer { is_player: true },
-        Position { x: 5, y: 5 },
+        DEFAULT_PLAYER_POSITION,
         components::Velocity { x: 0, y: 0 },
         CollisionState { collidable: true },
         Character { icon: '@' },

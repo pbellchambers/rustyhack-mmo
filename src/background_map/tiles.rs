@@ -17,7 +17,7 @@ pub enum OpenState {
 }
 
 #[derive(Clone, Copy)]
-pub struct Location {
+pub struct TilePosition {
     pub x: i32,
     pub y: i32,
 }
