@@ -1,6 +1,6 @@
 use crate::background_map;
-use crate::background_map::tiles::{Collidable, Tile};
-use crate::background_map::BackgroundMap;
+use rustyhack_lib::background_map::tiles::{Collidable, Tile};
+use rustyhack_lib::background_map::BackgroundMap;
 use crate::consts::DEFAULT_MAP;
 use crate::ecs::components;
 use crate::ecs::components::*;

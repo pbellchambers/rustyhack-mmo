@@ -1,5 +1,5 @@
-use crate::background_map::tiles::{Tile, TilePosition};
-use crate::background_map::BackgroundMap;
+use rustyhack_lib::background_map::tiles::{Tile, TilePosition};
+use rustyhack_lib::background_map::BackgroundMap;
 use crate::ecs::components::{Character, EntityColour, IsPlayer, Position, VisibleState};
 use console_engine::{pixel, ConsoleEngine};
 use legion::{IntoQuery, World};

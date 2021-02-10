@@ -1,24 +1,8 @@
-mod character_map;
-pub(crate) mod tiles;
-
-use crate::background_map::tiles::Tile;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::{env, fs, process};
-
-pub struct BackgroundMap {
-    data: Vec<Vec<Tile>>,
-}
-
-impl BackgroundMap {
-    pub fn data(&self) -> &Vec<Vec<Tile>> {
-        &self.data
-    }
-
-    pub fn get_tile_at(&self, x: usize, y: usize) -> Tile {
-        self.data[y][x]
-    }
-}
+use rustyhack_lib::background_map::{BackgroundMap, character_map};
+use rustyhack_lib::background_map::tiles::Tile;
 
 pub fn initialise_all_maps() -> HashMap<String, BackgroundMap> {
     let mut all_maps = HashMap::new();
