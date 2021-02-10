@@ -1,18 +1,21 @@
-mod background_map;
+use std::{env, process, thread};
+use std::fs::File;
+
+use laminar::{Packet, Socket, SocketEvent};
+use simplelog::*;
+
+use bincode::serialize;
+use crate::background_map::initialise_all_maps;
+
 mod consts;
 mod ecs;
 mod engine;
 mod viewport;
+mod background_map;
 
 #[macro_use]
 extern crate log;
 extern crate simplelog;
-
-use laminar::{Socket, SocketEvent};
-use simplelog::*;
-use std::fs::File;
-use std::net::SocketAddr;
-use std::{env, process, thread};
 
 fn main() {
     initialise_log();
@@ -40,34 +43,53 @@ fn initialise_log() {
 }
 
 fn run_server() {
-    const SERVER_ADDR: &'static str = "127.0.0.1:50201";
-    let mut socket = Socket::bind(SERVER_ADDR).unwrap();
+    const SERVER_ADDR: &str = "127.0.0.1:50201";
 
-    let event_receiver = socket.get_event_receiver();
-    // Starts the socket, which will start a poll mechanism to receive and send messages.
+    let mut socket = Socket::bind(SERVER_ADDR).unwrap();
+    let (sender, receiver) = (socket.get_packet_sender(), socket.get_event_receiver());
     let _thread = thread::spawn(move || socket.start_polling());
 
     loop {
-        // Waits until a socket event occurs
-        let result = event_receiver.recv();
-
-        match result {
-            Ok(socket_event) => match socket_event {
+        if let Ok(event) = receiver.recv() {
+            match event {
                 SocketEvent::Packet(packet) => {
-                    let endpoint: SocketAddr = packet.addr();
-                    let received_data: &[u8] = packet.payload();
-                    info!("Packet received from {}: {:?}", endpoint, String::from_utf8_lossy(received_data));
+                    let msg = packet.payload();
+                    let msg = String::from_utf8_lossy(msg);
+                    let address = packet.addr();
+
+                    info!("Received {:?} from {:?}", msg, address);
+                    if msg.starts_with("CreatePlayer:") {
+                        let response = serialize(&String::from("NewPlayer: someplayer")).unwrap();
+                        debug!("Will try to send NewPlayer: {:?}", response);
+                        sender
+                            .send(Packet::reliable_unordered(
+                                packet.addr(),
+                                serialize(&"NewPlayer: someplayer").unwrap(),
+                            ))
+                            .expect("This should send");
+                    } else if msg == "GetAllMaps" {
+                        let all_maps = initialise_all_maps();
+                        let response = serialize(&all_maps).unwrap();
+                        debug!("Will try to send AllMaps: {:?}", response);
+                        sender
+                            .send(Packet::reliable_ordered(
+                                packet.addr(),
+                                serialize(&all_maps).unwrap(),
+                                Some(2),
+                            ))
+                            .expect("This should send");
+                        break;
+                    } else {
+                        warn!("Unknown message from {:?}: {:?}", address, msg);
+                    }
                 }
                 SocketEvent::Connect(connect_event) => {
                     info!("Client connected from: {}", connect_event)
                 }
-                SocketEvent::Timeout(timeout_event) => {
-                    info!("Client timed out {}", timeout_event)
+                SocketEvent::Timeout(address) => {
+                    info!("Client timed out: {}", address);
                 }
                 _ => {}
-            },
-            Err(e) => {
-                error!("Something went wrong when receiving, error: {:?}", e);
             }
         }
     }
