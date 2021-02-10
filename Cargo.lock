@@ -557,6 +557,7 @@ name = "rustyhack_client"
 version = "0.1.0"
 dependencies = [
  "console_engine",
+ "laminar",
  "log",
  "rustyhack_lib",
  "simplelog",

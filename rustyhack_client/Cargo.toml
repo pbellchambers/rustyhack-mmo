@@ -13,3 +13,4 @@ rustyhack_lib = { path = "../rustyhack_lib" }
 log = "0.4.14"
 simplelog = "0.9.0"
 console_engine = "1.4.2"
+laminar = "0.4.0"
