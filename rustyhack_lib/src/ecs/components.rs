@@ -48,3 +48,8 @@ pub struct VisibleState {
 pub struct EntityName {
     pub name: String,
 }
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ClientAddress {
+    pub address: String,
+}

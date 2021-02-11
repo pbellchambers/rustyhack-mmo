@@ -22,7 +22,7 @@ fn main() {
     let receiver = socket.get_event_receiver();
     let _thread = thread::spawn(move || socket.start_polling());
 
-    engine::run(41, 15, 15, &sender, &receiver, SERVER_ADDR);
+    engine::run(41, 15, 15, &sender, &receiver, SERVER_ADDR, CLIENT_ADDR);
 }
 
 fn initialise_log() {

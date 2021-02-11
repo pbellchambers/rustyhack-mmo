@@ -13,7 +13,7 @@ rustyhack_lib = { path = "../rustyhack_lib" }
 log = "0.4.14"
 simplelog = "0.9.0"
 console_engine = "1.4.2"
-legion = "0.3.1"
+legion = { version = "0.3.1", features = ["extended-tuple-impls"] }
 laminar = "0.4.0"
 crossbeam-channel = "0.4.4"
 serde = "1.0.123"

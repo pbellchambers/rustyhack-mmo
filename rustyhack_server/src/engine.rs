@@ -13,6 +13,7 @@ use rustyhack_lib::ecs::components::*;
 use rustyhack_lib::message_handler::player_message::{PlayerMessage, PlayerReply};
 use std::collections::HashMap;
 use std::thread;
+use std::time::Duration;
 
 pub fn run() {
     const SERVER_ADDR: &str = "127.0.0.1:50201";
@@ -27,8 +28,6 @@ pub fn run() {
     let all_maps = background_map::initialise_all_maps();
     let (channel_sender, channel_receiver) = crossbeam_channel::unbounded();
     thread::spawn(move || message_handler::run(&sender, &receiver, &all_maps, channel_sender));
-
-    create_player(&mut world, String::from("default_player"));
 
     let mut schedule = Schedule::builder()
         .add_system(update_player_input_system())
@@ -47,6 +46,8 @@ pub fn run() {
         schedule.execute(&mut world, &mut resources);
         player_velocity_updates =
             send_player_updates(&mut world, &local_sender, player_velocity_updates);
+        //todo: tune this, else it eats up cpu
+        thread::sleep(Duration::from_millis(25));
     }
 }
 
@@ -59,7 +60,7 @@ fn process_player_messages(
         for received in channel_receiver {
             match received {
                 PlayerMessage::CreatePlayer(message) => {
-                    create_player(world, message.player_name);
+                    create_player(world, message.player_name, message.client_addr);
                 }
                 PlayerMessage::UpdateVelocity(message) => {
                     info!("Processing update velocity message");
@@ -81,9 +82,12 @@ fn process_player_messages(
     player_velocity_updates
 }
 
-pub fn create_player(world: &mut World, name: String) -> Entity {
+pub fn create_player(world: &mut World, name: String, client_addr: String) -> Entity {
     let player = world.push((
         EntityName { name },
+        ClientAddress {
+            address: client_addr,
+        },
         IsPlayer { is_player: true },
         Position {
             x: 5,
@@ -102,7 +106,7 @@ pub fn create_player(world: &mut World, name: String) -> Entity {
     player
 }
 
-#[system(par_for_each)]
+#[system(for_each)]
 fn update_player_input(
     entity_name: &EntityName,
     velocity: &mut Velocity,
@@ -116,7 +120,7 @@ fn update_player_input(
     }
 }
 
-#[system(par_for_each)]
+#[system(for_each)]
 fn update_entities_position(
     velocity: &mut Velocity,
     position: &mut Position,
@@ -148,13 +152,13 @@ fn send_player_updates(
     sender: &Sender<Packet>,
     mut player_velocity_updates: HashMap<EntityName, Velocity>,
 ) -> HashMap<EntityName, Velocity> {
-    let mut query = <(&EntityName, &mut Position)>::query();
-    for (player_name, position) in query.iter_mut(world) {
-        if !player_velocity_updates.is_empty() && player_name.name == "client_player" {
+    let mut query = <(&EntityName, &mut Position, &ClientAddress)>::query();
+    for (player_name, position, client_address) in query.iter_mut(world) {
+        if player_velocity_updates.contains_key(player_name) {
             let response = serialize(&PlayerReply::UpdatePosition(position.clone())).unwrap();
             sender
                 .send(Packet::unreliable_sequenced(
-                    "127.0.0.1:50202".parse().unwrap(),
+                    client_address.address.parse().unwrap(),
                     response,
                     Some(20),
                 ))
