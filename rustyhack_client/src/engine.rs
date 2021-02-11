@@ -59,11 +59,8 @@ fn create_new_player(
                 SocketEvent::Packet(packet) => {
                     let msg = packet.payload();
                     let msg_deserialised = deserialize::<PlayerReply>(msg).unwrap();
-                    match msg_deserialised {
-                        PlayerReply::PlayerCreated => {
-                            info!("NewPlayer reply from {:?}", packet.addr())
-                        }
-                        _ => {}
+                    if let PlayerReply::PlayerCreated = msg_deserialised {
+                        info!("NewPlayer reply from {:?}", packet.addr())
                     }
                     break;
                 }
@@ -110,14 +107,13 @@ fn download_all_maps_data(sender: &Sender<Packet>, receiver: &Receiver<SocketEve
             match event {
                 SocketEvent::Packet(packet) => {
                     let msg = packet.payload();
-                    let msg_deserialised =
-                        deserialize::<PlayerReply>(msg).expect(&String::from_utf8_lossy(msg));
-                    match msg_deserialised {
-                        PlayerReply::AllMaps(maps) => all_maps = maps,
-                        _ => {}
+                    let msg_deserialised = deserialize::<PlayerReply>(msg)
+                        .unwrap_or_else(|err| panic!("An error deserialising: {}", err));
+                    if let PlayerReply::AllMaps(maps) = msg_deserialised {
+                        all_maps = maps
                     }
-                    let address = packet.addr();
-                    info!("AllMaps reply from {:?}", address);
+                    // let address = packet.addr();
+                    // info!("AllMaps reply from {:?}", address);
                     break;
                 }
                 SocketEvent::Connect(connect_event) => {
@@ -170,12 +166,9 @@ fn send_and_request_location(
                     SocketEvent::Packet(packet) => {
                         let msg = packet.payload();
                         let msg_deserialised = deserialize::<PlayerReply>(msg).unwrap();
-                        match msg_deserialised {
-                            PlayerReply::UpdatePosition(position) => {
-                                info!("Position update received from server: {:?}", &position);
-                                player.position = position;
-                            }
-                            _ => {}
+                        if let PlayerReply::UpdatePosition(position) = msg_deserialised {
+                            info!("Position update received from server: {:?}", &position);
+                            player.position = position;
                         }
                         break;
                     }
