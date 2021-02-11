@@ -1,9 +1,9 @@
+use rustyhack_lib::background_map::tiles::Tile;
+use rustyhack_lib::background_map::AllMaps;
+use rustyhack_lib::background_map::{character_map, BackgroundMap};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::{env, fs, process};
-use rustyhack_lib::background_map::{BackgroundMap, character_map};
-use rustyhack_lib::background_map::tiles::Tile;
-use rustyhack_lib::background_map::AllMaps;
 
 pub fn initialise_all_maps() -> AllMaps {
     let mut all_maps: AllMaps = HashMap::new();

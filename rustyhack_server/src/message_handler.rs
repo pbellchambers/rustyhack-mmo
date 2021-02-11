@@ -36,7 +36,8 @@ pub fn run(
                                 .expect("Update velocity thread message didn't send.");
                         }
                         PlayerMessage::GetAllMaps => {
-                            let response = serialize(&PlayerReply::AllMaps(all_maps.clone())).unwrap();
+                            let response =
+                                serialize(&PlayerReply::AllMaps(all_maps.clone())).unwrap();
                             sender
                                 .send(Packet::reliable_ordered(packet.addr(), response, Some(2)))
                                 .expect("Get all maps reply didn't send.");

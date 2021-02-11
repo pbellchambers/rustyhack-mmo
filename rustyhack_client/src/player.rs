@@ -1,4 +1,4 @@
-use rustyhack_lib::ecs::components::{Character, EntityColour, Position, EntityName};
+use rustyhack_lib::ecs::components::{Character, EntityColour, EntityName, Position};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Player {

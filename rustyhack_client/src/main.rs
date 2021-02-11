@@ -1,17 +1,17 @@
+mod consts;
 mod engine;
 mod player;
 mod viewport;
-mod consts;
 
 #[macro_use]
 extern crate log;
 extern crate simplelog;
 
+use crate::consts::CLIENT_ADDR;
 use laminar::Socket;
 use simplelog::*;
 use std::fs::File;
 use std::{env, process, thread};
-use crate::consts::CLIENT_ADDR;
 
 fn main() {
     initialise_log();
