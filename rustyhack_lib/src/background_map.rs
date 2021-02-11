@@ -3,8 +3,9 @@ pub mod tiles;
 
 use crate::background_map::tiles::Tile;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BackgroundMap {
     pub data: Vec<Vec<Tile>>,
 }
@@ -18,3 +19,5 @@ impl BackgroundMap {
         self.data[y][x]
     }
 }
+
+pub type AllMaps = HashMap<String, BackgroundMap>;

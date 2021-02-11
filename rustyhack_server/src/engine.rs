@@ -1,22 +1,34 @@
 use crate::background_map;
-use rustyhack_lib::background_map::tiles::{Collidable, Tile};
-use rustyhack_lib::background_map::BackgroundMap;
-use crate::consts::DEFAULT_MAP;
-use crate::ecs::components;
-use crate::ecs::components::*;
-use crate::viewport::Viewport;
-use console_engine::{Color, ConsoleEngine, KeyCode, KeyModifiers};
+use crate::message_handler;
+use bincode::serialize;
+use console_engine::Color;
+use crossbeam_channel::{Receiver, Sender};
+use laminar::{Packet, Socket};
 use legion::*;
+use rustyhack_lib::background_map::tiles::{Collidable, Tile};
+use rustyhack_lib::background_map::AllMaps;
+use rustyhack_lib::consts::DEFAULT_MAP;
+use rustyhack_lib::ecs::components;
+use rustyhack_lib::ecs::components::*;
+use rustyhack_lib::message_handler::player_message::{PlayerMessage, PlayerReply};
 use std::collections::HashMap;
+use std::thread;
 
-pub fn run(width: u32, height: u32, target_fps: u32) {
-    let viewport = Viewport::new(width, height, target_fps);
-    let mut console =
-        console_engine::ConsoleEngine::init(viewport.width, viewport.height, viewport.target_fps);
+pub fn run() {
+    const SERVER_ADDR: &str = "127.0.0.1:50201";
+
+    let mut socket = Socket::bind(SERVER_ADDR).unwrap();
+    let (sender, receiver) = (socket.get_packet_sender(), socket.get_event_receiver());
+    let local_sender = socket.get_packet_sender();
+    thread::spawn(move || socket.start_polling());
+
     let mut world = World::default();
     let all_maps_resource = background_map::initialise_all_maps();
     let all_maps = background_map::initialise_all_maps();
-    let current_player_entity = create_player(&mut world);
+    let (channel_sender, channel_receiver) = crossbeam_channel::unbounded();
+    thread::spawn(move || message_handler::run(&sender, &receiver, &all_maps, channel_sender));
+
+    create_player(&mut world, String::from("default_player"));
 
     let mut schedule = Schedule::builder()
         .add_system(update_player_input_system())
@@ -26,24 +38,52 @@ pub fn run(width: u32, height: u32, target_fps: u32) {
     let mut resources = Resources::default();
     resources.insert(all_maps_resource);
 
+    let mut player_velocity_updates: HashMap<EntityName, Velocity> = HashMap::new();
+
     loop {
-        console.wait_frame();
-        console.clear_screen();
-
-        resources.insert(get_player_updates(current_player_entity, &console));
-
+        player_velocity_updates =
+            process_player_messages(&mut world, &channel_receiver, player_velocity_updates);
+        resources.insert(player_velocity_updates.to_owned());
         schedule.execute(&mut world, &mut resources);
-
-        viewport.draw_viewport_contents(&mut console, &world, all_maps.get(DEFAULT_MAP).unwrap());
-        if should_quit(&console) {
-            info!("Ctrl-q detected - quitting app.");
-            break;
-        }
+        player_velocity_updates =
+            send_player_updates(&mut world, &local_sender, player_velocity_updates);
     }
 }
 
-fn create_player(world: &mut World) -> Entity {
+fn process_player_messages(
+    world: &mut World,
+    channel_receiver: &Receiver<PlayerMessage>,
+    mut player_velocity_updates: HashMap<EntityName, Velocity>,
+) -> HashMap<EntityName, Velocity> {
+    if !channel_receiver.is_empty() {
+        for received in channel_receiver {
+            match received {
+                PlayerMessage::CreatePlayer(message) => {
+                    create_player(world, message.player_name);
+                }
+                PlayerMessage::UpdateVelocity(message) => {
+                    info!("Processing update velocity message");
+                    player_velocity_updates.insert(
+                        EntityName {
+                            name: message.player_name,
+                        },
+                        message.velocity,
+                    );
+                    info!("Processed: {:?}", &player_velocity_updates);
+                    break;
+                }
+                _ => {
+                    info!("Didn't match anything");
+                }
+            }
+        }
+    }
+    player_velocity_updates
+}
+
+pub fn create_player(world: &mut World, name: String) -> Entity {
     let player = world.push((
+        EntityName { name },
         IsPlayer { is_player: true },
         Position {
             x: 5,
@@ -62,35 +102,14 @@ fn create_player(world: &mut World) -> Entity {
     player
 }
 
-fn get_player_updates(
-    current_player_entity: Entity,
-    console: &ConsoleEngine,
-) -> HashMap<Entity, Velocity> {
-    let mut updates = HashMap::new();
-    if console.is_key_held(KeyCode::Up) {
-        updates.insert(current_player_entity, Velocity { x: 0, y: -1 });
-    } else if console.is_key_held(KeyCode::Down) {
-        updates.insert(current_player_entity, Velocity { x: 0, y: 1 });
-    } else if console.is_key_held(KeyCode::Left) {
-        updates.insert(current_player_entity, Velocity { x: -1, y: 0 });
-    } else if console.is_key_held(KeyCode::Right) {
-        updates.insert(current_player_entity, Velocity { x: 1, y: 0 });
-    }
-    updates
-}
-
-fn should_quit(console: &ConsoleEngine) -> bool {
-    console.is_key_pressed_with_modifier(KeyCode::Char('q'), KeyModifiers::CONTROL)
-}
-
 #[system(par_for_each)]
 fn update_player_input(
-    entity: &Entity,
+    entity_name: &EntityName,
     velocity: &mut Velocity,
-    #[resource] player_updates: &HashMap<Entity, Velocity>,
+    #[resource] player_updates: &HashMap<EntityName, Velocity>,
 ) {
     for (update_entity, update_velocity) in player_updates {
-        if update_entity == entity {
+        if update_entity == entity_name {
             velocity.x = update_velocity.x;
             velocity.y = update_velocity.y;
         }
@@ -101,7 +120,7 @@ fn update_player_input(
 fn update_entities_position(
     velocity: &mut Velocity,
     position: &mut Position,
-    #[resource] all_maps: &HashMap<String, BackgroundMap>,
+    #[resource] all_maps: &AllMaps,
 ) {
     let current_map = all_maps.get(&position.map).unwrap();
     if !entity_is_colliding(current_map.get_tile_at(
@@ -122,4 +141,26 @@ fn entity_is_colliding(tile: Tile) -> bool {
         Tile::Boundary => true,
         _ => false,
     }
+}
+
+fn send_player_updates(
+    world: &mut World,
+    sender: &Sender<Packet>,
+    mut player_velocity_updates: HashMap<EntityName, Velocity>,
+) -> HashMap<EntityName, Velocity> {
+    let mut query = <(&EntityName, &mut Position)>::query();
+    for (player_name, position) in query.iter_mut(world) {
+        if !player_velocity_updates.is_empty() && player_name.name == "client_player" {
+            let response = serialize(&PlayerReply::UpdatePosition(position.clone())).unwrap();
+            sender
+                .send(Packet::unreliable_sequenced(
+                    "127.0.0.1:50202".parse().unwrap(),
+                    response,
+                    Some(20),
+                ))
+                .expect("Player created reply didn't send.");
+        }
+    }
+    player_velocity_updates.clear();
+    player_velocity_updates
 }

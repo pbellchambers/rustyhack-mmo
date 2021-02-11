@@ -580,6 +580,7 @@ dependencies = [
 name = "rustyhack_lib"
 version = "0.1.0"
 dependencies = [
+ "console_engine",
  "serde",
 ]
 

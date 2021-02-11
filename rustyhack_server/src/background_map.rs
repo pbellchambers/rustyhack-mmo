@@ -3,9 +3,10 @@ use std::path::PathBuf;
 use std::{env, fs, process};
 use rustyhack_lib::background_map::{BackgroundMap, character_map};
 use rustyhack_lib::background_map::tiles::Tile;
+use rustyhack_lib::background_map::AllMaps;
 
-pub fn initialise_all_maps() -> HashMap<String, BackgroundMap> {
-    let mut all_maps = HashMap::new();
+pub fn initialise_all_maps() -> AllMaps {
+    let mut all_maps: AllMaps = HashMap::new();
     let file_location = get_maps_directory_location();
     let paths = fs::read_dir(file_location.as_path()).unwrap();
     for path in paths {
