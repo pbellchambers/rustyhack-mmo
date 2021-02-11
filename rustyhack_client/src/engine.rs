@@ -1,3 +1,4 @@
+use crate::consts::{CLIENT_ADDR, SERVER_ADDR, TARGET_FPS, VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
 use crate::player::Player;
 use crate::viewport::Viewport;
 use bincode::{deserialize, serialize};
@@ -12,27 +13,13 @@ use rustyhack_lib::message_handler::player_message::{
 };
 use std::collections::HashMap;
 
-pub fn run(
-    width: u32,
-    height: u32,
-    target_fps: u32,
-    sender: &Sender<Packet>,
-    receiver: &Receiver<SocketEvent>,
-    server_address: &str,
-    client_address: &str,
-) {
-    let mut player = create_new_player(
-        server_address,
-        &sender,
-        &receiver,
-        "client_player",
-        &client_address,
-    );
+pub fn run(sender: &Sender<Packet>, receiver: &Receiver<SocketEvent>) {
+    let mut player = create_new_player(&sender, &receiver, "client_player");
     info!("player_name is: {}", player.entity_name.name);
-    let all_maps = download_all_maps_data(server_address, &sender, &receiver);
+    let all_maps = download_all_maps_data(&sender, &receiver);
     info!("All maps is: {:?}", all_maps);
 
-    let viewport = Viewport::new(width, height, target_fps);
+    let viewport = Viewport::new(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, TARGET_FPS);
     let mut console =
         console_engine::ConsoleEngine::init(viewport.width, viewport.height, viewport.target_fps);
 
@@ -40,14 +27,7 @@ pub fn run(
         console.wait_frame();
         console.clear_screen();
 
-        player = send_and_request_location(
-            server_address,
-            &sender,
-            &receiver,
-            &console,
-            player,
-            &client_address,
-        );
+        player = send_and_request_location(&sender, &receiver, &console, player);
         viewport.draw_viewport_contents(&mut console, &player, all_maps.get(DEFAULT_MAP).unwrap());
 
         if should_quit(&console) {
@@ -58,16 +38,14 @@ pub fn run(
 }
 
 fn create_new_player(
-    server_address: &str,
     sender: &Sender<Packet>,
     receiver: &Receiver<SocketEvent>,
     player_name: &str,
-    client_address: &str,
 ) -> Player {
     let create_player_request_packet = Packet::reliable_unordered(
-        server_address.parse().unwrap(),
+        SERVER_ADDR.parse().unwrap(),
         serialize(&PlayerMessage::CreatePlayer(CreatePlayerMessage {
-            client_addr: client_address.to_string(),
+            client_addr: CLIENT_ADDR.to_string(),
             player_name: player_name.to_string(),
         }))
         .unwrap(),
@@ -117,13 +95,9 @@ fn new_player(name: String) -> Player {
     }
 }
 
-fn download_all_maps_data(
-    server_address: &str,
-    sender: &Sender<Packet>,
-    receiver: &Receiver<SocketEvent>,
-) -> AllMaps {
+fn download_all_maps_data(sender: &Sender<Packet>, receiver: &Receiver<SocketEvent>) -> AllMaps {
     let get_all_maps_request_packet = Packet::reliable_ordered(
-        server_address.parse().unwrap(),
+        SERVER_ADDR.parse().unwrap(),
         serialize(&PlayerMessage::GetAllMaps).unwrap(),
         Some(1),
     );
@@ -160,12 +134,10 @@ fn download_all_maps_data(
 }
 
 fn send_and_request_location(
-    server_address: &str,
     sender: &Sender<Packet>,
     receiver: &Receiver<SocketEvent>,
     console: &ConsoleEngine,
     mut player: Player,
-    client_address: &str,
 ) -> Player {
     let mut velocity = Velocity { x: 0, y: 0 };
     if console.is_key_held(KeyCode::Up) {
@@ -180,9 +152,9 @@ fn send_and_request_location(
 
     if velocity.y != 0 || velocity.x != 0 {
         let packet = Packet::unreliable_sequenced(
-            server_address.parse().unwrap(),
+            SERVER_ADDR.parse().unwrap(),
             serialize(&PlayerMessage::UpdateVelocity(VelocityMessage {
-                client_addr: client_address.to_string(),
+                client_addr: CLIENT_ADDR.to_string(),
                 player_name: player.entity_name.name.clone(),
                 velocity,
             }))

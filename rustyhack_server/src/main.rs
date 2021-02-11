@@ -1,9 +1,11 @@
 use std::fs::File;
 use std::{env, process};
 
+use crate::consts::LOG_NAME;
 use simplelog::*;
 
 mod background_map;
+mod consts;
 mod engine;
 mod message_handler;
 
@@ -23,7 +25,7 @@ fn initialise_log() {
         process::exit(1);
     });
     file_location.pop();
-    file_location.push("rustyhack_server.log");
+    file_location.push(LOG_NAME);
     CombinedLogger::init(vec![
         TermLogger::new(LevelFilter::Info, Config::default(), TerminalMode::Mixed),
         WriteLogger::new(

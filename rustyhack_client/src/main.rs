@@ -1,6 +1,7 @@
 mod engine;
 mod player;
 mod viewport;
+mod consts;
 
 #[macro_use]
 extern crate log;
@@ -10,11 +11,9 @@ use laminar::Socket;
 use simplelog::*;
 use std::fs::File;
 use std::{env, process, thread};
+use crate::consts::CLIENT_ADDR;
 
 fn main() {
-    pub const SERVER_ADDR: &str = "127.0.0.1:50201";
-    pub const CLIENT_ADDR: &str = "127.0.0.1:50202";
-
     initialise_log();
 
     let mut socket = Socket::bind(CLIENT_ADDR).unwrap();
@@ -22,7 +21,7 @@ fn main() {
     let receiver = socket.get_event_receiver();
     let _thread = thread::spawn(move || socket.start_polling());
 
-    engine::run(41, 15, 15, &sender, &receiver, SERVER_ADDR, CLIENT_ADDR);
+    engine::run(&sender, &receiver);
 }
 
 fn initialise_log() {

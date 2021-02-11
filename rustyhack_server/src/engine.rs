@@ -1,4 +1,5 @@
 use crate::background_map;
+use crate::consts::SERVER_ADDR;
 use crate::message_handler;
 use bincode::serialize;
 use console_engine::Color;
@@ -16,11 +17,9 @@ use std::thread;
 use std::time::Duration;
 
 pub fn run() {
-    const SERVER_ADDR: &str = "127.0.0.1:50201";
-
     let mut socket = Socket::bind(SERVER_ADDR).unwrap();
     let (sender, receiver) = (socket.get_packet_sender(), socket.get_event_receiver());
-    let local_sender = socket.get_packet_sender();
+    let local_sender = sender.clone();
     thread::spawn(move || socket.start_polling());
 
     let mut world = World::default();
@@ -56,9 +55,11 @@ fn process_player_messages(
     channel_receiver: &Receiver<PlayerMessage>,
     mut player_velocity_updates: HashMap<EntityName, Velocity>,
 ) -> HashMap<EntityName, Velocity> {
-    if !channel_receiver.is_empty() {
-        for received in channel_receiver {
-            match received {
+    while !channel_receiver.is_empty() {
+        info!("Channel receiver has entries.");
+        let received = channel_receiver.try_recv();
+        if let Ok(received_message) = received {
+            match received_message {
                 PlayerMessage::CreatePlayer(message) => {
                     create_player(world, message.player_name, message.client_addr);
                 }
@@ -71,12 +72,13 @@ fn process_player_messages(
                         message.velocity,
                     );
                     info!("Processed: {:?}", &player_velocity_updates);
-                    break;
                 }
                 _ => {
-                    info!("Didn't match anything");
+                    warn!("Didn't match any known message to process.")
                 }
             }
+        } else {
+            info!("Channel receiver is now empty.")
         }
     }
     player_velocity_updates
