@@ -13,9 +13,9 @@ Mostly a sandbox for learning rust. Currently produces a client & server console
 4. Run `rustyhack_client` from the command line
 5. Connect client to server
 
-Use arrow keys to move around.
+Use arrow keys to move around, ctrl-q to quit.
 
 ## Components
-- rustyhack_server - contains all the server code
-- rustyhack_client - contains all the client code
-- rustyhack_lib - contains modules that are shared between both client and server
+- **rustyhack_client** - contains all the client code
+- **rustyhack_server** - contains all the server code
+- **rustyhack_lib** - contains modules that are shared between both client and server

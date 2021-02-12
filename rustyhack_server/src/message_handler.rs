@@ -11,7 +11,9 @@ pub fn run(
     channel_sender: Sender<PlayerMessage>,
 ) {
     loop {
+        info!("Waiting for packet to be received.");
         if let Ok(event) = receiver.recv() {
+            info!("Packet received. Processing...");
             match event {
                 SocketEvent::Packet(packet) => {
                     let msg = packet.payload();

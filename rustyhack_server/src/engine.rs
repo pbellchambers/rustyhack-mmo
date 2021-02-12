@@ -1,5 +1,4 @@
 use crate::background_map;
-use crate::consts::SERVER_ADDR;
 use crate::message_handler;
 use bincode::serialize;
 use console_engine::Color;
@@ -16,8 +15,8 @@ use std::collections::HashMap;
 use std::thread;
 use std::time::Duration;
 
-pub fn run() {
-    let mut socket = Socket::bind(SERVER_ADDR).unwrap();
+pub fn run(server_addr: &str) {
+    let mut socket = Socket::bind(&server_addr).unwrap();
     let (sender, receiver) = (socket.get_packet_sender(), socket.get_event_receiver());
     let local_sender = sender.clone();
     thread::spawn(move || socket.start_polling());
@@ -41,12 +40,17 @@ pub fn run() {
     loop {
         player_velocity_updates =
             process_player_messages(&mut world, &channel_receiver, player_velocity_updates);
-        resources.insert(player_velocity_updates.to_owned());
-        schedule.execute(&mut world, &mut resources);
-        player_velocity_updates =
-            send_player_updates(&mut world, &local_sender, player_velocity_updates);
+        if !player_velocity_updates.is_empty() {
+            info!("Player velocity updates available, proceeding with world update.");
+            resources.insert(player_velocity_updates.to_owned());
+            schedule.execute(&mut world, &mut resources);
+            player_velocity_updates =
+                send_player_updates(&mut world, &local_sender, player_velocity_updates);
+        }
         //todo: tune this, else it eats up cpu
-        thread::sleep(Duration::from_millis(25));
+        //need to add a counter that checks how long a loop took to run,
+        // and sleep for the remaining "tick time"
+        thread::sleep(Duration::from_millis(10));
     }
 }
 
@@ -110,12 +114,12 @@ pub fn create_player(world: &mut World, name: String, client_addr: String) -> En
 
 #[system(for_each)]
 fn update_player_input(
-    entity_name: &EntityName,
+    world_entity_name: &EntityName,
     velocity: &mut Velocity,
     #[resource] player_updates: &HashMap<EntityName, Velocity>,
 ) {
-    for (update_entity, update_velocity) in player_updates {
-        if update_entity == entity_name {
+    for (update_entity_name, update_velocity) in player_updates {
+        if update_entity_name == world_entity_name {
             velocity.x = update_velocity.x;
             velocity.y = update_velocity.y;
         }
@@ -123,6 +127,7 @@ fn update_player_input(
 }
 
 #[system(for_each)]
+#[filter(maybe_changed::<Velocity>())]
 fn update_entities_position(
     velocity: &mut Velocity,
     position: &mut Position,
