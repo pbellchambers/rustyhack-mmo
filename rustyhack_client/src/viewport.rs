@@ -1,8 +1,7 @@
-use crate::background_map::tiles::{Tile, TilePosition};
-use crate::background_map::BackgroundMap;
-use crate::ecs::components::{Character, EntityColour, IsPlayer, Position, VisibleState};
+use crate::player::Player;
 use console_engine::{pixel, ConsoleEngine};
-use legion::{IntoQuery, World};
+use rustyhack_lib::background_map::tiles::{Tile, TilePosition};
+use rustyhack_lib::background_map::BackgroundMap;
 
 pub struct Viewport {
     pub width: u32,
@@ -22,14 +21,31 @@ impl Viewport {
     pub fn draw_viewport_contents(
         &self,
         console: &mut ConsoleEngine,
-        world: &World,
+        player: &Player,
         background_map: &BackgroundMap,
     ) {
-        let viewable_map_coords: TilePosition = calculate_viewable_map_coords(&self, &world);
+        let viewable_map_coords: TilePosition = calculate_viewable_map_coords(&self, &player);
         draw_viewable_map(console, &background_map, &viewable_map_coords, &self);
         draw_viewport_frame(console, &self);
-        draw_viewable_entities(console, &world, &self);
+        draw_viewable_entities(console, &self, &player);
         console.draw();
+    }
+}
+
+fn draw_viewable_entities(console: &mut ConsoleEngine, viewport: &Viewport, player: &Player) {
+    console.set_pxl(
+        (viewport.width / 2) as i32,
+        (viewport.height / 2) as i32,
+        pixel::pxl_fg(player.character.icon, player.entity_colour.colour),
+    )
+}
+
+fn calculate_viewable_map_coords(viewport: &Viewport, player: &Player) -> TilePosition {
+    let x_view_distance = viewport.width / 2;
+    let y_view_distance = viewport.height / 2;
+    TilePosition {
+        x: player.position.x - x_view_distance as i32,
+        y: player.position.y - y_view_distance as i32,
     }
 }
 
@@ -75,53 +91,6 @@ fn draw_viewable_map(
             viewport_print_x_loc += 1;
         }
         viewport_print_y_loc += 1;
-    }
-}
-
-fn calculate_viewable_map_coords(viewport: &Viewport, world: &World) -> TilePosition {
-    let x_view_distance = viewport.width / 2;
-    let y_view_distance = viewport.height / 2;
-    let mut viewable_map_coords: TilePosition = TilePosition { x: 0, y: 0 };
-
-    let mut query = <(&Position, &IsPlayer)>::query();
-
-    for (position, is_player) in query.iter(world) {
-        if is_player.is_player {
-            viewable_map_coords = TilePosition {
-                x: position.x - x_view_distance as i32,
-                y: position.y - y_view_distance as i32,
-            };
-            break;
-        } else {
-            // do nothing
-        }
-    }
-    viewable_map_coords
-}
-
-fn draw_viewable_entities(console: &mut ConsoleEngine, world: &World, viewport: &Viewport) {
-    let mut query = <(
-        &Position,
-        &Character,
-        &EntityColour,
-        &VisibleState,
-        &IsPlayer,
-    )>::query();
-
-    for (position, character, entity_colour, visible_state, is_player) in query.iter(world) {
-        if is_player.is_player {
-            console.set_pxl(
-                (viewport.width / 2) as i32,
-                (viewport.height / 2) as i32,
-                pixel::pxl_fg(character.icon, entity_colour.colour),
-            )
-        } else if visible_state.visible {
-            console.set_pxl(
-                position.x,
-                position.y,
-                pixel::pxl_fg(character.icon, entity_colour.colour),
-            )
-        }
     }
 }
 

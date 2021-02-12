@@ -1,28 +1,29 @@
-pub(crate) mod door;
-pub(crate) mod wall;
+pub mod door;
+pub mod wall;
 
 use crate::background_map::tiles::door::Door;
 use crate::background_map::tiles::wall::Wall;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug, Serialize, Deserialize)]
 pub enum Collidable {
     True,
     False,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum OpenState {
     Open,
     Closed,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct TilePosition {
     pub x: i32,
     pub y: i32,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum Tile {
     Wall(Wall),
     Door(Door),

@@ -10,31 +10,15 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    name: Pipeline
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        build: [ubuntu, macos, win32, win64]
-        include:
-          - build: ubuntu
-            os: ubuntu-latest
-            rust: stable
-          - build: macos
-            os: macos-latest
-            rust: stable
-          - build: win32
-            os: windows-latest
-            rust: stable-i686
-          - build: win64
-            os: windows-latest
-            rust: stable-x86_64
+  build_ubuntu:
+    name: Ubuntu Build
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.3.4
+    - uses: actions/checkout@v2
     - name: Install Rust (rustup)
       run: |
-        rustup update ${{ matrix.rust }} --no-self-update
-        rustup default ${{ matrix.rust }}
+        rustup update stable --no-self-update
+        rustup default stable
         rustup component add rustfmt
         rustup component add clippy
     - name: Build
@@ -46,54 +30,127 @@ jobs:
     - name: Lint Check
       run: |
         cargo clippy --version
-        cargo clippy -p rustybox -- --verbose -D warnings
+        cargo clippy -- --verbose -D warnings
     - name: Test
       run: cargo test --verbose
     - name: Build Release
       run: cargo build --release --verbose
-    - name: Move Artifacts (ubuntu)
-      if: ${{ matrix.build == 'ubuntu' }}
+    - name: Move Artifacts
       run: |
-        cp target/release/rustybox rustybox
-        chmod +x rustybox
-        tar -cvzf rustybox-ubuntu.tar.gz rustybox assets
-    - name: Move Artifacts (macos)
-      if: ${{ matrix.build == 'macos' }}
-      run: |
-        cp target/release/rustybox rustybox
-        chmod +x rustybox
-        tar -cvzf rustybox-macos.tar.gz rustybox assets
-    - name: Move Artifacts (win32)
-      if: ${{ matrix.build == 'win32' }}
-      run: copy target\release\rustybox.exe rustybox.exe
-    - name: Move Artifacts (win64)
-      if: ${{ matrix.build == 'win64' }}
-      run: copy target\release\rustybox.exe rustybox.exe
-    - name: Upload Artifact (ubuntu)
-      if: ${{ matrix.build == 'ubuntu' }}
-      uses: actions/upload-artifact@v2.2.2
+        ls target/release
+        cp target/release/rustyhack_client rustyhack-client
+        ls target/release
+        cp target/release/rustyhack_server rustyhack-server
+        chmod +x rustyhack-client
+        chmod +x rustyhack-server
+        tar -cvzf rustyhack-client-ubuntu.tar.gz rustyhack-client
+        tar -cvzf rustyhack-server-ubuntu.tar.gz rustyhack-server assets
+    - name: Upload Artifact Client
+      uses: actions/upload-artifact@v2
       with:
-        name: rustybox-${{ matrix.build }}
-        path: rustybox-ubuntu.tar.gz
-    - name: Upload Artifact (macos)
-      if: ${{ matrix.build == 'macos' }}
-      uses: actions/upload-artifact@v2.2.2
+        name: rustyhack-client-ubuntu
+        path: rustyhack-client-ubuntu.tar.gz
+    - name: Upload Artifact Server
+      uses: actions/upload-artifact@v2
       with:
-        name: rustybox-${{ matrix.build }}
-        path: rustybox-macos.tar.gz
-    - name: Upload Artifact (win32)
-      if: ${{ matrix.build == 'win32' }}
-      uses: actions/upload-artifact@v2.2.2
-      with:
-        name: rustybox-${{ matrix.build }}
-        path: |
-          rustybox.exe
-          assets\**\*
-    - name: Upload Artifact (win64)
-      if: ${{ matrix.build == 'win64' }}
-      uses: actions/upload-artifact@v2.2.2
-      with:
-        name: rustybox-${{ matrix.build }}
-        path: |
-          rustybox.exe
-          assets\**\*
+        name: rustyhack-server-ubuntu
+        path: rustyhack-server-ubuntu.tar.gz
+
+  build_macos:
+    name: Mac Build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust (rustup)
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - name: Test
+        run: cargo test --verbose
+      - name: Build Release
+        run: cargo build --release --verbose
+      - name: Move Artifacts
+        run: |
+          cp target/release/rustyhack_client rustyhack-client
+          cp target/release/rustyhack_server rustyhack-server
+          chmod +x rustyhack-client
+          chmod +x rustyhack-server
+          tar -cvzf rustyhack-client-macos.tar.gz rustyhack-client
+          tar -cvzf rustyhack-server-macos.tar.gz rustyhack-server assets
+      - name: Upload Artifact Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: rustyhack-client-macos
+          path: rustyhack-client-macos.tar.gz
+      - name: Upload Artifact Server
+        uses: actions/upload-artifact@v2
+        with:
+          name: rustyhack-server-macos
+          path: rustyhack-server-macos.tar.gz
+
+  build_win32:
+    name: Win32 Build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust (rustup)
+        run: |
+          rustup update stable-i686 --no-self-update
+          rustup default stable-i686
+      - name: Test
+        run: cargo test --verbose
+      - name: Build Release
+        run: cargo build --release --verbose
+      - name: Move Artifacts
+        run: |
+          copy target\release\rustyhack_client.exe rustyhack-client.exe
+          copy target\release\rustyhack_server.exe rustyhack-server.exe
+      - name: Upload Artifact Client (win32)
+        uses: actions/upload-artifact@v2
+        with:
+          name: rustyhack-client-win32
+          path: rustyhack-client.exe
+      - name: Upload Artifact Server (win32)
+        uses: actions/upload-artifact@v2
+        with:
+          name: rustyhack-server-win32
+          path: |
+            rustyhack-server.exe
+            assets\**\*
+
+  build_win64:
+    name: Win64 Build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust (rustup)
+        run: |
+          rustup update stable-x86_64 --no-self-update
+          rustup default stable-x86_64
+      - name: Test
+        run: cargo test --verbose
+      - name: Build Release
+        run: cargo build --release --verbose
+      - name: Move Artifacts
+        run: |
+          copy target\release\rustyhack_client.exe rustyhack-client.exe
+          copy target\release\rustyhack_server.exe rustyhack-server.exe
+      - name: Upload Artifact Client (win64)
+        uses: actions/upload-artifact@v2
+        with:
+          name: rustyhack-client-win64
+          path: rustyhack-client.exe
+      - name: Upload Artifact Server (win64)
+        uses: actions/upload-artifact@v2
+        with:
+          name: rustyhack-server-win64
+          path: |
+            rustyhack-server.exe
+            assets\**\*
+
+  update_release_draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
