@@ -1,4 +1,4 @@
-![Rustyhack Logo](https://github.com/pbellchambers/rustyhack-mmo/raw/main/assets/maps/rustyhack-logo.png "Rustyhack Logo")
+![Rustyhack Logo](https://github.com/pbellchambers/rustyhack-mmo/raw/main/assets/logo/rustyhack-logo.png "Rustyhack Logo")
 
 # Rustyhack MMO
 Partly a sandbox for me learning rust, partly an ASCII "roguelike" MMORPG. Lacking a lot of basic features. Currently produces a client & server console program that allows a player to be created and move around a map with arrow keys.
