@@ -1,5 +1,7 @@
-# rustyhack-mmo
-Partly a sandbox for learning rust, partly an ASCII "roguelike" MMORPG. Lacking a lot of basic features, however, currently produces a client & server console program that allows a player to be created and move around a map with arrow keys.
+![Rustyhack Logo](https://github.com/pbellchambers/rustyhack-mmo/raw/main/assets/maps/rustyhack-logo.png "Rustyhack Logo")
+
+# Rustyhack MMO
+Partly a sandbox for me learning rust, partly an ASCII "roguelike" MMORPG. Lacking a lot of basic features. Currently produces a client & server console program that allows a player to be created and move around a map with arrow keys.
 
 [![Build status](https://img.shields.io/github/workflow/status/pbellchambers/rustybox/CI/main)](https://github.com/pbellchambers/rustybox/actions)
 [![Downloads](https://img.shields.io/github/downloads/pbellchambers/rustybox/total)](https://github.com/pbellchambers/rustybox/releases)
