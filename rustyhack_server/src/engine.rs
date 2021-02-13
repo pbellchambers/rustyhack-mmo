@@ -112,7 +112,7 @@ pub fn create_player(world: &mut World, name: String, client_addr: String) -> En
     player
 }
 
-#[system(for_each)]
+#[system(par_for_each)]
 fn update_player_input(
     world_entity_name: &EntityName,
     velocity: &mut Velocity,
@@ -126,7 +126,7 @@ fn update_player_input(
     }
 }
 
-#[system(for_each)]
+#[system(par_for_each)]
 #[filter(maybe_changed::<Velocity>())]
 fn update_entities_position(
     velocity: &mut Velocity,
