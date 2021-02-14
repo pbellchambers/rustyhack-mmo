@@ -12,13 +12,17 @@ use rustyhack_lib::ecs::components;
 use rustyhack_lib::ecs::components::*;
 use rustyhack_lib::message_handler::player_message::{EntityUpdates, PlayerMessage, PlayerReply};
 use std::collections::HashMap;
-use std::thread;
 use std::time::{Duration, Instant};
+use std::{process, thread};
 
 pub fn run(server_addr: &str) {
     info!("Attempting to bind socket to: {}", &server_addr);
-    let mut socket = Socket::bind(&server_addr).unwrap();
+    let mut socket = Socket::bind(&server_addr).unwrap_or_else(|err| {
+        error!("Unable to bind socket to {}, error: {}", &server_addr, err);
+        process::exit(1);
+    });
     info!("Bound to socket successfully.");
+
     let (sender, receiver) = (socket.get_packet_sender(), socket.get_event_receiver());
     let local_sender = sender.clone();
     thread::spawn(move || socket.start_polling());
@@ -166,7 +170,14 @@ fn update_entities_position(
     #[resource] all_maps: &AllMaps,
 ) {
     debug!("Updating world entities positions after velocity updates.");
-    let current_map = all_maps.get(&position.map).unwrap();
+    let current_map = all_maps.get(&position.map).unwrap_or_else(|| {
+        error!(
+            "Entity is located on a map that does not exist: {}",
+            &position.map
+        );
+        warn!("Will return the default map, but this may cause problems.");
+        all_maps.get(DEFAULT_MAP).unwrap()
+    });
     if !entity_is_colliding(current_map.get_tile_at(
         (position.x + velocity.x) as usize,
         (position.y + velocity.y) as usize,
@@ -196,14 +207,22 @@ fn send_player_updates(
     for (player_name, position, client_address) in query.iter_mut(world) {
         if player_velocity_updates.contains_key(player_name) {
             debug!("Sending player velocity update for: {}", &player_name.name);
-            let response = serialize(&PlayerReply::UpdatePosition(position.clone())).unwrap();
-            sender
-                .send(Packet::unreliable_sequenced(
+            let response = serialize(&PlayerReply::UpdatePosition(position.clone()))
+                .unwrap_or_else(|err| {
+                    error!(
+                        "Failed to serialise player position: {:?}, error: {}",
+                        &position, err
+                    );
+                    process::exit(1);
+                });
+            message_handler::send_packet(
+                Packet::unreliable_sequenced(
                     client_address.address.parse().unwrap(),
                     response,
                     Some(20),
-                ))
-                .expect("Player velocity update didn't send.");
+                ),
+                &sender,
+            );
         }
     }
     player_velocity_updates.clear();
@@ -226,14 +245,21 @@ fn send_other_entities_updates(world: &mut World, sender: &Sender<Packet>) {
         let response = serialize(&PlayerReply::UpdateOtherEntities(EntityUpdates {
             updates: updates.clone(),
         }))
-        .unwrap();
-        sender
-            .send(Packet::unreliable_sequenced(
+        .unwrap_or_else(|err| {
+            error!(
+                "Failed to serialise entity updates: {:?}, error: {}",
+                &updates, err
+            );
+            process::exit(1);
+        });
+        message_handler::send_packet(
+            Packet::unreliable_sequenced(
                 client_address.address.parse().unwrap(),
                 response,
                 Some(21),
-            ))
-            .expect("Entities update didn't send.");
+            ),
+            &sender,
+        );
     }
     debug!("Finished sending entity updates to all players.");
 }
