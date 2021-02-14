@@ -6,7 +6,8 @@ use rustyhack_lib::message_handler::player_message::PlayerReply;
 pub fn run(
     _sender: Sender<Packet>,
     receiver: Receiver<SocketEvent>,
-    channel_sender: Sender<PlayerReply>,
+    player_update_sender: Sender<PlayerReply>,
+    entity_update_sender: Sender<PlayerReply>,
 ) {
     loop {
         info!("Waiting for packet to be received.");
@@ -22,22 +23,22 @@ pub fn run(
 
                     match player_reply {
                         PlayerReply::PlayerCreated => {
-                            channel_sender
+                            player_update_sender
                                 .send(PlayerReply::PlayerCreated)
                                 .expect("Player created thread message didn't send.");
                         }
                         PlayerReply::AllMaps(message) => {
-                            channel_sender
+                            player_update_sender
                                 .send(PlayerReply::AllMaps(message))
                                 .expect("All Maps thread message didn't send.");
                         }
                         PlayerReply::UpdatePosition(message) => {
-                            channel_sender
+                            player_update_sender
                                 .send(PlayerReply::UpdatePosition(message))
                                 .expect("All Maps thread message didn't send.");
                         }
                         PlayerReply::UpdateOtherEntities(message) => {
-                            channel_sender
+                            entity_update_sender
                                 .send(PlayerReply::UpdateOtherEntities(message))
                                 .expect("All Maps thread message didn't send.");
                         }

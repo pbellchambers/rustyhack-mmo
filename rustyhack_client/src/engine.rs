@@ -23,14 +23,17 @@ pub fn run(
     client_addr: &str,
     player_name: &str,
 ) {
-    let (channel_sender, channel_receiver) = crossbeam_channel::unbounded();
+    let (player_update_sender, player_update_receiver) = crossbeam_channel::unbounded();
+    let (entity_update_sender, entity_update_receiver) = crossbeam_channel::unbounded();
     let local_sender = sender.clone();
-    thread::spawn(move || message_handler::run(sender, receiver, channel_sender));
+    thread::spawn(move || {
+        message_handler::run(sender, receiver, player_update_sender, entity_update_sender)
+    });
 
     let mut player =
         send_new_player_request(&local_sender, player_name, &server_addr, &client_addr);
     request_all_maps_data(&local_sender, &server_addr);
-    let all_maps = wait_for_new_player_and_all_maps_response(&channel_receiver);
+    let all_maps = wait_for_new_player_and_all_maps_response(&player_update_receiver);
     info!("player_name is: {}", player.entity_name.name);
     info!("All maps is: {:?}", all_maps);
 
@@ -58,7 +61,8 @@ pub fn run(
         }
 
         info!("About to wait for entity updates from server.");
-        (player, other_entities) = wait_for_entity_updates(&channel_receiver, player, other_entities);
+        player = check_for_received_player_updates(&player_update_receiver, player);
+        other_entities = check_for_received_entity_updates(&entity_update_receiver, other_entities);
 
         viewport.draw_viewport_contents(
             &mut console,
@@ -80,7 +84,7 @@ fn wait_for_new_player_and_all_maps_response(channel_receiver: &Receiver<PlayerR
     let mut new_player_confirmed = false;
     let mut all_maps_downloaded = false;
     let mut all_maps = HashMap::new();
-    while !new_player_confirmed {
+    loop {
         let received = channel_receiver.recv();
         if let Ok(received_message) = received {
             match received_message {
@@ -88,17 +92,6 @@ fn wait_for_new_player_and_all_maps_response(channel_receiver: &Receiver<PlayerR
                     info!("New player creation confirmed.");
                     new_player_confirmed = true;
                 }
-                _ => {
-                    info!("Ignoring other message types until new player confirmed and maps downloaded. {:?}", received_message)
-                }
-            }
-        }
-        thread::sleep(Duration::from_millis(1));
-    }
-    while !all_maps_downloaded {
-        let received = channel_receiver.recv();
-        if let Ok(received_message) = received {
-            match received_message {
                 PlayerReply::AllMaps(message) => {
                     info!("All maps downloaded from server.");
                     all_maps_downloaded = true;
@@ -108,6 +101,10 @@ fn wait_for_new_player_and_all_maps_response(channel_receiver: &Receiver<PlayerR
                     info!("Ignoring other message types until new player confirmed and maps downloaded. {:?}", received_message)
                 }
             }
+        }
+        if new_player_confirmed && all_maps_downloaded {
+            info!("Got all data needed to begin game.");
+            break;
         }
         thread::sleep(Duration::from_millis(1));
     }
@@ -204,23 +201,18 @@ fn send_velocity_packet(
     sender.send(packet).expect("This should work.");
 }
 
-fn send_heartbeat(
-    sender: &Sender<Packet>,
-    server_addr: &str,
-) {
+fn send_heartbeat(sender: &Sender<Packet>, server_addr: &str) {
     let packet = Packet::reliable_unordered(
         server_addr.parse().unwrap(),
-        serialize(&PlayerMessage::Heartbeat)
-            .unwrap(),
+        serialize(&PlayerMessage::Heartbeat).unwrap(),
     );
     sender.send(packet).expect("This should work.");
 }
 
-fn wait_for_entity_updates(
+fn check_for_received_player_updates(
     channel_receiver: &Receiver<PlayerReply>,
     mut player: Player,
-    mut entity_updates: EntityUpdates,
-) -> (Player, EntityUpdates) {
+) -> Player {
     while !channel_receiver.is_empty() {
         let received = channel_receiver.recv();
         if let Ok(received_message) = received {
@@ -229,20 +221,40 @@ fn wait_for_entity_updates(
                     info!("Player position update received: {:?}", &new_position);
                     player.position = new_position
                 }
-                PlayerReply::UpdateOtherEntities(new_updates) => {
-                    info!("Entity updates received: {:?}", &new_updates);
-                    entity_updates = new_updates;
-                }
                 _ => {
                     warn!(
-                        "Unexpected message received from server: {:?}",
+                        "Unexpected message on channel from message handler: {:?}",
                         received_message
                     )
                 }
             }
         }
     }
-    (player, entity_updates)
+    player
+}
+
+fn check_for_received_entity_updates(
+    channel_receiver: &Receiver<PlayerReply>,
+    mut entity_updates: EntityUpdates,
+) -> EntityUpdates {
+    while !channel_receiver.is_empty() {
+        let received = channel_receiver.recv();
+        if let Ok(received_message) = received {
+            match received_message {
+                PlayerReply::UpdateOtherEntities(new_updates) => {
+                    info!("Entity updates received: {:?}", &new_updates);
+                    entity_updates = new_updates;
+                }
+                _ => {
+                    warn!(
+                        "Unexpected message on channel from message handler: {:?}",
+                        received_message
+                    )
+                }
+            }
+        }
+    }
+    entity_updates
 }
 
 fn should_quit(console: &ConsoleEngine) -> bool {

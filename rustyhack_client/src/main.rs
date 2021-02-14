@@ -1,5 +1,3 @@
-#![feature(destructuring_assignment)]
-
 mod consts;
 mod engine;
 mod message_handler;
@@ -27,8 +25,8 @@ fn main() {
     let _thread = thread::spawn(move || socket.start_polling());
 
     engine::run(
-        sender.clone(),
-        receiver.clone(),
+        sender,
+        receiver,
         &server_addr,
         &client_addr,
         &player_name,

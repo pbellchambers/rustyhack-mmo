@@ -50,7 +50,7 @@ pub fn run(server_addr: &str) {
 
         //aim to send once per second tick
         //todo make this better than a simple count, use actual time elapsed
-        if count > 100 {
+        if count > 10 {
             send_other_entities_updates(&mut world, &local_sender);
             count = 0;
         }
