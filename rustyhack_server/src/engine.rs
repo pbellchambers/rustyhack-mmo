@@ -13,7 +13,7 @@ use rustyhack_lib::ecs::components::*;
 use rustyhack_lib::message_handler::player_message::{EntityUpdates, PlayerMessage, PlayerReply};
 use std::collections::HashMap;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 pub fn run(server_addr: &str) {
     info!("Attempting to bind socket to: {}", &server_addr);
@@ -45,7 +45,8 @@ pub fn run(server_addr: &str) {
     info!("Finished loading all maps resource.");
 
     let mut player_velocity_updates: HashMap<EntityName, Velocity> = HashMap::new();
-    let mut count = 0;
+
+    let mut time = Instant::now();
     loop {
         player_velocity_updates =
             process_player_messages(&mut world, &channel_receiver, player_velocity_updates);
@@ -63,18 +64,16 @@ pub fn run(server_addr: &str) {
                 send_player_updates(&mut world, &local_sender, player_velocity_updates);
         }
 
-        //aim to send once per second tick
-        //todo make this better than a simple count, use actual time elapsed
-        if count > 10 {
+        //do every 50ms
+        if time.elapsed() > Duration::from_millis(50) {
             send_other_entities_updates(&mut world, &local_sender);
-            count = 0;
+            time = Instant::now();
         }
 
         //todo: tune this, else it eats up cpu
         //need to add a counter that checks how long a loop took to run,
         // and sleep for the remaining "tick time"
         thread::sleep(Duration::from_millis(10));
-        count += 1;
     }
 }
 

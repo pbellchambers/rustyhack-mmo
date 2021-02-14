@@ -14,7 +14,7 @@ use rustyhack_lib::message_handler::player_message::{
 };
 use std::collections::HashMap;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 pub fn run(
     sender: Sender<Packet>,
@@ -48,7 +48,7 @@ pub fn run(
         updates: HashMap::new(),
     };
 
-    let mut count = 0;
+    let mut time = Instant::now();
     loop {
         console.wait_frame();
         console.clear_screen();
@@ -56,12 +56,11 @@ pub fn run(
         debug!("About to send player velocity update.");
         send_player_updates(&local_sender, &console, &player, &server_addr, &client_addr);
 
-        //aim to send once per second tick
-        //todo make this better than a simple count, use actual time elapsed
-        if count > (100 / TARGET_FPS) {
+        //do once per second to avoid client timeout
+        if time.elapsed() > Duration::from_secs(1) {
             debug!("Sending heartbeat to server.");
             send_heartbeat(&local_sender, &server_addr);
-            count = 0;
+            time = Instant::now();
         }
 
         debug!("About to wait for entity updates from server.");
@@ -79,8 +78,6 @@ pub fn run(
             info!("Ctrl-q detected - quitting app.");
             break;
         }
-
-        count += 1;
     }
 }
 
