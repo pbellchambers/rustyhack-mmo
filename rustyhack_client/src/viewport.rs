@@ -38,6 +38,7 @@ impl Viewport {
 }
 
 fn draw_player(console: &mut ConsoleEngine, viewport: &Viewport, player: &Player) {
+    debug!("Drawing player.");
     console.set_pxl(
         (viewport.width / 2) as i32,
         (viewport.height / 2) as i32,
@@ -51,6 +52,7 @@ fn draw_other_entities(
     entity_updates: &EntityUpdates,
     viewport: &Viewport,
 ) {
+    debug!("Drawing other entities.");
     let updates = entity_updates.updates.clone();
     for (name, position) in updates {
         if name != player.entity_name {
@@ -76,6 +78,7 @@ fn draw_other_entities(
 }
 
 fn calculate_viewable_map_coords(viewport: &mut Viewport, player: &Player) {
+    debug!("Calculating viewable map coordinates.");
     let x_view_distance = viewport.width / 2;
     let y_view_distance = viewport.height / 2;
     viewport.viewable_map_topleft = TilePosition {
@@ -85,6 +88,7 @@ fn calculate_viewable_map_coords(viewport: &mut Viewport, player: &Player) {
 }
 
 fn draw_viewable_map(console: &mut ConsoleEngine, world_map: &BackgroundMap, viewport: &Viewport) {
+    debug!("Drawing viewable map.");
     let mut viewport_print_y_loc: i32 = 0;
     while viewport_print_y_loc < viewport.height as i32 {
         let mut viewport_print_x_loc: i32 = 0;
@@ -125,6 +129,7 @@ fn draw_viewable_map(console: &mut ConsoleEngine, world_map: &BackgroundMap, vie
 }
 
 fn draw_viewport_frame(console: &mut ConsoleEngine, viewport: &Viewport) {
+    debug!("Drawing viewport frame.");
     console.rect(
         0,
         0,

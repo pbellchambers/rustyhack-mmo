@@ -8,13 +8,13 @@ mod viewport;
 extern crate log;
 extern crate simplelog;
 
+use crate::consts::VALID_NAME_REGEX;
 use laminar::Socket;
+use regex::Regex;
 use simplelog::*;
 use std::fs::File;
 use std::net::SocketAddr;
 use std::{env, io, process, thread};
-use regex::Regex;
-use crate::consts::VALID_NAME_REGEX;
 
 fn main() {
     initialise_log();
@@ -28,6 +28,7 @@ fn main() {
     let sender = socket.get_packet_sender();
     let receiver = socket.get_event_receiver();
     let _thread = thread::spawn(move || socket.start_polling());
+    info!("Spawned socket polling thread.");
 
     engine::run(sender, receiver, &server_addr, &client_addr, &player_name);
 }
@@ -35,8 +36,9 @@ fn main() {
 fn get_server_addr() -> (String, String) {
     println!("--Rustyhack MMO Client Setup--");
 
-    let mut server_addr = String::new();
+    let mut server_addr;
     loop {
+        server_addr = String::new();
         println!("1) Connect to which server? (default: 127.0.0.1:55301)");
         io::stdin()
             .read_line(&mut server_addr)
@@ -63,8 +65,9 @@ fn get_server_addr() -> (String, String) {
         break;
     }
 
-    let mut client_addr = String::new();
+    let mut client_addr;
     loop {
+        client_addr = String::new();
         println!(
             "2) What is the client receive address (local listen address)? (default: 127.0.0.1:55302)"
         );

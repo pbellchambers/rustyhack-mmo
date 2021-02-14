@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use std::{env, fs, process};
 
 pub fn initialise_all_maps() -> AllMaps {
+    info!("About to initialise all maps");
     let mut all_maps: AllMaps = HashMap::new();
     let file_location = get_maps_directory_location();
     let paths = fs::read_dir(file_location.as_path()).unwrap();
@@ -38,6 +39,7 @@ fn initialise_map(path: &PathBuf) -> BackgroundMap {
 }
 
 fn load_map_data_from_file(path: &PathBuf) -> String {
+    info!("Loading map data from file: {:?}", &path);
     fs::read_to_string(path.as_path()).unwrap_or_else(|err| {
         error!(
             "Problem getting map data from file: {:?}, error: {}",
@@ -53,6 +55,7 @@ fn process_map_data(data: &str) -> Vec<Vec<Tile>> {
     let mut entity: Tile;
     let mut current_x = 0;
     let mut current_y = 0;
+    debug!("Beginning to process map data into Vec.");
     for character in data.chars() {
         entity = character_map::map_character_to_tile(current_x, current_y, character);
         match entity {
@@ -72,5 +75,6 @@ fn process_map_data(data: &str) -> Vec<Vec<Tile>> {
             }
         }
     }
+    debug!("Finished processing map data into Vec.");
     processed_data
 }

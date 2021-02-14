@@ -9,17 +9,18 @@ pub fn run(
     player_update_sender: Sender<PlayerReply>,
     entity_update_sender: Sender<PlayerReply>,
 ) {
+    info!("Spawned message handler thread.");
     loop {
-        info!("Waiting for packet to be received.");
+        debug!("Waiting for packet to be received.");
         if let Ok(event) = receiver.recv() {
-            info!("Packet received. Processing...");
+            debug!("Packet received. Processing...");
             match event {
                 SocketEvent::Packet(packet) => {
                     let msg = packet.payload();
                     let address = packet.addr();
                     let player_reply =
                         deserialize::<PlayerReply>(msg).expect(&*String::from_utf8_lossy(msg));
-                    info!("Received {:?} from {:?}", player_reply, address);
+                    debug!("Received {:?} from {:?}", player_reply, address);
 
                     match player_reply {
                         PlayerReply::PlayerCreated => {

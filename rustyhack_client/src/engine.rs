@@ -25,6 +25,7 @@ pub fn run(
 ) {
     let (player_update_sender, player_update_receiver) = crossbeam_channel::unbounded();
     let (entity_update_sender, entity_update_receiver) = crossbeam_channel::unbounded();
+    debug!("Spawned thread channels.");
     let local_sender = sender.clone();
     thread::spawn(move || {
         message_handler::run(sender, receiver, player_update_sender, entity_update_sender)
@@ -35,12 +36,13 @@ pub fn run(
     request_all_maps_data(&local_sender, &server_addr);
     let all_maps = wait_for_new_player_and_all_maps_response(&player_update_receiver);
     info!("player_name is: {}", player.entity_name.name);
-    info!("All maps is: {:?}", all_maps);
+    debug!("All maps is: {:?}", all_maps);
 
     let mut viewport = Viewport::new(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, TARGET_FPS);
     let mut console =
         console_engine::ConsoleEngine::init(viewport.width, viewport.height, viewport.target_fps);
     console.set_title(GAME_TITLE);
+    info!("Initialised console engine.");
 
     let mut other_entities = EntityUpdates {
         updates: HashMap::new(),
@@ -51,17 +53,18 @@ pub fn run(
         console.wait_frame();
         console.clear_screen();
 
-        info!("About to send player velocity update.");
+        debug!("About to send player velocity update.");
         send_player_updates(&local_sender, &console, &player, &server_addr, &client_addr);
 
         //aim to send once per second tick
         //todo make this better than a simple count, use actual time elapsed
         if count > (100 / TARGET_FPS) {
+            debug!("Sending heartbeat to server.");
             send_heartbeat(&local_sender, &server_addr);
             count = 0;
         }
 
-        info!("About to wait for entity updates from server.");
+        debug!("About to wait for entity updates from server.");
         player = check_for_received_player_updates(&player_update_receiver, player);
         other_entities = check_for_received_entity_updates(&entity_update_receiver, other_entities);
 
@@ -128,7 +131,8 @@ fn send_new_player_request(
     );
     sender
         .send(create_player_request_packet)
-        .expect("This should work.");
+        .expect("Error when sending packet.");
+    info!("Sent new player request to server.");
     new_player(player_name.to_string())
 }
 
@@ -155,7 +159,8 @@ fn request_all_maps_data(sender: &Sender<Packet>, server_addr: &str) {
     );
     sender
         .send(get_all_maps_request_packet)
-        .expect("This should work.");
+        .expect("Error when sending packet.");
+    info!("Requested all maps data from server.");
 }
 
 fn send_player_updates(
@@ -177,6 +182,7 @@ fn send_player_updates(
     }
 
     if velocity.y != 0 || velocity.x != 0 {
+        debug!("Movement detected, sending velocity packet to server.");
         send_velocity_packet(sender, server_addr, client_addr, player, velocity);
     }
 }
@@ -199,7 +205,8 @@ fn send_velocity_packet(
         Some(10),
     );
 
-    sender.send(packet).expect("This should work.");
+    sender.send(packet).expect("Error when sending packet.");
+    debug!("Sent velocity packet to server.");
 }
 
 fn send_heartbeat(sender: &Sender<Packet>, server_addr: &str) {
@@ -207,19 +214,21 @@ fn send_heartbeat(sender: &Sender<Packet>, server_addr: &str) {
         server_addr.parse().unwrap(),
         serialize(&PlayerMessage::Heartbeat).unwrap(),
     );
-    sender.send(packet).expect("This should work.");
+    sender.send(packet).expect("Error when sending packet.");
+    debug!("Sent heartbeat to server.");
 }
 
 fn check_for_received_player_updates(
     channel_receiver: &Receiver<PlayerReply>,
     mut player: Player,
 ) -> Player {
+    debug!("Checking for received player position from server.");
     while !channel_receiver.is_empty() {
         let received = channel_receiver.recv();
         if let Ok(received_message) = received {
             match received_message {
                 PlayerReply::UpdatePosition(new_position) => {
-                    info!("Player position update received: {:?}", &new_position);
+                    debug!("Player position update received: {:?}", &new_position);
                     player.position = new_position
                 }
                 _ => {
@@ -238,12 +247,13 @@ fn check_for_received_entity_updates(
     channel_receiver: &Receiver<PlayerReply>,
     mut entity_updates: EntityUpdates,
 ) -> EntityUpdates {
+    debug!("Checking for received entity updates from server.");
     while !channel_receiver.is_empty() {
         let received = channel_receiver.recv();
         if let Ok(received_message) = received {
             match received_message {
                 PlayerReply::UpdateOtherEntities(new_updates) => {
-                    info!("Entity updates received: {:?}", &new_updates);
+                    debug!("Entity updates received: {:?}", &new_updates);
                     entity_updates = new_updates;
                 }
                 _ => {

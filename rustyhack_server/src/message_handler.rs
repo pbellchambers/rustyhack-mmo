@@ -10,17 +10,18 @@ pub fn run(
     all_maps: &AllMaps,
     channel_sender: Sender<PlayerMessage>,
 ) {
+    info!("Spawned message handler thread.");
     loop {
-        info!("Waiting for packet to be received.");
+        debug!("Waiting for packet to be received.");
         if let Ok(event) = receiver.recv() {
-            info!("Packet received. Processing...");
+            debug!("Packet received. Processing...");
             match event {
                 SocketEvent::Packet(packet) => {
                     let msg = packet.payload();
                     let address = packet.addr();
                     let player_message =
                         deserialize::<PlayerMessage>(msg).expect(&*String::from_utf8_lossy(msg));
-                    info!("Received {:?} from {:?}", player_message, address);
+                    debug!("Received {:?} from {:?}", player_message, address);
 
                     match player_message {
                         PlayerMessage::CreatePlayer(message) => {

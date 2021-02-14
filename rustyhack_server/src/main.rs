@@ -25,9 +25,10 @@ fn main() {
 fn get_server_addr() -> String {
     println!("--Rustyhack MMO Server Setup--");
 
-    let mut server_addr = String::new();
+    let mut server_addr;
     loop {
-        println!("What is the server listen address? (default: 127.0.0.1:55301)");
+        server_addr = String::new();
+        println!("1) What is the server listen address? (default: 127.0.0.1:55301)");
         io::stdin()
             .read_line(&mut server_addr)
             .expect("Failed to read line");
