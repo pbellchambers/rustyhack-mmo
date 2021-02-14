@@ -13,8 +13,8 @@ use rustyhack_lib::message_handler::player_message::{
     CreatePlayerMessage, EntityUpdates, PlayerMessage, PlayerReply, VelocityMessage,
 };
 use std::collections::HashMap;
-use std::thread;
 use std::time::{Duration, Instant};
+use std::{process, thread};
 
 pub fn run(
     sender: Sender<Packet>,
@@ -70,7 +70,13 @@ pub fn run(
         viewport.draw_viewport_contents(
             &mut console,
             &player,
-            all_maps.get(&player.position.map).unwrap(),
+            all_maps.get(&player.position.map).unwrap_or_else(|| {
+                error!(
+                    "There is no map for current player position: {}",
+                    &player.position.map
+                );
+                process::exit(1);
+            }),
             &other_entities,
         );
 
@@ -119,16 +125,16 @@ fn send_new_player_request(
     client_addr: &str,
 ) -> Player {
     let create_player_request_packet = Packet::reliable_unordered(
-        server_addr.parse().unwrap(),
+        server_addr
+            .parse()
+            .expect("Server address format is invalid."),
         serialize(&PlayerMessage::CreatePlayer(CreatePlayerMessage {
             client_addr: client_addr.to_string(),
             player_name: player_name.to_string(),
         }))
         .unwrap(),
     );
-    sender
-        .send(create_player_request_packet)
-        .expect("Error when sending packet.");
+    message_handler::send_packet(create_player_request_packet, sender);
     info!("Sent new player request to server.");
     new_player(player_name.to_string())
 }
@@ -150,13 +156,13 @@ fn new_player(name: String) -> Player {
 
 fn request_all_maps_data(sender: &Sender<Packet>, server_addr: &str) {
     let get_all_maps_request_packet = Packet::reliable_ordered(
-        server_addr.parse().unwrap(),
-        serialize(&PlayerMessage::GetAllMaps).unwrap(),
+        server_addr
+            .parse()
+            .expect("Server address format is invalid."),
+        serialize(&PlayerMessage::GetAllMaps).expect("Error serialising GetAllMaps request."),
         Some(1),
     );
-    sender
-        .send(get_all_maps_request_packet)
-        .expect("Error when sending packet.");
+    message_handler::send_packet(get_all_maps_request_packet, sender);
     info!("Requested all maps data from server.");
 }
 
@@ -192,7 +198,9 @@ fn send_velocity_packet(
     velocity: Velocity,
 ) {
     let packet = Packet::unreliable_sequenced(
-        server_addr.parse().unwrap(),
+        server_addr
+            .parse()
+            .expect("Server address format is invalid."),
         serialize(&PlayerMessage::UpdateVelocity(VelocityMessage {
             client_addr: client_addr.to_string(),
             player_name: player.entity_name.name.clone(),
@@ -201,17 +209,18 @@ fn send_velocity_packet(
         .unwrap(),
         Some(10),
     );
-
-    sender.send(packet).expect("Error when sending packet.");
+    message_handler::send_packet(packet, sender);
     debug!("Sent velocity packet to server.");
 }
 
 fn send_heartbeat(sender: &Sender<Packet>, server_addr: &str) {
     let packet = Packet::reliable_unordered(
-        server_addr.parse().unwrap(),
-        serialize(&PlayerMessage::Heartbeat).unwrap(),
+        server_addr
+            .parse()
+            .expect("Server address format is invalid."),
+        serialize(&PlayerMessage::Heartbeat).expect("Error serialising Heartbeat packet."),
     );
-    sender.send(packet).expect("Error when sending packet.");
+    message_handler::send_packet(packet, sender);
     debug!("Sent heartbeat to server.");
 }
 

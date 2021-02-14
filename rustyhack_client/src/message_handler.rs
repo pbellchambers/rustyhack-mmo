@@ -18,30 +18,48 @@ pub fn run(
                 SocketEvent::Packet(packet) => {
                     let msg = packet.payload();
                     let address = packet.addr();
-                    let player_reply =
-                        deserialize::<PlayerReply>(msg).expect(&*String::from_utf8_lossy(msg));
+
+                    let player_reply_result = deserialize::<PlayerReply>(msg);
+                    let player_reply;
+                    match player_reply_result {
+                        Ok(_) => player_reply = player_reply_result.unwrap(),
+                        Err(error) => {
+                            warn!(
+                                "Error when deserialising player reply packet from server: {}",
+                                error
+                            );
+                            //try again with next packet
+                            continue;
+                        }
+                    }
                     debug!("Received {:?} from {:?}", player_reply, address);
 
+                    let channel_send_status;
                     match player_reply {
                         PlayerReply::PlayerCreated => {
-                            player_update_sender
-                                .send(PlayerReply::PlayerCreated)
-                                .expect("Player created thread message didn't send.");
+                            channel_send_status =
+                                player_update_sender.send(PlayerReply::PlayerCreated);
                         }
                         PlayerReply::AllMaps(message) => {
-                            player_update_sender
-                                .send(PlayerReply::AllMaps(message))
-                                .expect("All Maps thread message didn't send.");
+                            channel_send_status =
+                                player_update_sender.send(PlayerReply::AllMaps(message));
                         }
                         PlayerReply::UpdatePosition(message) => {
-                            player_update_sender
-                                .send(PlayerReply::UpdatePosition(message))
-                                .expect("All Maps thread message didn't send.");
+                            channel_send_status =
+                                player_update_sender.send(PlayerReply::UpdatePosition(message));
                         }
                         PlayerReply::UpdateOtherEntities(message) => {
-                            entity_update_sender
-                                .send(PlayerReply::UpdateOtherEntities(message))
-                                .expect("All Maps thread message didn't send.");
+                            channel_send_status = entity_update_sender
+                                .send(PlayerReply::UpdateOtherEntities(message));
+                        }
+                    }
+
+                    match channel_send_status {
+                        Ok(_) => {
+                            //do nothing
+                        }
+                        Err(message) => {
+                            warn!("Failed to send message via thread channel: {}", &message);
                         }
                     }
                 }
@@ -53,6 +71,19 @@ pub fn run(
                 }
                 _ => {}
             }
+        }
+    }
+}
+
+pub fn send_packet(packet: Packet, sender: &Sender<Packet>) {
+    let send_result = sender.send(packet);
+    match send_result {
+        Ok(_) => {
+            //packet send successful
+        }
+        Err(message) => {
+            warn!("Error sending packet: {}", message);
+            warn!("Will try to continue, but things may be broken.");
         }
     }
 }

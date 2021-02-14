@@ -24,7 +24,13 @@ fn main() {
 
     let player_name = get_player_name();
 
-    let mut socket = Socket::bind(&client_addr).unwrap();
+    info!("Attempting to bind listen socket to: {}", &client_addr);
+    let mut socket = Socket::bind(&client_addr).unwrap_or_else(|err| {
+        error!("Unable to bind socket to {}, error: {}", &client_addr, err);
+        process::exit(1);
+    });
+    info!("Successfully bound socket.");
+
     let sender = socket.get_packet_sender();
     let receiver = socket.get_event_receiver();
     let _thread = thread::spawn(move || socket.start_polling());
@@ -125,7 +131,7 @@ fn get_player_name() -> String {
         }
 
         //must only contain letters
-        let regex = Regex::new(VALID_NAME_REGEX).unwrap();
+        let regex = Regex::new(VALID_NAME_REGEX).expect("Player name regex is invalid.");
         if !regex.is_match(&parsed_player_name) {
             println!("Character name must only contain letters.");
             println!();
@@ -140,7 +146,7 @@ fn get_player_name() -> String {
 
 fn initialise_log() {
     let mut file_location = env::current_exe().unwrap_or_else(|err| {
-        error!("Problem getting current executable location: {}", err);
+        eprintln!("Problem getting current executable location: {}", err);
         process::exit(1);
     });
     file_location.pop();
@@ -150,8 +156,17 @@ fn initialise_log() {
         WriteLogger::new(
             LevelFilter::Info,
             Config::default(),
-            File::create(file_location.as_path()).unwrap(),
+            File::create(file_location.as_path()).unwrap_or_else(|err| {
+                eprintln!("Unable to create log file: {}", err);
+                process::exit(1);
+            }),
         ),
     ])
-    .unwrap();
+    .unwrap_or_else(|err| {
+        eprintln!(
+            "Something went wrong when initialising the logging system: {}",
+            err
+        );
+        process::exit(1);
+    });
 }
