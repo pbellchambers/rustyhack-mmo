@@ -1,4 +1,4 @@
-use crate::consts::{TARGET_FPS, VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
+use crate::consts::{GAME_TITLE, TARGET_FPS, VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
 use crate::message_handler;
 use crate::player::Player;
 use crate::viewport::Viewport;
@@ -40,6 +40,7 @@ pub fn run(
     let mut viewport = Viewport::new(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, TARGET_FPS);
     let mut console =
         console_engine::ConsoleEngine::init(viewport.width, viewport.height, viewport.target_fps);
+    console.set_title(GAME_TITLE);
 
     let mut other_entities = EntityUpdates {
         updates: HashMap::new(),

@@ -24,13 +24,7 @@ fn main() {
     let receiver = socket.get_event_receiver();
     let _thread = thread::spawn(move || socket.start_polling());
 
-    engine::run(
-        sender,
-        receiver,
-        &server_addr,
-        &client_addr,
-        &player_name,
-    );
+    engine::run(sender, receiver, &server_addr, &client_addr, &player_name);
 }
 
 fn get_server_addr() -> (String, String) {
