@@ -44,6 +44,7 @@ pub fn run(
                                 .send(Packet::reliable_ordered(packet.addr(), response, Some(2)))
                                 .expect("Get all maps reply didn't send.");
                         }
+                        _ => {}
                     }
                 }
                 SocketEvent::Connect(connect_event) => {
