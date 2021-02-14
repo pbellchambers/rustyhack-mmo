@@ -13,6 +13,8 @@ use simplelog::*;
 use std::fs::File;
 use std::net::SocketAddr;
 use std::{env, io, process, thread};
+use regex::Regex;
+use crate::consts::VALID_NAME_REGEX;
 
 fn main() {
     initialise_log();
@@ -35,13 +37,14 @@ fn get_server_addr() -> (String, String) {
 
     let mut server_addr = String::new();
     loop {
-        println!("Connect to which server? (default: 127.0.0.1:55301)");
+        println!("1) Connect to which server? (default: 127.0.0.1:55301)");
         io::stdin()
             .read_line(&mut server_addr)
-            .expect("Failed to read line");
+            .expect("Failed to read input");
 
         if server_addr.trim() == "" {
             println!("Using default server address.");
+            println!();
             server_addr = String::from("127.0.0.1:55301");
             break;
         }
@@ -63,14 +66,15 @@ fn get_server_addr() -> (String, String) {
     let mut client_addr = String::new();
     loop {
         println!(
-            "What is the client receive address (local listen address)? (default: 127.0.0.1:55302)"
+            "2) What is the client receive address (local listen address)? (default: 127.0.0.1:55302)"
         );
         io::stdin()
             .read_line(&mut client_addr)
-            .expect("Failed to read line");
+            .expect("Failed to read input");
 
         if client_addr.trim() == "" {
             println!("Using default client listen address.");
+            println!();
             client_addr = String::from("127.0.0.1:55302");
             break;
         }
@@ -93,24 +97,41 @@ fn get_server_addr() -> (String, String) {
 }
 
 fn get_player_name() -> String {
-    let mut player_name = String::new();
+    let mut player_name;
     loop {
-        println!("What is your character name?");
+        player_name = String::new();
+        println!("3) What is your character name?");
         io::stdin()
             .read_line(&mut player_name)
-            .expect("Failed to read line");
+            .expect("Failed to read input");
 
         let parsed_player_name: String = match player_name.trim().parse() {
             Ok(value) => value,
             Err(err) => {
                 println!("Must be a valid String: {}", err);
+                println!();
                 continue;
             }
         };
+
+        //must be 20 characters or less
+        if parsed_player_name.chars().count() > 20 {
+            println!("Character name must be 20 characters or less.");
+            println!();
+            continue;
+        }
+
+        //must only contain letters
+        let regex = Regex::new(VALID_NAME_REGEX).unwrap();
+        if !regex.is_match(&parsed_player_name) {
+            println!("Character name must only contain letters.");
+            println!();
+            continue;
+        }
+
         player_name = parsed_player_name;
         break;
     }
-
     player_name
 }
 
