@@ -1,12 +1,14 @@
 use crate::player::Player;
-use console_engine::{pixel, ConsoleEngine};
+use console_engine::{pixel, Color, ConsoleEngine};
 use rustyhack_lib::background_map::tiles::{Tile, TilePosition};
 use rustyhack_lib::background_map::BackgroundMap;
+use rustyhack_lib::message_handler::player_message::EntityUpdates;
 
 pub struct Viewport {
     pub width: u32,
     pub height: u32,
     pub target_fps: u32,
+    pub viewable_map_topleft: TilePosition,
 }
 
 impl Viewport {
@@ -15,24 +17,28 @@ impl Viewport {
             width,
             height,
             target_fps,
+            viewable_map_topleft: TilePosition { x: 0, y: 0 },
         }
     }
 
     pub fn draw_viewport_contents(
-        &self,
+        &mut self,
         console: &mut ConsoleEngine,
         player: &Player,
         background_map: &BackgroundMap,
+        entity_updates: &EntityUpdates,
     ) {
-        let viewable_map_coords: TilePosition = calculate_viewable_map_coords(&self, &player);
-        draw_viewable_map(console, &background_map, &viewable_map_coords, &self);
+        calculate_viewable_map_coords(self, &player);
+        draw_viewable_map(console, &background_map, &self);
         draw_viewport_frame(console, &self);
-        draw_viewable_entities(console, &self, &player);
+        draw_player(console, &self, &player);
+        draw_other_entities(console, &player, &entity_updates, &self);
         console.draw();
     }
 }
 
-fn draw_viewable_entities(console: &mut ConsoleEngine, viewport: &Viewport, player: &Player) {
+fn draw_player(console: &mut ConsoleEngine, viewport: &Viewport, player: &Player) {
+    debug!("Drawing player.");
     console.set_pxl(
         (viewport.width / 2) as i32,
         (viewport.height / 2) as i32,
@@ -40,28 +46,56 @@ fn draw_viewable_entities(console: &mut ConsoleEngine, viewport: &Viewport, play
     )
 }
 
-fn calculate_viewable_map_coords(viewport: &Viewport, player: &Player) -> TilePosition {
+fn draw_other_entities(
+    console: &mut ConsoleEngine,
+    player: &Player,
+    entity_updates: &EntityUpdates,
+    viewport: &Viewport,
+) {
+    debug!("Drawing other entities.");
+    let updates = entity_updates.updates.clone();
+    for (name, position) in updates {
+        if name != player.entity_name {
+            let relative_entity_position = TilePosition {
+                x: position.x - viewport.viewable_map_topleft.x,
+                y: position.y - viewport.viewable_map_topleft.y,
+            };
+
+            if relative_entity_position.x > 0
+                && relative_entity_position.y > 0
+                && relative_entity_position.x < viewport.width as i32
+                && relative_entity_position.y < viewport.height as i32
+            {
+                console.set_pxl(
+                    relative_entity_position.x,
+                    relative_entity_position.y,
+                    //todo don't hardcode this
+                    pixel::pxl_fg('@', Color::Magenta),
+                )
+            }
+        }
+    }
+}
+
+fn calculate_viewable_map_coords(viewport: &mut Viewport, player: &Player) {
+    debug!("Calculating viewable map coordinates.");
     let x_view_distance = viewport.width / 2;
     let y_view_distance = viewport.height / 2;
-    TilePosition {
+    viewport.viewable_map_topleft = TilePosition {
         x: player.position.x - x_view_distance as i32,
         y: player.position.y - y_view_distance as i32,
     }
 }
 
-fn draw_viewable_map(
-    console: &mut ConsoleEngine,
-    world_map: &BackgroundMap,
-    viewable_map_topleft: &TilePosition,
-    viewport: &Viewport,
-) {
+fn draw_viewable_map(console: &mut ConsoleEngine, world_map: &BackgroundMap, viewport: &Viewport) {
+    debug!("Drawing viewable map.");
     let mut viewport_print_y_loc: i32 = 0;
     while viewport_print_y_loc < viewport.height as i32 {
         let mut viewport_print_x_loc: i32 = 0;
         while viewport_print_x_loc < viewport.width as i32 {
             let current_map_print_loc = TilePosition {
-                x: viewable_map_topleft.x + viewport_print_x_loc,
-                y: viewable_map_topleft.y + viewport_print_y_loc,
+                x: viewport.viewable_map_topleft.x + viewport_print_x_loc,
+                y: viewport.viewable_map_topleft.y + viewport_print_y_loc,
             };
             if (current_map_print_loc.x >= 0)
                 && (current_map_print_loc.y >= 0)
@@ -95,6 +129,7 @@ fn draw_viewable_map(
 }
 
 fn draw_viewport_frame(console: &mut ConsoleEngine, viewport: &Viewport) {
+    debug!("Drawing viewport frame.");
     console.rect(
         0,
         0,

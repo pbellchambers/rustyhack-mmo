@@ -1,7 +1,8 @@
-use crate::consts::{TARGET_FPS, VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
+use crate::consts::{GAME_TITLE, TARGET_FPS, VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
+use crate::message_handler;
 use crate::player::Player;
 use crate::viewport::Viewport;
-use bincode::{deserialize, serialize};
+use bincode::serialize;
 use console_engine::{Color, ConsoleEngine, KeyCode, KeyModifiers};
 use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
@@ -9,42 +10,74 @@ use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::consts::DEFAULT_MAP;
 use rustyhack_lib::ecs::components::{Character, EntityColour, EntityName, Position, Velocity};
 use rustyhack_lib::message_handler::player_message::{
-    CreatePlayerMessage, PlayerMessage, PlayerReply, VelocityMessage,
+    CreatePlayerMessage, EntityUpdates, PlayerMessage, PlayerReply, VelocityMessage,
 };
 use std::collections::HashMap;
+use std::time::{Duration, Instant};
+use std::{process, thread};
 
 pub fn run(
-    sender: &Sender<Packet>,
-    receiver: &Receiver<SocketEvent>,
+    sender: Sender<Packet>,
+    receiver: Receiver<SocketEvent>,
     server_addr: &str,
     client_addr: &str,
     player_name: &str,
 ) {
-    let mut player = create_new_player(&sender, &receiver, player_name, &server_addr, &client_addr);
-    info!("player_name is: {}", player.entity_name.name);
-    let all_maps = download_all_maps_data(&sender, &receiver, &server_addr);
-    info!("All maps is: {:?}", all_maps);
+    let (player_update_sender, player_update_receiver) = crossbeam_channel::unbounded();
+    let (entity_update_sender, entity_update_receiver) = crossbeam_channel::unbounded();
+    debug!("Spawned thread channels.");
+    let local_sender = sender.clone();
+    thread::spawn(move || {
+        message_handler::run(sender, receiver, player_update_sender, entity_update_sender)
+    });
 
-    let viewport = Viewport::new(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, TARGET_FPS);
+    let mut player =
+        send_new_player_request(&local_sender, player_name, &server_addr, &client_addr);
+    request_all_maps_data(&local_sender, &server_addr);
+    let all_maps = wait_for_new_player_and_all_maps_response(&player_update_receiver);
+    info!("player_name is: {}", player.entity_name.name);
+    debug!("All maps is: {:?}", all_maps);
+
+    let mut viewport = Viewport::new(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, TARGET_FPS);
     let mut console =
         console_engine::ConsoleEngine::init(viewport.width, viewport.height, viewport.target_fps);
+    console.set_title(GAME_TITLE);
+    info!("Initialised console engine.");
 
+    let mut other_entities = EntityUpdates {
+        updates: HashMap::new(),
+    };
+
+    let mut time = Instant::now();
     loop {
         console.wait_frame();
         console.clear_screen();
 
-        player = send_and_request_location(
-            &sender,
-            &receiver,
-            &console,
-            player,
-            &server_addr,
-            &client_addr,
-        );
+        debug!("About to send player velocity update.");
+        send_player_updates(&local_sender, &console, &player, &server_addr, &client_addr);
+
+        //do once per second to avoid client timeout
+        if time.elapsed() > Duration::from_secs(1) {
+            debug!("Sending heartbeat to server.");
+            send_heartbeat(&local_sender, &server_addr);
+            time = Instant::now();
+        }
+
+        debug!("About to wait for entity updates from server.");
+        player = check_for_received_player_updates(&player_update_receiver, player);
+        other_entities = check_for_received_entity_updates(&entity_update_receiver, other_entities);
+
         viewport.draw_viewport_contents(
             &mut console,
             &player,
-            all_maps.get(&player.position.map).unwrap(),
+            all_maps.get(&player.position.map).unwrap_or_else(|| {
+                error!(
+                    "There is no map for current player position: {}",
+                    &player.position.map
+                );
+                process::exit(1);
+            }),
+            &other_entities,
         );
 
         if should_quit(&console) {
@@ -54,45 +87,55 @@ pub fn run(
     }
 }
 
-fn create_new_player(
+fn wait_for_new_player_and_all_maps_response(channel_receiver: &Receiver<PlayerReply>) -> AllMaps {
+    let mut new_player_confirmed = false;
+    let mut all_maps_downloaded = false;
+    let mut all_maps = HashMap::new();
+    loop {
+        let received = channel_receiver.recv();
+        if let Ok(received_message) = received {
+            match received_message {
+                PlayerReply::PlayerCreated => {
+                    info!("New player creation confirmed.");
+                    new_player_confirmed = true;
+                }
+                PlayerReply::AllMaps(message) => {
+                    info!("All maps downloaded from server.");
+                    all_maps_downloaded = true;
+                    all_maps = message;
+                }
+                _ => {
+                    info!("Ignoring other message types until new player confirmed and maps downloaded. {:?}", received_message)
+                }
+            }
+        }
+        if new_player_confirmed && all_maps_downloaded {
+            info!("Got all data needed to begin game.");
+            break;
+        }
+        thread::sleep(Duration::from_millis(1));
+    }
+    all_maps
+}
+
+fn send_new_player_request(
     sender: &Sender<Packet>,
-    receiver: &Receiver<SocketEvent>,
     player_name: &str,
     server_addr: &str,
     client_addr: &str,
 ) -> Player {
     let create_player_request_packet = Packet::reliable_unordered(
-        server_addr.parse().unwrap(),
+        server_addr
+            .parse()
+            .expect("Server address format is invalid."),
         serialize(&PlayerMessage::CreatePlayer(CreatePlayerMessage {
             client_addr: client_addr.to_string(),
             player_name: player_name.to_string(),
         }))
         .unwrap(),
     );
-    sender
-        .send(create_player_request_packet)
-        .expect("This should work.");
-    loop {
-        if let Ok(event) = receiver.recv() {
-            match event {
-                SocketEvent::Packet(packet) => {
-                    let msg = packet.payload();
-                    let msg_deserialised = deserialize::<PlayerReply>(msg).unwrap();
-                    if let PlayerReply::PlayerCreated = msg_deserialised {
-                        info!("NewPlayer reply from {:?}", packet.addr())
-                    }
-                    break;
-                }
-                SocketEvent::Connect(connect_event) => {
-                    info!("Client connected from: {}", connect_event)
-                }
-                SocketEvent::Timeout(address) => {
-                    info!("Client timed out: {}", address);
-                }
-                _ => {}
-            }
-        }
-    }
+    message_handler::send_packet(create_player_request_packet, sender);
+    info!("Sent new player request to server.");
     new_player(player_name.to_string())
 }
 
@@ -111,55 +154,25 @@ fn new_player(name: String) -> Player {
     }
 }
 
-fn download_all_maps_data(
-    sender: &Sender<Packet>,
-    receiver: &Receiver<SocketEvent>,
-    server_addr: &str,
-) -> AllMaps {
+fn request_all_maps_data(sender: &Sender<Packet>, server_addr: &str) {
     let get_all_maps_request_packet = Packet::reliable_ordered(
-        server_addr.parse().unwrap(),
-        serialize(&PlayerMessage::GetAllMaps).unwrap(),
+        server_addr
+            .parse()
+            .expect("Server address format is invalid."),
+        serialize(&PlayerMessage::GetAllMaps).expect("Error serialising GetAllMaps request."),
         Some(1),
     );
-    sender
-        .send(get_all_maps_request_packet)
-        .expect("This should work.");
-    let mut all_maps = HashMap::new();
-    loop {
-        if let Ok(event) = receiver.recv() {
-            match event {
-                SocketEvent::Packet(packet) => {
-                    let msg = packet.payload();
-                    let msg_deserialised = deserialize::<PlayerReply>(msg)
-                        .unwrap_or_else(|err| panic!("An error deserialising: {}", err));
-                    if let PlayerReply::AllMaps(maps) = msg_deserialised {
-                        all_maps = maps
-                    }
-                    // let address = packet.addr();
-                    // info!("AllMaps reply from {:?}", address);
-                    break;
-                }
-                SocketEvent::Connect(connect_event) => {
-                    info!("Client connected from: {}", connect_event)
-                }
-                SocketEvent::Timeout(address) => {
-                    info!("Client timed out: {}", address);
-                }
-                _ => {}
-            }
-        }
-    }
-    all_maps
+    message_handler::send_packet(get_all_maps_request_packet, sender);
+    info!("Requested all maps data from server.");
 }
 
-fn send_and_request_location(
+fn send_player_updates(
     sender: &Sender<Packet>,
-    receiver: &Receiver<SocketEvent>,
     console: &ConsoleEngine,
-    mut player: Player,
+    player: &Player,
     server_addr: &str,
     client_addr: &str,
-) -> Player {
+) {
     let mut velocity = Velocity { x: 0, y: 0 };
     if console.is_key_held(KeyCode::Up) {
         velocity.y = -1;
@@ -172,43 +185,93 @@ fn send_and_request_location(
     }
 
     if velocity.y != 0 || velocity.x != 0 {
-        let packet = Packet::unreliable_sequenced(
-            server_addr.parse().unwrap(),
-            serialize(&PlayerMessage::UpdateVelocity(VelocityMessage {
-                client_addr: client_addr.to_string(),
-                player_name: player.entity_name.name.clone(),
-                velocity,
-            }))
-            .unwrap(),
-            Some(10),
-        );
+        debug!("Movement detected, sending velocity packet to server.");
+        send_velocity_packet(sender, server_addr, client_addr, player, velocity);
+    }
+}
 
-        sender.send(packet).expect("This should work.");
+fn send_velocity_packet(
+    sender: &Sender<Packet>,
+    server_addr: &str,
+    client_addr: &str,
+    player: &Player,
+    velocity: Velocity,
+) {
+    let packet = Packet::unreliable_sequenced(
+        server_addr
+            .parse()
+            .expect("Server address format is invalid."),
+        serialize(&PlayerMessage::UpdateVelocity(VelocityMessage {
+            client_addr: client_addr.to_string(),
+            player_name: player.entity_name.name.clone(),
+            velocity,
+        }))
+        .unwrap(),
+        Some(10),
+    );
+    message_handler::send_packet(packet, sender);
+    debug!("Sent velocity packet to server.");
+}
 
-        loop {
-            if let Ok(event) = receiver.recv() {
-                match event {
-                    SocketEvent::Packet(packet) => {
-                        let msg = packet.payload();
-                        let msg_deserialised = deserialize::<PlayerReply>(msg).unwrap();
-                        if let PlayerReply::UpdatePosition(position) = msg_deserialised {
-                            info!("Position update received from server: {:?}", &position);
-                            player.position = position;
-                        }
-                        break;
-                    }
-                    SocketEvent::Connect(connect_event) => {
-                        info!("Client connected from: {}", connect_event)
-                    }
-                    SocketEvent::Timeout(address) => {
-                        info!("Client timed out: {}", address);
-                    }
-                    _ => {}
+fn send_heartbeat(sender: &Sender<Packet>, server_addr: &str) {
+    let packet = Packet::reliable_unordered(
+        server_addr
+            .parse()
+            .expect("Server address format is invalid."),
+        serialize(&PlayerMessage::Heartbeat).expect("Error serialising Heartbeat packet."),
+    );
+    message_handler::send_packet(packet, sender);
+    debug!("Sent heartbeat to server.");
+}
+
+fn check_for_received_player_updates(
+    channel_receiver: &Receiver<PlayerReply>,
+    mut player: Player,
+) -> Player {
+    debug!("Checking for received player position from server.");
+    while !channel_receiver.is_empty() {
+        let received = channel_receiver.recv();
+        if let Ok(received_message) = received {
+            match received_message {
+                PlayerReply::UpdatePosition(new_position) => {
+                    debug!("Player position update received: {:?}", &new_position);
+                    player.position = new_position
+                }
+                _ => {
+                    warn!(
+                        "Unexpected message on channel from message handler: {:?}",
+                        received_message
+                    )
                 }
             }
         }
     }
     player
+}
+
+fn check_for_received_entity_updates(
+    channel_receiver: &Receiver<PlayerReply>,
+    mut entity_updates: EntityUpdates,
+) -> EntityUpdates {
+    debug!("Checking for received entity updates from server.");
+    while !channel_receiver.is_empty() {
+        let received = channel_receiver.recv();
+        if let Ok(received_message) = received {
+            match received_message {
+                PlayerReply::UpdateOtherEntities(new_updates) => {
+                    debug!("Entity updates received: {:?}", &new_updates);
+                    entity_updates = new_updates;
+                }
+                _ => {
+                    warn!(
+                        "Unexpected message on channel from message handler: {:?}",
+                        received_message
+                    )
+                }
+            }
+        }
+    }
+    entity_updates
 }
 
 fn should_quit(console: &ConsoleEngine) -> bool {
