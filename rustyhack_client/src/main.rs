@@ -17,6 +17,9 @@ use std::{env, io, process, thread};
 fn main() {
     initialise_log();
     let (server_addr, client_addr) = get_server_addr();
+    info!("Server address is set to: {}", &server_addr);
+    info!("Client listen address is set to: {}", &client_addr);
+
     let player_name = get_player_name();
 
     let mut socket = Socket::bind(&client_addr).unwrap();
@@ -28,20 +31,26 @@ fn main() {
 }
 
 fn get_server_addr() -> (String, String) {
-    println!("--Rustyhack Client Setup--");
+    println!("--Rustyhack MMO Client Setup--");
 
     let mut server_addr = String::new();
     loop {
-        println!("Connect to which server? (ip.address:port)");
+        println!("Connect to which server? (default: 127.0.0.1:55301)");
         io::stdin()
             .read_line(&mut server_addr)
             .expect("Failed to read line");
+
+        if server_addr.trim() == "" {
+            println!("Using default server address.");
+            server_addr = String::from("127.0.0.1:55301");
+            break;
+        }
 
         let server_socket_addr: SocketAddr = match server_addr.trim().parse() {
             Ok(value) => value,
             Err(err) => {
                 println!(
-                    "Not a valid socket address (e.g. 127.0.0.1:50001 ): {}",
+                    "Not a valid socket address (e.g. 127.0.0.1:55301 ): {}",
                     err
                 );
                 continue;
@@ -53,16 +62,24 @@ fn get_server_addr() -> (String, String) {
 
     let mut client_addr = String::new();
     loop {
-        println!("What is the client receive address (local listen address)? (ip.address:port)");
+        println!(
+            "What is the client receive address (local listen address)? (default: 127.0.0.1:55302)"
+        );
         io::stdin()
             .read_line(&mut client_addr)
             .expect("Failed to read line");
+
+        if client_addr.trim() == "" {
+            println!("Using default client listen address.");
+            client_addr = String::from("127.0.0.1:55302");
+            break;
+        }
 
         let client_socket_addr: SocketAddr = match client_addr.trim().parse() {
             Ok(value) => value,
             Err(err) => {
                 println!(
-                    "Not a valid socket address (e.g. 127.0.0.1:50001 ): {}",
+                    "Not a valid socket address (e.g. 127.0.0.1:55302 ): {}",
                     err
                 );
                 continue;
