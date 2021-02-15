@@ -1,7 +1,6 @@
 mod consts;
 mod engine;
 mod message_handler;
-mod player;
 mod viewport;
 
 #[macro_use]
@@ -17,7 +16,8 @@ use std::net::SocketAddr;
 use std::{env, io, process, thread};
 
 fn main() {
-    initialise_log();
+    let args: Vec<String> = env::args().collect();
+    initialise_log(&args);
     let (server_addr, client_addr) = get_server_addr();
     info!("Server address is set to: {}", &server_addr);
     info!("Client listen address is set to: {}", &client_addr);
@@ -25,10 +25,11 @@ fn main() {
     let player_name = get_player_name();
 
     info!("Attempting to bind listen socket to: {}", &client_addr);
-    let mut socket = Socket::bind(&client_addr).unwrap_or_else(|err| {
-        error!("Unable to bind socket to {}, error: {}", &client_addr, err);
-        process::exit(1);
-    });
+    let mut socket = Socket::bind_with_config(&client_addr, message_handler::get_laminar_config())
+        .unwrap_or_else(|err| {
+            error!("Unable to bind socket to {}, error: {}", &client_addr, err);
+            process::exit(1);
+        });
     info!("Successfully bound socket.");
 
     let sender = socket.get_packet_sender();
@@ -144,7 +145,13 @@ fn get_player_name() -> String {
     player_name
 }
 
-fn initialise_log() {
+fn initialise_log(args: &[String]) {
+    let mut log_level = LevelFilter::Info;
+    if args.len() > 1 && args[1] == "--debug" {
+        println!("Debug logging enabled.");
+        log_level = LevelFilter::Debug;
+    }
+
     let mut file_location = env::current_exe().unwrap_or_else(|err| {
         eprintln!("Problem getting current executable location: {}", err);
         process::exit(1);
@@ -152,10 +159,14 @@ fn initialise_log() {
     file_location.pop();
     file_location.push(consts::LOG_NAME);
     CombinedLogger::init(vec![
-        TermLogger::new(LevelFilter::Warn, Config::default(), TerminalMode::Mixed),
+        TermLogger::new(
+            LevelFilter::Warn,
+            simplelog::Config::default(),
+            TerminalMode::Mixed,
+        ),
         WriteLogger::new(
-            LevelFilter::Info,
-            Config::default(),
+            log_level,
+            simplelog::Config::default(),
             File::create(file_location.as_path()).unwrap_or_else(|err| {
                 eprintln!("Unable to create log file: {}", err);
                 process::exit(1);

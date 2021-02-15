@@ -1,6 +1,6 @@
 [package]
 name = "rustyhack_client"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["pbellchambers <pbellchambers@users.noreply.github.com>"]
 edition = "2018"
 repository = "https://github.com/pbellchambers/rustyhack-mmo"
@@ -13,6 +13,7 @@ rustyhack_lib = { path = "../rustyhack_lib" }
 log = "0.4.14"
 simplelog = "0.9.0"
 console_engine = "1.4.2"
+crossterm = { version = "0.18.2", features = ["serde"] }
 laminar = "0.4.0"
 crossbeam-channel = "0.4.4"
 serde = "1.0.123"
