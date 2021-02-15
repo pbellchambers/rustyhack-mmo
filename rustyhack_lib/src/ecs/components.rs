@@ -19,37 +19,17 @@ pub struct OpenState {
     pub open: bool,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct CollisionState {
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct DisplayDetails {
+    pub icon: char,
+    pub colour: Color,
+    pub visible: bool,
     pub collidable: bool,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Character {
-    pub icon: char,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct EntityColour {
-    pub colour: Color,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct IsPlayer {
-    pub is_player: bool,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct VisibleState {
-    pub visible: bool,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Eq)]
-pub struct EntityName {
-    pub name: String,
-}
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct ClientAddress {
-    pub address: String,
+pub struct PlayerDetails {
+    pub player_name: String,
+    pub client_addr: String,
+    pub currently_online: bool,
 }

@@ -2,6 +2,8 @@ use bincode::deserialize;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
 use rustyhack_lib::message_handler::player_message::PlayerReply;
+use std::process;
+use std::time::Duration;
 
 pub fn run(
     _sender: Sender<Packet>,
@@ -36,9 +38,9 @@ pub fn run(
 
                     let channel_send_status;
                     match player_reply {
-                        PlayerReply::PlayerCreated => {
+                        PlayerReply::PlayerCreated(message) => {
                             channel_send_status =
-                                player_update_sender.send(PlayerReply::PlayerCreated);
+                                player_update_sender.send(PlayerReply::PlayerCreated(message));
                         }
                         PlayerReply::AllMaps(message) => {
                             channel_send_status =
@@ -67,7 +69,9 @@ pub fn run(
                     info!("Server connected at: {}", connect_event)
                 }
                 SocketEvent::Timeout(address) => {
-                    info!("Server connection timed out: {}", address);
+                    error!("Server connection timed out: {}", address);
+                    warn!("Please check that the server is online and the address is correct.");
+                    process::exit(1);
                 }
                 _ => {}
             }
@@ -85,5 +89,14 @@ pub fn send_packet(packet: Packet, sender: &Sender<Packet>) {
             warn!("Error sending packet: {}", message);
             warn!("Will try to continue, but things may be broken.");
         }
+    }
+}
+
+pub fn get_laminar_config() -> laminar::Config {
+    laminar::Config {
+        idle_connection_timeout: Duration::from_secs(10),
+        heartbeat_interval: Some(Duration::from_secs(2)),
+        max_fragments: 255,
+        ..Default::default()
     }
 }

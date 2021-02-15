@@ -3,6 +3,7 @@ use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::message_handler::player_message::{PlayerMessage, PlayerReply};
+use std::time::Duration;
 
 pub fn run(
     sender: &Sender<Packet>,
@@ -38,15 +39,11 @@ pub fn run(
 
                     match player_message {
                         PlayerMessage::CreatePlayer(message) => {
-                            let response = serialize(&PlayerReply::PlayerCreated)
-                                .expect("Error serialising PlayerCreated response.");
+                            let mut create_player_message = message.clone();
+                            create_player_message.client_addr = packet.addr().to_string();
                             send_channel_message(
-                                PlayerMessage::CreatePlayer(message),
+                                PlayerMessage::CreatePlayer(create_player_message),
                                 &channel_sender,
-                            );
-                            send_packet(
-                                Packet::reliable_unordered(packet.addr(), response),
-                                &sender,
                             );
                         }
                         PlayerMessage::UpdateVelocity(message) => {
@@ -71,6 +68,10 @@ pub fn run(
                 }
                 SocketEvent::Timeout(address) => {
                     info!("Client timed out: {}", address);
+                    send_channel_message(
+                        PlayerMessage::Timeout(address.to_string()),
+                        &channel_sender,
+                    );
                 }
                 _ => {}
             }
@@ -101,5 +102,13 @@ fn send_channel_message(message: PlayerMessage, sender: &Sender<PlayerMessage>) 
             warn!("Error sending channel message: {}", message);
             warn!("Will try to continue, but things may be broken.");
         }
+    }
+}
+
+pub fn get_laminar_config() -> laminar::Config {
+    laminar::Config {
+        idle_connection_timeout: Duration::from_secs(10),
+        max_fragments: 255,
+        ..Default::default()
     }
 }

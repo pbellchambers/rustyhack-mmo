@@ -1,19 +1,22 @@
-use crate::background_map::AllMaps;
-use crate::ecs::components::{EntityName, Position, Velocity};
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use serde::{Deserialize, Serialize};
+
+use crate::background_map::AllMaps;
+use crate::ecs::components::{Position, Velocity};
+use crate::ecs::player::Player;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum PlayerMessage {
     CreatePlayer(CreatePlayerMessage),
     UpdateVelocity(VelocityMessage),
     GetAllMaps,
-    Heartbeat,
+    Timeout(String),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum PlayerReply {
-    PlayerCreated,
+    PlayerCreated(Player),
     AllMaps(AllMaps),
     UpdatePosition(Position),
     UpdateOtherEntities(EntityUpdates),
@@ -27,12 +30,11 @@ pub struct CreatePlayerMessage {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct VelocityMessage {
-    pub client_addr: String,
     pub player_name: String,
     pub velocity: Velocity,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct EntityUpdates {
-    pub updates: HashMap<EntityName, Position>,
+    pub updates: HashMap<String, Position>,
 }

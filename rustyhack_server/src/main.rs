@@ -13,7 +13,8 @@ extern crate log;
 extern crate simplelog;
 
 fn main() {
-    initialise_log();
+    let args: Vec<String> = env::args().collect();
+    initialise_log(&args);
     let server_addr = get_server_addr();
     info!("Server listen address is set to: {}", &server_addr);
     engine::run(&server_addr);
@@ -53,7 +54,12 @@ fn get_server_addr() -> String {
     server_addr
 }
 
-fn initialise_log() {
+fn initialise_log(args: &[String]) {
+    let mut log_level = LevelFilter::Info;
+    if args.len() > 1 && args[1] == "--debug" {
+        println!("Debug logging enabled.");
+        log_level = LevelFilter::Debug;
+    }
     let mut file_location = env::current_exe().unwrap_or_else(|err| {
         eprintln!("Problem getting current executable location: {}", err);
         process::exit(1);
@@ -63,7 +69,7 @@ fn initialise_log() {
     CombinedLogger::init(vec![
         TermLogger::new(LevelFilter::Info, Config::default(), TerminalMode::Mixed),
         WriteLogger::new(
-            LevelFilter::Info,
+            log_level,
             Config::default(),
             File::create(file_location.as_path()).unwrap_or_else(|err| {
                 eprintln!("Unable to create log file: {}", err);

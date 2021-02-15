@@ -186,6 +186,7 @@ dependencies = [
  "libc",
  "mio",
  "parking_lot",
+ "serde",
  "signal-hook",
  "winapi",
 ]
@@ -579,9 +580,9 @@ dependencies = [
 
 [[package]]
 name = "redox_syscall"
-version = "0.2.4"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05ec8ca9416c5ea37062b502703cd7fcb207736bc294f6e0cf367ac6fc234570"
+checksum = "94341e4e44e24f6b591b59e47a8a027df12e008d73fd5672dbea9cc22f4507d9"
 dependencies = [
  "bitflags",
 ]
@@ -606,11 +607,12 @@ checksum = "b5eb417147ba9860a96cfe72a0b93bf88fee1744b5636ec99ab20c1aa9376581"
 
 [[package]]
 name = "rustyhack_client"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bincode",
  "console_engine",
  "crossbeam-channel 0.4.4",
+ "crossterm",
  "laminar",
  "log",
  "regex",
@@ -621,7 +623,7 @@ dependencies = [
 
 [[package]]
 name = "rustyhack_lib"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "console_engine",
  "serde",
@@ -629,11 +631,12 @@ dependencies = [
 
 [[package]]
 name = "rustyhack_server"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bincode",
  "console_engine",
  "crossbeam-channel 0.4.4",
+ "crossterm",
  "laminar",
  "legion",
  "log",

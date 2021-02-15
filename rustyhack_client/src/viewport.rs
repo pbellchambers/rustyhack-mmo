@@ -1,7 +1,7 @@
-use crate::player::Player;
 use console_engine::{pixel, Color, ConsoleEngine};
 use rustyhack_lib::background_map::tiles::{Tile, TilePosition};
 use rustyhack_lib::background_map::BackgroundMap;
+use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::player_message::EntityUpdates;
 
 pub struct Viewport {
@@ -42,7 +42,7 @@ fn draw_player(console: &mut ConsoleEngine, viewport: &Viewport, player: &Player
     console.set_pxl(
         (viewport.width / 2) as i32,
         (viewport.height / 2) as i32,
-        pixel::pxl_fg(player.character.icon, player.entity_colour.colour),
+        pixel::pxl_fg(player.display_details.icon, player.display_details.colour),
     )
 }
 
@@ -55,7 +55,7 @@ fn draw_other_entities(
     debug!("Drawing other entities.");
     let updates = entity_updates.updates.clone();
     for (name, position) in updates {
-        if name != player.entity_name {
+        if name != player.player_details.player_name {
             let relative_entity_position = TilePosition {
                 x: position.x - viewport.viewable_map_topleft.x,
                 y: position.y - viewport.viewable_map_topleft.y,
