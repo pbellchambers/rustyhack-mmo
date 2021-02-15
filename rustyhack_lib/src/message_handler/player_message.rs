@@ -30,7 +30,6 @@ pub struct CreatePlayerMessage {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct VelocityMessage {
-    pub client_addr: String,
     pub player_name: String,
     pub velocity: Velocity,
 }

@@ -56,7 +56,7 @@ pub fn run(
         console.clear_screen();
 
         debug!("About to send player velocity update.");
-        send_player_updates(&local_sender, &console, &player, &server_addr, &client_addr);
+        send_player_updates(&local_sender, &console, &player, &server_addr);
 
         debug!("About to wait for entity updates from server.");
         player = check_for_received_player_updates(&player_update_receiver, player);
@@ -184,7 +184,6 @@ fn send_player_updates(
     console: &ConsoleEngine,
     player: &Player,
     server_addr: &str,
-    client_addr: &str,
 ) {
     let mut velocity = Velocity { x: 0, y: 0 };
     if console.is_key_held(KeyCode::Up) {
@@ -199,14 +198,13 @@ fn send_player_updates(
 
     if velocity.y != 0 || velocity.x != 0 {
         debug!("Movement detected, sending velocity packet to server.");
-        send_velocity_packet(sender, server_addr, client_addr, player, velocity);
+        send_velocity_packet(sender, server_addr, player, velocity);
     }
 }
 
 fn send_velocity_packet(
     sender: &Sender<Packet>,
     server_addr: &str,
-    client_addr: &str,
     player: &Player,
     velocity: Velocity,
 ) {
@@ -215,7 +213,6 @@ fn send_velocity_packet(
             .parse()
             .expect("Server address format is invalid."),
         serialize(&PlayerMessage::UpdateVelocity(VelocityMessage {
-            client_addr: client_addr.to_string(),
             player_name: player.player_details.player_name.clone(),
             velocity,
         }))

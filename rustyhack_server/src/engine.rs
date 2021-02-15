@@ -119,10 +119,7 @@ fn process_player_messages(
                     create_player(world, message.player_name, message.client_addr, &sender);
                 }
                 PlayerMessage::UpdateVelocity(message) => {
-                    debug!(
-                        "Velocity update received for {} from: {}",
-                        &message.player_name, &message.client_addr
-                    );
+                    debug!("Velocity update received for {}", &message.player_name);
                     player_velocity_updates.insert(message.player_name, message.velocity);
                     debug!("Processed velocity update: {:?}", &player_velocity_updates);
                 }

@@ -39,8 +39,10 @@ pub fn run(
 
                     match player_message {
                         PlayerMessage::CreatePlayer(message) => {
+                            let mut create_player_message = message.clone();
+                            create_player_message.client_addr = packet.addr().to_string();
                             send_channel_message(
-                                PlayerMessage::CreatePlayer(message),
+                                PlayerMessage::CreatePlayer(create_player_message),
                                 &channel_sender,
                             );
                         }
