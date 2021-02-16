@@ -93,7 +93,7 @@ fn send_new_player_request(
         server_addr
             .parse()
             .expect("Server address format is invalid."),
-        serialize(&PlayerMessage::CreatePlayer(CreatePlayerMessage {
+        serialize(&PlayerMessage::PlayerJoin(CreatePlayerMessage {
             client_addr: client_addr.to_string(),
             player_name: player_name.to_string(),
         }))
@@ -157,10 +157,16 @@ fn wait_for_new_player_response(channel_receiver: &Receiver<PlayerReply>) -> Pla
         let received = channel_receiver.recv();
         if let Ok(received_message) = received {
             match received_message {
-                PlayerReply::PlayerCreated(message) => {
+                PlayerReply::PlayerJoined(message) => {
                     info!("New player creation confirmed.");
                     new_player_confirmed = true;
                     player = message;
+                }
+                PlayerReply::PlayerAlreadyOnline => {
+                    error!(
+                        "This player name is already taken, and the player is currently online."
+                    );
+                    process::exit(1);
                 }
                 _ => {
                     info!(
