@@ -27,14 +27,14 @@ fn get_server_addr() -> String {
     let mut server_addr;
     loop {
         server_addr = String::new();
-        println!("1) What is the server listen port? (default: 55301)");
+        println!("1) What is the server listen port? (default: 50201)");
         io::stdin()
             .read_line(&mut server_addr)
             .expect("Failed to read line");
 
         if server_addr.trim() == "" {
             println!("Using default server listen port.");
-            server_addr = String::from("0.0.0.0:55301");
+            server_addr = String::from("0.0.0.0:50201");
             break;
         }
 
@@ -42,7 +42,7 @@ fn get_server_addr() -> String {
         let server_socket_addr: SocketAddr = match server_addr.trim().parse() {
             Ok(value) => value,
             Err(err) => {
-                println!("Not a valid port (e.g. 55301 ): {}", err);
+                println!("Not a valid port (e.g. 50201 ): {}", err);
                 continue;
             }
         };

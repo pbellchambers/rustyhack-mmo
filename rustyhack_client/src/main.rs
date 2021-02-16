@@ -46,7 +46,7 @@ fn get_server_addr() -> (String, String) {
     let mut server_addr;
     loop {
         server_addr = String::new();
-        println!("1) Connect to which server? (default: 127.0.0.1:55301)");
+        println!("1) Connect to which server? (default: 127.0.0.1:50201)");
         io::stdin()
             .read_line(&mut server_addr)
             .expect("Failed to read input");
@@ -54,7 +54,7 @@ fn get_server_addr() -> (String, String) {
         if server_addr.trim() == "" {
             println!("Using default server address.");
             println!();
-            server_addr = String::from("127.0.0.1:55301");
+            server_addr = String::from("127.0.0.1:50201");
             break;
         }
 
@@ -62,7 +62,7 @@ fn get_server_addr() -> (String, String) {
             Ok(value) => value,
             Err(err) => {
                 println!(
-                    "Not a valid socket address (e.g. 127.0.0.1:55301 ): {}",
+                    "Not a valid socket address (e.g. 127.0.0.1:50201 ): {}",
                     err
                 );
                 continue;
