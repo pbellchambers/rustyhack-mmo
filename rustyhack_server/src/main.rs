@@ -42,10 +42,7 @@ fn get_server_addr() -> String {
         let server_socket_addr: SocketAddr = match server_addr.trim().parse() {
             Ok(value) => value,
             Err(err) => {
-                println!(
-                    "Not a valid port (e.g. 55301 ): {}",
-                    err
-                );
+                println!("Not a valid port (e.g. 55301 ): {}", err);
                 continue;
             }
         };
