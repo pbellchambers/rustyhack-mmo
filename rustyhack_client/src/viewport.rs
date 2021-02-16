@@ -63,8 +63,8 @@ fn draw_other_entities(
 
             if relative_entity_position.x > 0
                 && relative_entity_position.y > 0
-                && relative_entity_position.x < viewport.width as i32
-                && relative_entity_position.y < viewport.height as i32
+                && relative_entity_position.x < (viewport.width - 1) as i32
+                && relative_entity_position.y < (viewport.height - 1) as i32
             {
                 console.set_pxl(
                     relative_entity_position.x,

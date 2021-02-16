@@ -38,9 +38,9 @@ pub fn run(
 
                     let channel_send_status;
                     match player_reply {
-                        PlayerReply::PlayerCreated(message) => {
+                        PlayerReply::PlayerJoined(message) => {
                             channel_send_status =
-                                player_update_sender.send(PlayerReply::PlayerCreated(message));
+                                player_update_sender.send(PlayerReply::PlayerJoined(message));
                         }
                         PlayerReply::AllMaps(message) => {
                             channel_send_status =
@@ -53,6 +53,10 @@ pub fn run(
                         PlayerReply::UpdateOtherEntities(message) => {
                             channel_send_status = entity_update_sender
                                 .send(PlayerReply::UpdateOtherEntities(message));
+                        }
+                        PlayerReply::PlayerAlreadyOnline => {
+                            channel_send_status =
+                                player_update_sender.send(PlayerReply::PlayerAlreadyOnline);
                         }
                     }
 

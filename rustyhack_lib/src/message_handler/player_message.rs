@@ -8,7 +8,7 @@ use crate::ecs::player::Player;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum PlayerMessage {
-    CreatePlayer(CreatePlayerMessage),
+    PlayerJoin(CreatePlayerMessage),
     UpdateVelocity(VelocityMessage),
     GetAllMaps,
     Timeout(String),
@@ -16,7 +16,8 @@ pub enum PlayerMessage {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum PlayerReply {
-    PlayerCreated(Player),
+    PlayerJoined(Player),
+    PlayerAlreadyOnline,
     AllMaps(AllMaps),
     UpdatePosition(Position),
     UpdateOtherEntities(EntityUpdates),

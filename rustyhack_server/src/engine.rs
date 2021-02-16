@@ -111,12 +111,12 @@ fn process_player_messages(
         let received = channel_receiver.try_recv();
         if let Ok(received_message) = received {
             match received_message {
-                PlayerMessage::CreatePlayer(message) => {
+                PlayerMessage::PlayerJoin(message) => {
                     info!(
-                        "New player request received for {} from: {}",
+                        "Player joined request received for {} from: {}",
                         &message.player_name, &message.client_addr
                     );
-                    create_player(world, message.player_name, message.client_addr, &sender);
+                    join_player(world, message.player_name, message.client_addr, &sender);
                 }
                 PlayerMessage::UpdateVelocity(message) => {
                     debug!("Velocity update received for {}", &message.player_name);
@@ -145,10 +145,51 @@ fn set_player_disconnected(world: &mut World, address: String) {
             player_details.client_addr = "".to_string();
             info!(
                 "Player {} at {} now marked as disconnected.",
-                &player_details.player_name, &player_details.client_addr
+                &player_details.player_name, &address
             );
             break;
         }
+    }
+}
+
+pub fn join_player(world: &mut World, name: String, client_addr: String, sender: &Sender<Packet>) {
+    let mut query = <(&mut PlayerDetails, &DisplayDetails, &Position)>::query();
+    let mut should_create_new_player = true;
+    for (player_details, display_details, position) in query.iter_mut(world) {
+        if player_details.player_name == name && !player_details.currently_online {
+            player_details.currently_online = true;
+            player_details.client_addr = client_addr.clone();
+            info!(
+                "Existing player \"{}\" logged in from: {}",
+                name, &client_addr
+            );
+            let player = Player {
+                player_details: player_details.clone(),
+                display_details: *display_details,
+                position: position.clone(),
+            };
+            send_player_joined_response(player, sender);
+            should_create_new_player = false;
+            break;
+        } else if player_details.player_name == name && player_details.currently_online {
+            warn!("Player join request from {} for existing player that's currently online ({} at {}).", &client_addr, &name, &player_details.client_addr);
+            let response = serialize(&PlayerReply::PlayerAlreadyOnline).unwrap_or_else(|err| {
+                error!(
+                    "Failed to serialise player already online response, error: {}",
+                    err
+                );
+                process::exit(1);
+            });
+            message_handler::send_packet(
+                Packet::reliable_ordered(client_addr.parse().unwrap(), response, Some(11)),
+                &sender,
+            );
+            should_create_new_player = false;
+            break;
+        }
+    }
+    if should_create_new_player {
+        create_player(world, name, client_addr, sender);
     }
 }
 
@@ -174,8 +215,11 @@ pub fn create_player(
         components::Velocity { x: 0, y: 0 },
     ));
     info!("New player \"{}\" created: {:?}", name, &player_entity);
+    send_player_joined_response(player, sender);
+}
 
-    let response = serialize(&PlayerReply::PlayerCreated(player.clone())).unwrap_or_else(|err| {
+fn send_player_joined_response(player: Player, sender: &Sender<Packet>) {
+    let response = serialize(&PlayerReply::PlayerJoined(player.clone())).unwrap_or_else(|err| {
         error!(
             "Failed to serialise player created response, error: {}",
             err
@@ -223,7 +267,7 @@ fn update_entities_position(
         warn!("Will return the default map, but this may cause problems.");
         all_maps.get(DEFAULT_MAP).unwrap()
     });
-    if !entity_is_colliding(current_map.get_tile_at(
+    if !entity_is_colliding_with_tile(current_map.get_tile_at(
         (position.x + velocity.x) as usize,
         (position.y + velocity.y) as usize,
     )) {
@@ -234,7 +278,7 @@ fn update_entities_position(
     velocity.y = 0;
 }
 
-fn entity_is_colliding(tile: Tile) -> bool {
+fn entity_is_colliding_with_tile(tile: Tile) -> bool {
     match tile {
         Tile::Door(door) => door.collidable == Collidable::True,
         Tile::Wall(wall) => wall.collidable == Collidable::True,

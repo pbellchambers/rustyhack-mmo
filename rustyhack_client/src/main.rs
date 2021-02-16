@@ -46,7 +46,7 @@ fn get_server_addr() -> (String, String) {
     let mut server_addr;
     loop {
         server_addr = String::new();
-        println!("1) Connect to which server? (default: 127.0.0.1:55301)");
+        println!("1) Connect to which server? (default: 127.0.0.1:50201)");
         io::stdin()
             .read_line(&mut server_addr)
             .expect("Failed to read input");
@@ -54,7 +54,7 @@ fn get_server_addr() -> (String, String) {
         if server_addr.trim() == "" {
             println!("Using default server address.");
             println!();
-            server_addr = String::from("127.0.0.1:55301");
+            server_addr = String::from("127.0.0.1:50201");
             break;
         }
 
@@ -62,7 +62,7 @@ fn get_server_addr() -> (String, String) {
             Ok(value) => value,
             Err(err) => {
                 println!(
-                    "Not a valid socket address (e.g. 127.0.0.1:55301 ): {}",
+                    "Not a valid socket address (e.g. 127.0.0.1:50201 ): {}",
                     err
                 );
                 continue;
@@ -72,36 +72,9 @@ fn get_server_addr() -> (String, String) {
         break;
     }
 
-    let mut client_addr;
-    loop {
-        client_addr = String::new();
-        println!(
-            "2) What is the client receive address (local listen address)? (default: 127.0.0.1:55302)"
-        );
-        io::stdin()
-            .read_line(&mut client_addr)
-            .expect("Failed to read input");
-
-        if client_addr.trim() == "" {
-            println!("Using default client listen address.");
-            println!();
-            client_addr = String::from("127.0.0.1:55302");
-            break;
-        }
-
-        let client_socket_addr: SocketAddr = match client_addr.trim().parse() {
-            Ok(value) => value,
-            Err(err) => {
-                println!(
-                    "Not a valid socket address (e.g. 127.0.0.1:55302 ): {}",
-                    err
-                );
-                continue;
-            }
-        };
-        client_addr = client_socket_addr.to_string();
-        break;
-    }
+    //handle client port allocation automatically
+    //maybe need to revisit in future if it causes problems
+    let client_addr = String::from("0.0.0.0:0");
 
     (server_addr, client_addr)
 }
