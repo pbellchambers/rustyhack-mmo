@@ -1,7 +1,4 @@
-use crate::consts::{
-    DEFAULT_MAP, DEFAULT_PLAYER_COLOUR, DEFAULT_PLAYER_ICON, DEFAULT_PLAYER_POSITION_X,
-    DEFAULT_PLAYER_POSITION_Y,
-};
+use crate::consts::{DEFAULT_MAP, DEFAULT_PLAYER_POSITION_X, DEFAULT_PLAYER_POSITION_Y};
 use crate::ecs::components::{DisplayDetails, PlayerDetails, Position};
 use serde::{Deserialize, Serialize};
 
@@ -20,12 +17,7 @@ impl Default for Player {
                 client_addr: "".to_string(),
                 currently_online: false,
             },
-            display_details: DisplayDetails {
-                icon: DEFAULT_PLAYER_ICON,
-                colour: DEFAULT_PLAYER_COLOUR,
-                visible: true,
-                collidable: true,
-            },
+            display_details: DisplayDetails::default(),
             position: Position {
                 x: DEFAULT_PLAYER_POSITION_X,
                 y: DEFAULT_PLAYER_POSITION_Y,

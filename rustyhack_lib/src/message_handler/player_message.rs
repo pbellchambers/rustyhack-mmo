@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::background_map::AllMaps;
-use crate::ecs::components::{Position, Velocity};
+use crate::ecs::components::{DisplayDetails, Position, Velocity};
 use crate::ecs::player::Player;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -37,5 +37,6 @@ pub struct VelocityMessage {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct EntityUpdates {
-    pub updates: HashMap<String, Position>,
+    pub position_updates: HashMap<String, Position>,
+    pub display_details: HashMap<String, DisplayDetails>,
 }

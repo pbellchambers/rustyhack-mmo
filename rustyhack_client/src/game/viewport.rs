@@ -1,18 +1,19 @@
-use console_engine::{pixel, Color, ConsoleEngine};
+use console_engine::{pixel, ConsoleEngine};
 use rustyhack_lib::background_map::tiles::{Tile, TilePosition};
 use rustyhack_lib::background_map::BackgroundMap;
+use rustyhack_lib::ecs::components::DisplayDetails;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::player_message::EntityUpdates;
 
-pub struct Viewport {
-    pub width: u32,
-    pub height: u32,
-    pub target_fps: u32,
-    pub viewable_map_topleft: TilePosition,
+pub(crate) struct Viewport {
+    pub(crate) width: u32,
+    pub(crate) height: u32,
+    pub(crate) target_fps: u32,
+    pub(crate) viewable_map_topleft: TilePosition,
 }
 
 impl Viewport {
-    pub fn new(width: u32, height: u32, target_fps: u32) -> Viewport {
+    pub(crate) fn new(width: u32, height: u32, target_fps: u32) -> Viewport {
         Viewport {
             width,
             height,
@@ -21,7 +22,7 @@ impl Viewport {
         }
     }
 
-    pub fn draw_viewport_contents(
+    pub(crate) fn draw_viewport_contents(
         &mut self,
         console: &mut ConsoleEngine,
         player: &Player,
@@ -53,7 +54,8 @@ fn draw_other_entities(
     viewport: &Viewport,
 ) {
     debug!("Drawing other entities.");
-    let updates = entity_updates.updates.clone();
+    let default_display_details = DisplayDetails::default();
+    let updates = entity_updates.position_updates.clone();
     for (name, position) in updates {
         if name != player.player_details.player_name {
             let relative_entity_position = TilePosition {
@@ -66,11 +68,14 @@ fn draw_other_entities(
                 && relative_entity_position.x < (viewport.width - 1) as i32
                 && relative_entity_position.y < (viewport.height - 1) as i32
             {
+                let display_details = entity_updates.display_details.get(&name).unwrap_or_else(|| {
+                    warn!("Entity update for {} doesn't have a corresponding display detail, using default.", &name);
+                    &default_display_details});
+
                 console.set_pxl(
                     relative_entity_position.x,
                     relative_entity_position.y,
-                    //todo don't hardcode this
-                    pixel::pxl_fg('@', Color::Magenta),
+                    pixel::pxl_fg(display_details.icon, display_details.colour),
                 )
             }
         }

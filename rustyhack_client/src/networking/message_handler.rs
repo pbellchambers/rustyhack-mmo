@@ -1,11 +1,22 @@
+use crate::networking::message_handler;
 use bincode::deserialize;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
 use rustyhack_lib::message_handler::player_message::PlayerReply;
-use std::process;
-use std::time::Duration;
+use std::{process, thread};
 
-pub fn run(
+pub(crate) fn spawn_message_handler_thread(
+    sender: Sender<Packet>,
+    receiver: Receiver<SocketEvent>,
+    player_update_sender: Sender<PlayerReply>,
+    entity_update_sender: Sender<PlayerReply>,
+) {
+    thread::spawn(move || {
+        message_handler::run(sender, receiver, player_update_sender, entity_update_sender)
+    });
+}
+
+pub(crate) fn run(
     _sender: Sender<Packet>,
     receiver: Receiver<SocketEvent>,
     player_update_sender: Sender<PlayerReply>,
@@ -83,7 +94,7 @@ pub fn run(
     }
 }
 
-pub fn send_packet(packet: Packet, sender: &Sender<Packet>) {
+pub(crate) fn send_packet(packet: Packet, sender: &Sender<Packet>) {
     let send_result = sender.send(packet);
     match send_result {
         Ok(_) => {
@@ -93,14 +104,5 @@ pub fn send_packet(packet: Packet, sender: &Sender<Packet>) {
             warn!("Error sending packet: {}", message);
             warn!("Will try to continue, but things may be broken.");
         }
-    }
-}
-
-pub fn get_laminar_config() -> laminar::Config {
-    laminar::Config {
-        idle_connection_timeout: Duration::from_secs(10),
-        heartbeat_interval: Some(Duration::from_secs(2)),
-        max_fragments: 255,
-        ..Default::default()
     }
 }
