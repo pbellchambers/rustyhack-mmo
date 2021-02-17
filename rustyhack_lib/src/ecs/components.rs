@@ -1,3 +1,4 @@
+use crate::consts::{DEFAULT_PLAYER_COLOUR, DEFAULT_PLAYER_ICON};
 use console_engine::Color;
 use serde::{Deserialize, Serialize};
 
@@ -25,6 +26,17 @@ pub struct DisplayDetails {
     pub colour: Color,
     pub visible: bool,
     pub collidable: bool,
+}
+
+impl Default for DisplayDetails {
+    fn default() -> Self {
+        DisplayDetails {
+            icon: DEFAULT_PLAYER_ICON,
+            colour: DEFAULT_PLAYER_COLOUR,
+            visible: true,
+            collidable: true,
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

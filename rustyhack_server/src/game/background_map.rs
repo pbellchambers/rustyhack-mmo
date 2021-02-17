@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::{env, fs, process};
 
-pub fn initialise_all_maps() -> AllMaps {
+pub(crate) fn initialise_all_maps() -> AllMaps {
     info!("About to initialise all maps");
     let mut all_maps: AllMaps = HashMap::new();
     let file_location = get_maps_directory_location();

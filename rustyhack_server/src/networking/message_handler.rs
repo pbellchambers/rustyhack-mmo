@@ -3,12 +3,21 @@ use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::message_handler::player_message::{PlayerMessage, PlayerReply};
-use std::time::Duration;
+use std::thread;
 
-pub fn run(
-    sender: &Sender<Packet>,
-    receiver: &Receiver<SocketEvent>,
-    all_maps: &AllMaps,
+pub(crate) fn spawn_message_handler_thread(
+    sender: Sender<Packet>,
+    receiver: Receiver<SocketEvent>,
+    all_maps: AllMaps,
+    channel_sender: Sender<PlayerMessage>,
+) {
+    thread::spawn(move || run(sender, receiver, all_maps, channel_sender));
+}
+
+pub(crate) fn run(
+    sender: Sender<Packet>,
+    receiver: Receiver<SocketEvent>,
+    all_maps: AllMaps,
     channel_sender: Sender<PlayerMessage>,
 ) {
     info!("Spawned message handler thread.");
@@ -79,7 +88,7 @@ pub fn run(
     }
 }
 
-pub fn send_packet(packet: Packet, sender: &Sender<Packet>) {
+pub(crate) fn send_packet(packet: Packet, sender: &Sender<Packet>) {
     let send_result = sender.send(packet);
     match send_result {
         Ok(_) => {
@@ -102,13 +111,5 @@ fn send_channel_message(message: PlayerMessage, sender: &Sender<PlayerMessage>) 
             warn!("Error sending channel message: {}", message);
             warn!("Will try to continue, but things may be broken.");
         }
-    }
-}
-
-pub fn get_laminar_config() -> laminar::Config {
-    laminar::Config {
-        idle_connection_timeout: Duration::from_secs(10),
-        max_fragments: 255,
-        ..Default::default()
     }
 }
