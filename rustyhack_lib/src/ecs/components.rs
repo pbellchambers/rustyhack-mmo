@@ -45,3 +45,11 @@ pub struct PlayerDetails {
     pub client_addr: String,
     pub currently_online: bool,
 }
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct MonsterDetails {
+    pub name: String,
+    pub spawn_location: Position,
+    pub is_active: bool,
+    pub current_target: Option<String>,
+}

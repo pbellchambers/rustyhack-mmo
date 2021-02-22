@@ -12,6 +12,7 @@ use crate::consts;
 use crate::networking::message_handler;
 
 mod background_map;
+mod monsters;
 mod player_updates;
 mod systems;
 
@@ -36,7 +37,11 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
 
     let mut player_velocity_updates: HashMap<String, Velocity> = HashMap::new();
 
+    world.extend(monsters::spawn_monsters());
+    info!("Spawned all monsters in initial positions.");
+
     let mut entity_tick_time = Instant::now();
+    let mut monster_tick_time = Instant::now();
     let mut loop_tick_time = Instant::now();
     info!("Starting game loop");
     loop {
@@ -63,10 +68,14 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             );
         }
 
-        //do every 50ms
         if entity_tick_time.elapsed() > consts::ENTITY_UPDATE_TICK {
-            player_updates::send_other_entities_updates(&mut world, &local_sender);
+            player_updates::send_other_entities_updates(&world, &local_sender);
             entity_tick_time = Instant::now();
+        }
+
+        if monster_tick_time.elapsed() > consts::MONSTER_UPDATE_TICK {
+            monsters::update_positions(&mut world);
+            monster_tick_time = Instant::now();
         }
 
         if loop_tick_time.elapsed() > consts::LOOP_TICK {

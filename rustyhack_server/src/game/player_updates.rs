@@ -4,7 +4,9 @@ use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
 use legion::{IntoQuery, World};
 use rustyhack_lib::ecs::components;
-use rustyhack_lib::ecs::components::{DisplayDetails, PlayerDetails, Position, Velocity};
+use rustyhack_lib::ecs::components::{
+    DisplayDetails, MonsterDetails, PlayerDetails, Position, Velocity,
+};
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::player_message::{EntityUpdates, PlayerMessage, PlayerReply};
 use std::collections::HashMap;
@@ -178,21 +180,28 @@ pub(crate) fn send_player_updates(
     player_velocity_updates
 }
 
-pub(crate) fn send_other_entities_updates(world: &mut World, sender: &Sender<Packet>) {
+pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>) {
     let mut position_updates: HashMap<String, Position> = HashMap::new();
     let mut display_details: HashMap<String, DisplayDetails> = HashMap::new();
-    let mut query = <(&PlayerDetails, &mut Position, &DisplayDetails)>::query();
+    let mut query = <(&PlayerDetails, &Position, &DisplayDetails)>::query();
     debug!("Getting all players positions");
-    for (player_details, position, display) in query.iter_mut(world) {
+    for (player_details, position, display) in query.iter(world) {
         if player_details.currently_online {
             position_updates.insert(player_details.player_name.clone(), position.clone());
             display_details.insert(player_details.player_name.clone(), *display);
         }
     }
 
-    let mut query2 = <&PlayerDetails>::query();
+    let mut query = <(&MonsterDetails, &Position, &DisplayDetails)>::query();
+    debug!("Getting all monster positions");
+    for (monster_details, position, display) in query.iter(world) {
+        position_updates.insert(monster_details.name.clone(), position.clone());
+        display_details.insert(monster_details.name.clone(), *display);
+    }
+
+    let mut query = <&PlayerDetails>::query();
     debug!("Sending entity updates to all players.");
-    for player_details in query2.iter_mut(world) {
+    for player_details in query.iter(world) {
         if player_details.currently_online {
             debug!("Sending entity updates to: {}", &player_details.client_addr);
             let response = serialize(&PlayerReply::UpdateOtherEntities(EntityUpdates {
