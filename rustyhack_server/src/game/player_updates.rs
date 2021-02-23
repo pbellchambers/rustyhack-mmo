@@ -195,8 +195,8 @@ pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>
     let mut query = <(&MonsterDetails, &Position, &DisplayDetails)>::query();
     debug!("Getting all monster positions");
     for (monster_details, position, display) in query.iter(world) {
-        position_updates.insert(monster_details.name.clone(), position.clone());
-        display_details.insert(monster_details.name.clone(), *display);
+        position_updates.insert(monster_details.id.to_string(), position.clone());
+        display_details.insert(monster_details.id.to_string(), *display);
     }
 
     let mut query = <&PlayerDetails>::query();

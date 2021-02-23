@@ -1,6 +1,7 @@
 use crate::consts::{DEFAULT_PLAYER_COLOUR, DEFAULT_PLAYER_ICON};
 use console_engine::Color;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Position {
@@ -48,7 +49,8 @@ pub struct PlayerDetails {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct MonsterDetails {
-    pub name: String,
+    pub id: Uuid,
+    pub monster_type: String,
     pub spawn_location: Position,
     pub is_active: bool,
     pub current_target: Option<String>,

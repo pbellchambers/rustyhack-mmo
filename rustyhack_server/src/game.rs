@@ -14,6 +14,7 @@ use crate::networking::message_handler;
 mod background_map;
 mod monsters;
 mod player_updates;
+mod players;
 mod systems;
 
 pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
@@ -29,7 +30,8 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let mut world = World::default();
     info!("Initialised ECS World");
 
-    let mut schedule = systems::build_schedule();
+    let mut player_update_schedule = systems::build_player_update_schedule();
+    let mut monster_update_schedule = systems::build_monster_update_schedule();
 
     let mut resources = Resources::default();
     resources.insert(all_maps_resource);
@@ -57,9 +59,9 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             resources.insert(player_velocity_updates.to_owned());
             debug!("Added player velocity updates to world resources.");
 
-            debug!("Executing schedule...");
-            schedule.execute(&mut world, &mut resources);
-            debug!("Schedule executed successfully.");
+            debug!("Executing player update schedule...");
+            player_update_schedule.execute(&mut world, &mut resources);
+            debug!("Player update schedule executed successfully.");
 
             player_velocity_updates = player_updates::send_player_updates(
                 &mut world,
@@ -68,14 +70,18 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             );
         }
 
+        if monster_tick_time.elapsed() > consts::MONSTER_UPDATE_TICK {
+            monsters::update_velocities(&mut world);
+            monster_tick_time = Instant::now();
+
+            debug!("Executing monster update schedule...");
+            monster_update_schedule.execute(&mut world, &mut resources);
+            debug!("Monster update schedule executed successfully.");
+        }
+
         if entity_tick_time.elapsed() > consts::ENTITY_UPDATE_TICK {
             player_updates::send_other_entities_updates(&world, &local_sender);
             entity_tick_time = Instant::now();
-        }
-
-        if monster_tick_time.elapsed() > consts::MONSTER_UPDATE_TICK {
-            monsters::update_positions(&mut world);
-            monster_tick_time = Instant::now();
         }
 
         if loop_tick_time.elapsed() > consts::LOOP_TICK {

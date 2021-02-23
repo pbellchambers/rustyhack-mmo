@@ -6,12 +6,20 @@ use rustyhack_lib::consts::DEFAULT_MAP;
 use rustyhack_lib::ecs::components::{DisplayDetails, PlayerDetails, Position, Velocity};
 use std::collections::HashMap;
 
-pub(crate) fn build_schedule() -> Schedule {
+pub(crate) fn build_player_update_schedule() -> Schedule {
     let schedule = Schedule::builder()
         .add_system(update_player_input_system())
         .add_system(update_entities_position_system())
         .build();
-    info!("Built system schedule.");
+    info!("Built player update system schedule.");
+    schedule
+}
+
+pub(crate) fn build_monster_update_schedule() -> Schedule {
+    let schedule = Schedule::builder()
+        .add_system(update_entities_position_system())
+        .build();
+    info!("Built monster update system schedule.");
     schedule
 }
 

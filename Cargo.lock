@@ -698,6 +698,7 @@ version = "0.2.0"
 dependencies = [
  "console_engine",
  "serde",
+ "uuid",
 ]
 
 [[package]]
@@ -715,6 +716,7 @@ dependencies = [
  "rustyhack_lib",
  "serde",
  "simplelog",
+ "uuid",
 ]
 
 [[package]]
