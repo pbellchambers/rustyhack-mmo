@@ -1,0 +1,30 @@
+{
+  "monsters": [
+    {
+      "monster_type": "Snake",
+      "spawn_positions": [
+        {
+          "x": 88,
+          "y": 3
+        },
+        {
+          "x": 96,
+          "y": 5
+        }
+      ]
+    },
+    {
+      "monster_type": "Zombie",
+      "spawn_positions": [
+        {
+          "x": 50,
+          "y": 27
+        },
+        {
+          "x": 65,
+          "y": 27
+        }
+      ]
+    }
+  ]
+}

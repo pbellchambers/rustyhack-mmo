@@ -57,7 +57,7 @@ fn draw_other_entities(
     let default_display_details = DisplayDetails::default();
     let updates = entity_updates.position_updates.clone();
     for (name, position) in updates {
-        if name != player.player_details.player_name {
+        if name != player.player_details.player_name && position.map == player.position.map {
             let relative_entity_position = TilePosition {
                 x: position.x - viewport.viewable_map_topleft.x,
                 y: position.y - viewport.viewable_map_topleft.y,

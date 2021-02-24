@@ -1,146 +1,110 @@
+use crate::consts;
 use crate::consts::MONSTER_DISTANCE_ACTIVATION;
 use crate::game::players;
-use console_engine::Color;
-use legion::storage::IntoComponentSource;
+use crate::game::spawns::AllSpawns;
 use legion::{IntoQuery, World};
 use rand::Rng;
-use rustyhack_lib::consts::DEFAULT_MAP;
 use rustyhack_lib::ecs::components::{DisplayDetails, MonsterDetails, Position, Velocity};
-use rustyhack_lib::ecs::monster::Monster;
+use rustyhack_lib::ecs::monster::{AllMonsterDefinitions, Monster};
+use rustyhack_lib::file_utils;
 use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::BufReader;
+use std::path::PathBuf;
+use std::process;
 use uuid::Uuid;
 
-pub(crate) fn spawn_monsters() -> impl IntoComponentSource {
-    //todo load monsters from metadata file
-    let zombie1 = Monster {
-        monster_details: MonsterDetails {
-            id: Uuid::new_v4(),
-            monster_type: "Zombie".to_string(),
-            spawn_location: Position {
-                x: 50,
-                y: 27,
-                map: DEFAULT_MAP.to_string(),
-            },
-            is_active: false,
-            current_target: None,
-        },
-        display_details: DisplayDetails {
-            icon: 'z',
-            colour: Color::Grey,
-            visible: true,
-            collidable: true,
-        },
-        position: Position {
-            x: 50,
-            y: 27,
-            map: DEFAULT_MAP.to_string(),
-        },
-        velocity: Velocity { x: 0, y: 0 },
-    };
-    let zombie2 = Monster {
-        monster_details: MonsterDetails {
-            id: Uuid::new_v4(),
-            monster_type: "Zombie".to_string(),
-            spawn_location: Position {
-                x: 65,
-                y: 27,
-                map: DEFAULT_MAP.to_string(),
-            },
-            is_active: false,
-            current_target: None,
-        },
-        display_details: DisplayDetails {
-            icon: 'z',
-            colour: Color::Grey,
-            visible: true,
-            collidable: true,
-        },
-        position: Position {
-            x: 65,
-            y: 27,
-            map: DEFAULT_MAP.to_string(),
-        },
-        velocity: Velocity { x: 0, y: 0 },
-    };
-    let snake1 = Monster {
-        monster_details: MonsterDetails {
-            id: Uuid::new_v4(),
-            monster_type: "Snake".to_string(),
-            spawn_location: Position {
-                x: 88,
-                y: 3,
-                map: DEFAULT_MAP.to_string(),
-            },
-            is_active: false,
-            current_target: None,
-        },
-        display_details: DisplayDetails {
-            icon: 's',
-            colour: Color::DarkGreen,
-            visible: true,
-            collidable: true,
-        },
-        position: Position {
-            x: 88,
-            y: 3,
-            map: DEFAULT_MAP.to_string(),
-        },
-        velocity: Velocity { x: 0, y: 0 },
-    };
-    let snake2 = Monster {
-        monster_details: MonsterDetails {
-            id: Uuid::new_v4(),
-            monster_type: "Snake".to_string(),
-            spawn_location: Position {
-                x: 96,
-                y: 5,
-                map: DEFAULT_MAP.to_string(),
-            },
-            is_active: false,
-            current_target: None,
-        },
-        display_details: DisplayDetails {
-            icon: 's',
-            colour: Color::DarkGreen,
-            visible: true,
-            collidable: true,
-        },
-        position: Position {
-            x: 96,
-            y: 5,
-            map: DEFAULT_MAP.to_string(),
-        },
-        velocity: Velocity { x: 0, y: 0 },
-    };
-    info!("UUIDs: {} {} {} {}", zombie1.monster_details.id.to_string(),zombie2.monster_details.id.to_string(),snake1.monster_details.id.to_string(),snake2.monster_details.id.to_string());
+pub(crate) fn initialise_all_monster_definitions() -> AllMonsterDefinitions {
+    info!("About to initialise all monster definitions");
+    let mut all_monster_definitions: AllMonsterDefinitions = HashMap::new();
+    let paths = file_utils::get_all_files_in_location(monsters_directory_location());
+    for path in paths {
+        let unwrapped_path = path.unwrap();
+        let name = String::from(
+            unwrapped_path
+                .file_name()
+                .to_str()
+                .unwrap()
+                .split('.')
+                .next()
+                .unwrap(),
+        );
+        let monster: Monster = get_monster_definition_from_path(&unwrapped_path.path());
+        info!("Initialised monster: {:?}", &name);
+        all_monster_definitions.insert(name, monster);
+    }
+    all_monster_definitions
+}
 
-    vec![
-        (
-            zombie1.monster_details,
-            zombie1.display_details,
-            zombie1.position,
-            zombie1.velocity,
-        ),
-        (
-            zombie2.monster_details,
-            zombie2.display_details,
-            zombie2.position,
-            zombie2.velocity,
-        ),
-        (
-            snake1.monster_details,
-            snake1.display_details,
-            snake1.position,
-            snake1.velocity,
-        ),
-        (
-            snake2.monster_details,
-            snake2.display_details,
-            snake2.position,
-            snake2.velocity,
-        ),
-    ]
+fn monsters_directory_location() -> PathBuf {
+    let mut file_location = file_utils::current_exe_location();
+    file_location.pop();
+    file_location.push(consts::ASSETS_DIRECTORY);
+    file_location.push(consts::MONSTERS_DIRECTORY);
+    file_location
+}
+
+fn get_monster_definition_from_path(path: &PathBuf) -> Monster {
+    let file = File::open(path).unwrap_or_else(|err| {
+        error!(
+            "Problem getting monster definition from file: {:?}, error: {}",
+            path, err
+        );
+        process::exit(1);
+    });
+    let buf_reader = BufReader::new(file);
+    serde_json::from_reader(buf_reader).unwrap_or_else(|err| {
+        error!(
+            "Problem deserialising monster definition from file: {:?}, error: {}",
+            path, err
+        );
+        process::exit(1);
+    })
+}
+
+pub(crate) fn spawn_initial_monsters(
+    world: &mut World,
+    all_monster_definitions: &AllMonsterDefinitions,
+    all_spawns: &AllSpawns,
+) {
+    info!("Spawning initial monsters.");
+    let mut monsters_vec: Vec<(MonsterDetails, DisplayDetails, Position, Velocity)> = vec![];
+    for (map, spawns) in all_spawns {
+        for monster in &spawns.monsters {
+            let mut current_monster = all_monster_definitions
+                .get(&monster.monster_type)
+                .unwrap_or_else(|| {
+                    error!(
+                        "Monster {} missing from all_monster_definitions.",
+                        &monster.monster_type,
+                    );
+                    process::exit(1);
+                })
+                .clone();
+            for spawn_position in &monster.spawn_positions {
+                let position = Position {
+                    x: spawn_position.x,
+                    y: spawn_position.y,
+                    map: map.clone(),
+                };
+                current_monster.monster_details.id = Uuid::new_v4();
+                current_monster.monster_details.spawn_position = position.clone();
+                current_monster.position = position;
+                info!(
+                    "Spawned monster {} at position {:?}",
+                    current_monster.monster_details.monster_type, current_monster.position
+                );
+                monsters_vec.push((
+                    current_monster.monster_details.clone(),
+                    current_monster.display_details,
+                    current_monster.position,
+                    current_monster.velocity,
+                ));
+            }
+        }
+    }
+    world.extend(monsters_vec);
 }
 
 pub(crate) fn update_velocities(world: &mut World) {
@@ -172,7 +136,7 @@ pub(crate) fn update_velocities(world: &mut World) {
                     debug!("Monster returning to spawn location");
                     monster.is_active = false;
                     monster.current_target = None;
-                    *velocity = move_towards_target(position, &monster.spawn_location);
+                    *velocity = move_towards_target(position, &monster.spawn_position);
                 }
             }
         }

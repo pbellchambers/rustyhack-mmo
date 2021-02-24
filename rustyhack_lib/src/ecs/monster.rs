@@ -4,7 +4,10 @@ use crate::consts::{
 };
 use crate::ecs::components::{DisplayDetails, MonsterDetails, Position, Velocity};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use uuid::Uuid;
+
+pub type AllMonsterDefinitions = HashMap<String, Monster>;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Monster {
@@ -20,7 +23,7 @@ impl Default for Monster {
             monster_details: MonsterDetails {
                 id: Uuid::new_v4(),
                 monster_type: DEFAULT_MONSTER_TYPE.to_string(),
-                spawn_location: Position {
+                spawn_position: Position {
                     x: DEFAULT_MONSTER_POSITION_X,
                     y: DEFAULT_MONSTER_POSITION_Y,
                     map: DEFAULT_MAP.to_string(),

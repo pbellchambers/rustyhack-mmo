@@ -1,18 +1,27 @@
+use crate::consts;
 use rustyhack_lib::background_map::tiles::Tile;
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::background_map::{character_map, BackgroundMap};
+use rustyhack_lib::file_utils;
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::{env, fs, process};
+use std::{fs, process};
 
 pub(crate) fn initialise_all_maps() -> AllMaps {
     info!("About to initialise all maps");
     let mut all_maps: AllMaps = HashMap::new();
-    let file_location = get_maps_directory_location();
-    let paths = fs::read_dir(file_location.as_path()).unwrap();
+    let paths = file_utils::get_all_files_in_location(maps_directory_location());
     for path in paths {
         let unwrapped_path = path.unwrap();
-        let filename = String::from(unwrapped_path.file_name().to_str().unwrap());
+        let filename = String::from(
+            unwrapped_path
+                .file_name()
+                .to_str()
+                .unwrap()
+                .split('.')
+                .next()
+                .unwrap(),
+        );
         let map = initialise_map(&unwrapped_path.path());
         info!("Initialised map: {:?}", &filename);
         all_maps.insert(filename, map);
@@ -21,14 +30,11 @@ pub(crate) fn initialise_all_maps() -> AllMaps {
     all_maps
 }
 
-fn get_maps_directory_location() -> PathBuf {
-    let mut file_location = env::current_exe().unwrap_or_else(|err| {
-        error!("Problem getting current executable location: {}", err);
-        process::exit(1);
-    });
+fn maps_directory_location() -> PathBuf {
+    let mut file_location = file_utils::current_exe_location();
     file_location.pop();
-    file_location.push("assets");
-    file_location.push("maps");
+    file_location.push(consts::ASSETS_DIRECTORY);
+    file_location.push(consts::MAPS_DIRECTORY);
     file_location
 }
 

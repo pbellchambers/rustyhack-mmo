@@ -15,33 +15,37 @@ mod background_map;
 mod monsters;
 mod player_updates;
 mod players;
+mod spawns;
 mod systems;
 
 pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
+    //initialise all basic resources
     let all_maps_resource = background_map::initialise_all_maps();
     let all_maps = background_map::initialise_all_maps();
-
-    let (channel_sender, channel_receiver) = crossbeam_channel::unbounded();
-    info!("Created thread channel sender and receiver.");
-    let local_sender = sender.clone();
-
-    message_handler::spawn_message_handler_thread(sender, receiver, all_maps, channel_sender);
-
+    let all_monster_definitions = monsters::initialise_all_monster_definitions();
+    let all_spawns = spawns::initialise_all_spawn_definitions();
+    let mut player_velocity_updates: HashMap<String, Velocity> = HashMap::new();
     let mut world = World::default();
     info!("Initialised ECS World");
-
     let mut player_update_schedule = systems::build_player_update_schedule();
     let mut monster_update_schedule = systems::build_monster_update_schedule();
 
+    //initialise message handler thread
+    let (channel_sender, channel_receiver) = crossbeam_channel::unbounded();
+    info!("Created thread channel sender and receiver.");
+    let local_sender = sender.clone();
+    message_handler::spawn_message_handler_thread(sender, receiver, all_maps, channel_sender);
+
+    //load resources into world
     let mut resources = Resources::default();
     resources.insert(all_maps_resource);
-    info!("Finished loading all_maps into world resources.");
+    info!("Finished loading resources into world.");
 
-    let mut player_velocity_updates: HashMap<String, Velocity> = HashMap::new();
-
-    world.extend(monsters::spawn_monsters());
+    //spawn initial monsters
+    monsters::spawn_initial_monsters(&mut world, &all_monster_definitions, &all_spawns);
     info!("Spawned all monsters in initial positions.");
 
+    //start tick counts
     let mut entity_tick_time = Instant::now();
     let mut monster_tick_time = Instant::now();
     let mut loop_tick_time = Instant::now();

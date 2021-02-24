@@ -27,6 +27,8 @@ pub struct TilePosition {
 pub enum Tile {
     Wall(Wall),
     Door(Door),
+    UpLadder,
+    DownLadder,
     EmptySpace,
     Boundary,
     NewLine,
@@ -39,6 +41,8 @@ impl Tile {
         match self {
             Tile::Wall(wall) => wall.character_icon,
             Tile::Door(door) => door.character_icon,
+            Tile::UpLadder => '^',
+            Tile::DownLadder => 'v',
             Tile::EmptySpace => ' ',
             Tile::Boundary => '#',
             Tile::NewLine => ' ',

@@ -51,7 +51,7 @@ pub struct PlayerDetails {
 pub struct MonsterDetails {
     pub id: Uuid,
     pub monster_type: String,
-    pub spawn_location: Position,
+    pub spawn_position: Position,
     pub is_active: bool,
     pub current_target: Option<String>,
 }
