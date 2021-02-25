@@ -50,11 +50,14 @@ pub(crate) fn process_player_messages(
 }
 
 fn set_player_disconnected(world: &mut World, address: String) {
-    let mut query = <&mut PlayerDetails>::query();
-    for player_details in query.iter_mut(world) {
+    let mut query = <(&mut PlayerDetails, &mut DisplayDetails)>::query();
+    for (player_details, display_details) in query.iter_mut(world) {
         if player_details.client_addr == address {
+            display_details.visible = false;
+            display_details.collidable = false;
             player_details.currently_online = false;
             player_details.client_addr = "".to_string();
+
             info!(
                 "Player {} at {} now marked as disconnected.",
                 &player_details.player_name, &address
@@ -65,12 +68,14 @@ fn set_player_disconnected(world: &mut World, address: String) {
 }
 
 fn join_player(world: &mut World, name: String, client_addr: String, sender: &Sender<Packet>) {
-    let mut query = <(&mut PlayerDetails, &DisplayDetails, &Position, &Stats)>::query();
+    let mut query = <(&mut PlayerDetails, &mut DisplayDetails, &Position, &Stats)>::query();
     let mut should_create_new_player = true;
     for (player_details, display_details, position, stats) in query.iter_mut(world) {
         if player_details.player_name == name && !player_details.currently_online {
             player_details.currently_online = true;
             player_details.client_addr = client_addr.clone();
+            display_details.collidable = true;
+            display_details.visible = true;
             info!(
                 "Existing player \"{}\" logged in from: {}",
                 name, &client_addr
