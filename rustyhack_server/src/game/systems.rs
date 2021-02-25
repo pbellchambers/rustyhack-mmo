@@ -40,9 +40,14 @@ fn update_player_input(
 
 #[system]
 #[read_component(DisplayDetails)]
-fn update_entities_position(world: &mut SubWorld, query: &mut Query<(&mut Velocity, &mut Position)>, #[resource] all_maps: &AllMaps) {
+fn update_entities_position(
+    world: &mut SubWorld,
+    velocity_query: &mut Query<(&mut Velocity, &mut Position)>,
+    collision_query: &mut Query<(&Position, &DisplayDetails)>,
+    #[resource] all_maps: &AllMaps,
+) {
     let world2 = &world.clone();
-    for (velocity, position) in query.iter_mut(world) {
+    for (velocity, position) in velocity_query.iter_mut(world) {
         debug!("Updating world entities positions after velocity updates.");
         let current_map = all_maps.get(&position.map).unwrap_or_else(|| {
             error!(
@@ -59,6 +64,7 @@ fn update_entities_position(world: &mut SubWorld, query: &mut Query<(&mut Veloci
             position.x + velocity.x,
             position.y + velocity.y,
             world2,
+            collision_query,
             &position.map,
         ) {
             position.x += velocity.x;
@@ -73,10 +79,10 @@ fn entity_is_colliding_with_entity(
     player_x: i32,
     player_y: i32,
     world: &SubWorld,
+    query: &mut Query<(&Position, &DisplayDetails)>,
     current_map: &str,
 ) -> bool {
     let mut result = false;
-    let mut query = <(&Position, &DisplayDetails)>::query();
     for (position, display_details) in query.iter(world) {
         if position.map == current_map
             && display_details.collidable
