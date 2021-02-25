@@ -39,11 +39,8 @@ fn update_player_input(
 }
 
 #[system]
-#[write_component(Velocity)]
-#[write_component(Position)]
 #[read_component(DisplayDetails)]
-fn update_entities_position(world: &mut SubWorld, #[resource] all_maps: &AllMaps) {
-    let mut query = <(&mut Velocity, &mut Position)>::query();
+fn update_entities_position(world: &mut SubWorld, query: &mut Query<(&mut Velocity, &mut Position)>, #[resource] all_maps: &AllMaps) {
     let world2 = &world.clone();
     for (velocity, position) in query.iter_mut(world) {
         debug!("Updating world entities positions after velocity updates.");
