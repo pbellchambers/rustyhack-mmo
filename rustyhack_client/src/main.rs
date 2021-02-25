@@ -3,6 +3,7 @@ use std::env;
 mod consts;
 mod game;
 mod networking;
+mod screens;
 mod setup;
 
 #[macro_use]

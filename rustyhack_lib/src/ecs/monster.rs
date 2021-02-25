@@ -2,7 +2,7 @@ use crate::consts::{
     DEFAULT_MAP, DEFAULT_MONSTER_COLOUR, DEFAULT_MONSTER_ICON, DEFAULT_MONSTER_POSITION_X,
     DEFAULT_MONSTER_POSITION_Y, DEFAULT_MONSTER_TYPE,
 };
-use crate::ecs::components::{DisplayDetails, MonsterDetails, Position, Velocity};
+use crate::ecs::components::{DisplayDetails, MonsterDetails, Position, Stats, Velocity};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -15,6 +15,7 @@ pub struct Monster {
     pub display_details: DisplayDetails,
     pub position: Position,
     pub velocity: Velocity,
+    pub stats: Stats,
 }
 
 impl Default for Monster {
@@ -30,6 +31,8 @@ impl Default for Monster {
                 },
                 is_active: false,
                 current_target: None,
+                exp: 1,
+                gold: 1,
             },
             display_details: DisplayDetails {
                 icon: DEFAULT_MONSTER_ICON,
@@ -42,6 +45,14 @@ impl Default for Monster {
                 map: DEFAULT_MAP.to_string(),
             },
             velocity: Velocity { x: 0, y: 0 },
+            stats: Stats {
+                current_hp: 1,
+                max_hp: 1,
+                str: 1,
+                dex: 1,
+                con: 1,
+                armour: 1,
+            },
         }
     }
 }

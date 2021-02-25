@@ -4,7 +4,7 @@ use crate::game::players;
 use crate::game::spawns::AllSpawns;
 use legion::{IntoQuery, World};
 use rand::Rng;
-use rustyhack_lib::ecs::components::{DisplayDetails, MonsterDetails, Position, Velocity};
+use rustyhack_lib::ecs::components::{DisplayDetails, MonsterDetails, Position, Stats, Velocity};
 use rustyhack_lib::ecs::monster::{AllMonsterDefinitions, Monster};
 use rustyhack_lib::file_utils;
 use std::cmp::Ordering;
@@ -69,7 +69,7 @@ pub(crate) fn spawn_initial_monsters(
     all_spawns: &AllSpawns,
 ) {
     info!("Spawning initial monsters.");
-    let mut monsters_vec: Vec<(MonsterDetails, DisplayDetails, Position, Velocity)> = vec![];
+    let mut monsters_vec: Vec<(MonsterDetails, DisplayDetails, Position, Velocity, Stats)> = vec![];
     for (map, spawns) in all_spawns {
         for monster in &spawns.monsters {
             let mut current_monster = all_monster_definitions
@@ -100,6 +100,7 @@ pub(crate) fn spawn_initial_monsters(
                     current_monster.display_details,
                     current_monster.position,
                     current_monster.velocity,
+                    current_monster.stats,
                 ));
             }
         }

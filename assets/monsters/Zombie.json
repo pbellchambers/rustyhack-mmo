@@ -8,7 +8,9 @@
       "map": "none"
     },
     "is_active": false,
-    "current_target": null
+    "current_target": null,
+    "exp": 20,
+    "gold": 5
   },
   "display_details": {
     "icon": "z",
@@ -24,5 +26,13 @@
   "velocity": {
     "x": 0,
     "y": 0
+  },
+  "stats": {
+    "current_hp": 50,
+    "max_hp": 50,
+    "str": 15,
+    "dex": 5,
+    "con": 20,
+    "armour": 15
   }
 }

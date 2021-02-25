@@ -5,7 +5,7 @@ use laminar::Packet;
 use legion::{IntoQuery, World};
 use rustyhack_lib::ecs::components;
 use rustyhack_lib::ecs::components::{
-    DisplayDetails, MonsterDetails, PlayerDetails, Position, Velocity,
+    DisplayDetails, MonsterDetails, PlayerDetails, Position, Stats, Velocity,
 };
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::player_message::{EntityUpdates, PlayerMessage, PlayerReply};
@@ -65,9 +65,9 @@ fn set_player_disconnected(world: &mut World, address: String) {
 }
 
 fn join_player(world: &mut World, name: String, client_addr: String, sender: &Sender<Packet>) {
-    let mut query = <(&mut PlayerDetails, &DisplayDetails, &Position)>::query();
+    let mut query = <(&mut PlayerDetails, &DisplayDetails, &Position, &Stats)>::query();
     let mut should_create_new_player = true;
-    for (player_details, display_details, position) in query.iter_mut(world) {
+    for (player_details, display_details, position, stats) in query.iter_mut(world) {
         if player_details.player_name == name && !player_details.currently_online {
             player_details.currently_online = true;
             player_details.client_addr = client_addr.clone();
@@ -79,6 +79,7 @@ fn join_player(world: &mut World, name: String, client_addr: String, sender: &Se
                 player_details: player_details.clone(),
                 display_details: *display_details,
                 position: position.clone(),
+                stats: *stats,
             };
             send_player_joined_response(player, sender);
             should_create_new_player = false;
@@ -111,6 +112,9 @@ fn create_player(world: &mut World, name: String, client_addr: String, sender: &
             player_name: name.clone(),
             client_addr,
             currently_online: true,
+            level: 1,
+            exp: 0,
+            gold: 0,
         },
         ..Default::default()
     };
@@ -119,6 +123,7 @@ fn create_player(world: &mut World, name: String, client_addr: String, sender: &
         player.player_details.clone(),
         player.display_details,
         player.position.clone(),
+        player.stats,
         components::Velocity { x: 0, y: 0 },
     ));
     info!("New player \"{}\" created: {:?}", name, &player_entity);
