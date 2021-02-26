@@ -9,6 +9,7 @@ use crate::consts::{CONSOLE_HEIGHT, CONSOLE_WIDTH, GAME_TITLE, TARGET_FPS};
 use crate::networking::message_handler;
 use crate::screens::draw_screens;
 
+mod input_handler;
 mod map_handler;
 mod new_player;
 mod updates_handler;
@@ -56,6 +57,8 @@ pub(crate) fn run(
         display_details: HashMap::new(),
     };
 
+    let mut status_messages: Vec<String> = vec![];
+
     info!("Starting game loop");
     loop {
         //wait for target fps, and clear screen between frames
@@ -73,8 +76,16 @@ pub(crate) fn run(
             other_entities,
         );
 
+        input_handler::handle_other_input(&mut console, &mut status_messages, &player, &all_maps);
+
         //update and redraw the screens
-        draw_screens(&mut console, &all_maps, &player, &other_entities);
+        draw_screens(
+            &mut console,
+            &all_maps,
+            &player,
+            &other_entities,
+            &status_messages,
+        );
 
         //check if we should quit
         if should_quit(&console) {
