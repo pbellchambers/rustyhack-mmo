@@ -12,6 +12,7 @@ use crate::consts;
 use crate::networking::message_handler;
 
 mod background_map;
+mod map_state;
 mod monsters;
 mod player_updates;
 mod players;
@@ -20,8 +21,9 @@ mod systems;
 
 pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     //initialise all basic resources
-    let all_maps_resource = background_map::initialise_all_maps();
     let all_maps = background_map::initialise_all_maps();
+    let all_maps_resource = all_maps.clone();
+    let all_map_states = map_state::initialise_all_map_states(&all_maps);
     let all_monster_definitions = monsters::initialise_all_monster_definitions();
     let all_spawns = spawns::initialise_all_spawn_definitions();
     let mut player_velocity_updates: HashMap<String, Velocity> = HashMap::new();
@@ -29,6 +31,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     info!("Initialised ECS World");
     let mut player_update_schedule = systems::build_player_update_schedule();
     let mut monster_update_schedule = systems::build_monster_update_schedule();
+    let mut map_state_update_schedule = systems::build_map_state_update_schedule();
 
     //initialise message handler thread
     let (channel_sender, channel_receiver) = crossbeam_channel::unbounded();
@@ -39,6 +42,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     //load resources into world
     let mut resources = Resources::default();
     resources.insert(all_maps_resource);
+    resources.insert(all_map_states);
     info!("Finished loading resources into world.");
 
     //spawn initial monsters
@@ -64,6 +68,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             debug!("Added player velocity updates to world resources.");
 
             debug!("Executing player update schedule...");
+            map_state_update_schedule.execute(&mut world, &mut resources);
             player_update_schedule.execute(&mut world, &mut resources);
             debug!("Player update schedule executed successfully.");
 
@@ -79,6 +84,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             monster_tick_time = Instant::now();
 
             debug!("Executing monster update schedule...");
+            map_state_update_schedule.execute(&mut world, &mut resources);
             monster_update_schedule.execute(&mut world, &mut resources);
             debug!("Monster update schedule executed successfully.");
         }
