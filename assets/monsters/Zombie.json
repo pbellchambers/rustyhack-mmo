@@ -1,0 +1,38 @@
+{
+  "monster_details": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "monster_type": "Zombie",
+    "spawn_position": {
+      "x": 0,
+      "y": 0,
+      "map": "none"
+    },
+    "is_active": false,
+    "current_target": null,
+    "exp": 20,
+    "gold": 5
+  },
+  "display_details": {
+    "icon": "z",
+    "colour": "Grey",
+    "visible": true,
+    "collidable": true
+  },
+  "position": {
+    "x": 0,
+    "y": 0,
+    "map": "none"
+  },
+  "velocity": {
+    "x": 0,
+    "y": 0
+  },
+  "stats": {
+    "current_hp": 50,
+    "max_hp": 50,
+    "str": 15,
+    "dex": 5,
+    "con": 20,
+    "armour": 15
+  }
+}

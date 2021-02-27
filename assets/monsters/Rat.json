@@ -1,0 +1,38 @@
+{
+  "monster_details": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "monster_type": "Rat",
+    "spawn_position": {
+      "x": 0,
+      "y": 0,
+      "map": "none"
+    },
+    "is_active": false,
+    "current_target": null,
+    "exp": 5,
+    "gold": 1
+  },
+  "display_details": {
+    "icon": "r",
+    "colour": "Grey",
+    "visible": true,
+    "collidable": true
+  },
+  "position": {
+    "x": 0,
+    "y": 0,
+    "map": "none"
+  },
+  "velocity": {
+    "x": 0,
+    "y": 0
+  },
+  "stats": {
+    "current_hp": 10,
+    "max_hp": 10,
+    "str": 2,
+    "dex": 20,
+    "con": 5,
+    "armour": 1
+  }
+}

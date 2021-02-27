@@ -9,6 +9,8 @@ pub fn map_character_to_tile(x: i32, y: i32, character: char) -> Tile {
         '%' => Tile::EndOfFile,
         '#' => Tile::Boundary,
         ' ' => Tile::EmptySpace,
+        '^' => Tile::UpLadder,
+        'v' => Tile::DownLadder,
         '|' => Tile::Wall(Wall::new(x, y, character)),
         '-' => Tile::Wall(Wall::new(x, y, character)),
         '+' => Tile::Door(Door::new(x, y, OpenState::Closed)),

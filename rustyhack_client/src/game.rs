@@ -1,17 +1,19 @@
-mod map_handler;
-mod new_player;
-mod updates_handler;
-pub(crate) mod viewport;
-
-use crate::consts::{GAME_TITLE, TARGET_FPS, VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
-use crate::game::viewport::Viewport;
-use crate::networking::message_handler;
 use console_engine::{ConsoleEngine, KeyCode, KeyModifiers};
 use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
-use rustyhack_lib::message_handler::player_message::EntityUpdates;
 use std::collections::HashMap;
-use std::process;
+
+use rustyhack_lib::message_handler::player_message::EntityUpdates;
+
+use crate::consts::{CONSOLE_HEIGHT, CONSOLE_WIDTH, GAME_TITLE, TARGET_FPS};
+use crate::networking::message_handler;
+use crate::screens::draw_screens;
+
+mod commands;
+mod input_handler;
+mod map_handler;
+mod new_player;
+mod updates_handler;
 
 pub(crate) fn run(
     sender: Sender<Packet>,
@@ -20,11 +22,11 @@ pub(crate) fn run(
     client_addr: &str,
     player_name: &str,
 ) {
+    //setup message handling threads
     let (player_update_sender, player_update_receiver) = crossbeam_channel::unbounded();
     let (entity_update_sender, entity_update_receiver) = crossbeam_channel::unbounded();
     debug!("Spawned thread channels.");
     let local_sender = sender.clone();
-
     message_handler::spawn_message_handler_thread(
         sender,
         receiver,
@@ -32,9 +34,11 @@ pub(crate) fn run(
         entity_update_sender,
     );
 
+    //get basic data from server needed to start game
     let all_maps =
         map_handler::request_all_maps_data(&local_sender, &server_addr, &player_update_receiver);
 
+    //create player
     let mut player = new_player::send_new_player_request(
         &local_sender,
         player_name,
@@ -43,10 +47,9 @@ pub(crate) fn run(
         &player_update_receiver,
     );
 
-    let mut viewport = Viewport::new(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, TARGET_FPS);
-
+    //initialise console engine
     let mut console =
-        console_engine::ConsoleEngine::init(viewport.width, viewport.height, viewport.target_fps);
+        console_engine::ConsoleEngine::init(CONSOLE_WIDTH, CONSOLE_HEIGHT, TARGET_FPS);
     console.set_title(GAME_TITLE);
     info!("Initialised console engine.");
 
@@ -55,8 +58,11 @@ pub(crate) fn run(
         display_details: HashMap::new(),
     };
 
+    let mut status_messages: Vec<String> = vec![];
+
     info!("Starting game loop");
     loop {
+        //wait for target fps, and clear screen between frames
         console.wait_frame();
         console.clear_screen();
 
@@ -71,19 +77,24 @@ pub(crate) fn run(
             other_entities,
         );
 
-        viewport.draw_viewport_contents(
+        input_handler::handle_other_input(
             &mut console,
+            &mut status_messages,
             &player,
-            all_maps.get(&player.position.map).unwrap_or_else(|| {
-                error!(
-                    "There is no map for current player position: {}",
-                    &player.position.map
-                );
-                process::exit(1);
-            }),
+            &all_maps,
             &other_entities,
         );
 
+        //update and redraw the screens
+        draw_screens(
+            &mut console,
+            &all_maps,
+            &player,
+            &other_entities,
+            &status_messages,
+        );
+
+        //check if we should quit
         if should_quit(&console) {
             info!("Ctrl-q detected - quitting app.");
             break;

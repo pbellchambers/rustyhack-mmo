@@ -4,7 +4,9 @@ use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
 use legion::{IntoQuery, World};
 use rustyhack_lib::ecs::components;
-use rustyhack_lib::ecs::components::{DisplayDetails, PlayerDetails, Position, Velocity};
+use rustyhack_lib::ecs::components::{
+    DisplayDetails, MonsterDetails, PlayerDetails, Position, Stats, Velocity,
+};
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::player_message::{EntityUpdates, PlayerMessage, PlayerReply};
 use std::collections::HashMap;
@@ -48,11 +50,14 @@ pub(crate) fn process_player_messages(
 }
 
 fn set_player_disconnected(world: &mut World, address: String) {
-    let mut query = <&mut PlayerDetails>::query();
-    for player_details in query.iter_mut(world) {
+    let mut query = <(&mut PlayerDetails, &mut DisplayDetails)>::query();
+    for (player_details, display_details) in query.iter_mut(world) {
         if player_details.client_addr == address {
+            display_details.visible = false;
+            display_details.collidable = false;
             player_details.currently_online = false;
             player_details.client_addr = "".to_string();
+
             info!(
                 "Player {} at {} now marked as disconnected.",
                 &player_details.player_name, &address
@@ -63,12 +68,14 @@ fn set_player_disconnected(world: &mut World, address: String) {
 }
 
 fn join_player(world: &mut World, name: String, client_addr: String, sender: &Sender<Packet>) {
-    let mut query = <(&mut PlayerDetails, &DisplayDetails, &Position)>::query();
+    let mut query = <(&mut PlayerDetails, &mut DisplayDetails, &Position, &Stats)>::query();
     let mut should_create_new_player = true;
-    for (player_details, display_details, position) in query.iter_mut(world) {
+    for (player_details, display_details, position, stats) in query.iter_mut(world) {
         if player_details.player_name == name && !player_details.currently_online {
             player_details.currently_online = true;
             player_details.client_addr = client_addr.clone();
+            display_details.collidable = true;
+            display_details.visible = true;
             info!(
                 "Existing player \"{}\" logged in from: {}",
                 name, &client_addr
@@ -77,6 +84,7 @@ fn join_player(world: &mut World, name: String, client_addr: String, sender: &Se
                 player_details: player_details.clone(),
                 display_details: *display_details,
                 position: position.clone(),
+                stats: *stats,
             };
             send_player_joined_response(player, sender);
             should_create_new_player = false;
@@ -109,6 +117,9 @@ fn create_player(world: &mut World, name: String, client_addr: String, sender: &
             player_name: name.clone(),
             client_addr,
             currently_online: true,
+            level: 1,
+            exp: 0,
+            gold: 0,
         },
         ..Default::default()
     };
@@ -117,6 +128,7 @@ fn create_player(world: &mut World, name: String, client_addr: String, sender: &
         player.player_details.clone(),
         player.display_details,
         player.position.clone(),
+        player.stats,
         components::Velocity { x: 0, y: 0 },
     ));
     info!("New player \"{}\" created: {:?}", name, &player_entity);
@@ -178,21 +190,28 @@ pub(crate) fn send_player_updates(
     player_velocity_updates
 }
 
-pub(crate) fn send_other_entities_updates(world: &mut World, sender: &Sender<Packet>) {
+pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>) {
     let mut position_updates: HashMap<String, Position> = HashMap::new();
     let mut display_details: HashMap<String, DisplayDetails> = HashMap::new();
-    let mut query = <(&PlayerDetails, &mut Position, &DisplayDetails)>::query();
+    let mut query = <(&PlayerDetails, &Position, &DisplayDetails)>::query();
     debug!("Getting all players positions");
-    for (player_details, position, display) in query.iter_mut(world) {
+    for (player_details, position, display) in query.iter(world) {
         if player_details.currently_online {
             position_updates.insert(player_details.player_name.clone(), position.clone());
             display_details.insert(player_details.player_name.clone(), *display);
         }
     }
 
-    let mut query2 = <&PlayerDetails>::query();
+    let mut query = <(&MonsterDetails, &Position, &DisplayDetails)>::query();
+    debug!("Getting all monster positions");
+    for (monster_details, position, display) in query.iter(world) {
+        position_updates.insert(monster_details.id.to_string(), position.clone());
+        display_details.insert(monster_details.id.to_string(), *display);
+    }
+
+    let mut query = <&PlayerDetails>::query();
     debug!("Sending entity updates to all players.");
-    for player_details in query2.iter_mut(world) {
+    for player_details in query.iter(world) {
         if player_details.currently_online {
             debug!("Sending entity updates to: {}", &player_details.client_addr);
             let response = serialize(&PlayerReply::UpdateOtherEntities(EntityUpdates {

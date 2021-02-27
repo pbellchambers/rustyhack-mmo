@@ -12,31 +12,46 @@ use crate::consts;
 use crate::networking::message_handler;
 
 mod background_map;
+mod map_state;
+mod monsters;
 mod player_updates;
+mod players;
+mod spawns;
 mod systems;
 
 pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
-    let all_maps_resource = background_map::initialise_all_maps();
+    //initialise all basic resources
     let all_maps = background_map::initialise_all_maps();
+    let all_maps_resource = all_maps.clone();
+    let all_map_states = map_state::initialise_all_map_states(&all_maps);
+    let all_monster_definitions = monsters::initialise_all_monster_definitions();
+    let all_spawns = spawns::initialise_all_spawn_definitions();
+    let mut player_velocity_updates: HashMap<String, Velocity> = HashMap::new();
+    let mut world = World::default();
+    info!("Initialised ECS World");
+    let mut player_update_schedule = systems::build_player_update_schedule();
+    let mut monster_update_schedule = systems::build_monster_update_schedule();
+    let mut map_state_update_schedule = systems::build_map_state_update_schedule();
 
+    //initialise message handler thread
     let (channel_sender, channel_receiver) = crossbeam_channel::unbounded();
     info!("Created thread channel sender and receiver.");
     let local_sender = sender.clone();
-
     message_handler::spawn_message_handler_thread(sender, receiver, all_maps, channel_sender);
 
-    let mut world = World::default();
-    info!("Initialised ECS World");
-
-    let mut schedule = systems::build_schedule();
-
+    //load resources into world
     let mut resources = Resources::default();
     resources.insert(all_maps_resource);
-    info!("Finished loading all_maps into world resources.");
+    resources.insert(all_map_states);
+    info!("Finished loading resources into world.");
 
-    let mut player_velocity_updates: HashMap<String, Velocity> = HashMap::new();
+    //spawn initial monsters
+    monsters::spawn_initial_monsters(&mut world, &all_monster_definitions, &all_spawns);
+    info!("Spawned all monsters in initial positions.");
 
+    //start tick counts
     let mut entity_tick_time = Instant::now();
+    let mut monster_tick_time = Instant::now();
     let mut loop_tick_time = Instant::now();
     info!("Starting game loop");
     loop {
@@ -52,9 +67,10 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             resources.insert(player_velocity_updates.to_owned());
             debug!("Added player velocity updates to world resources.");
 
-            debug!("Executing schedule...");
-            schedule.execute(&mut world, &mut resources);
-            debug!("Schedule executed successfully.");
+            debug!("Executing player update schedule...");
+            map_state_update_schedule.execute(&mut world, &mut resources);
+            player_update_schedule.execute(&mut world, &mut resources);
+            debug!("Player update schedule executed successfully.");
 
             player_velocity_updates = player_updates::send_player_updates(
                 &mut world,
@@ -63,9 +79,18 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             );
         }
 
-        //do every 50ms
+        if monster_tick_time.elapsed() > consts::MONSTER_UPDATE_TICK {
+            monsters::update_velocities(&mut world);
+            monster_tick_time = Instant::now();
+
+            debug!("Executing monster update schedule...");
+            map_state_update_schedule.execute(&mut world, &mut resources);
+            monster_update_schedule.execute(&mut world, &mut resources);
+            debug!("Monster update schedule executed successfully.");
+        }
+
         if entity_tick_time.elapsed() > consts::ENTITY_UPDATE_TICK {
-            player_updates::send_other_entities_updates(&mut world, &local_sender);
+            player_updates::send_other_entities_updates(&world, &local_sender);
             entity_tick_time = Instant::now();
         }
 

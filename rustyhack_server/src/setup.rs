@@ -1,8 +1,9 @@
 use crate::consts;
+use rustyhack_lib::file_utils;
 use simplelog::{CombinedLogger, Config, LevelFilter, TermLogger, TerminalMode, WriteLogger};
 use std::fs::File;
 use std::net::SocketAddr;
-use std::{env, io, process};
+use std::{io, process};
 
 pub(crate) fn initialise_log(args: Vec<String>) {
     let mut log_level = LevelFilter::Info;
@@ -10,10 +11,7 @@ pub(crate) fn initialise_log(args: Vec<String>) {
         println!("Debug logging enabled.");
         log_level = LevelFilter::Debug;
     }
-    let mut file_location = env::current_exe().unwrap_or_else(|err| {
-        eprintln!("Problem getting current executable location: {}", err);
-        process::exit(1);
-    });
+    let mut file_location = file_utils::current_exe_location();
     file_location.pop();
     file_location.push(consts::LOG_NAME);
     CombinedLogger::init(vec![

@@ -1,9 +1,9 @@
 pub mod door;
 pub mod wall;
-
 use crate::background_map::tiles::door::Door;
 use crate::background_map::tiles::wall::Wall;
 use serde::{Deserialize, Serialize};
+use strum_macros::Display;
 
 #[derive(Clone, Copy, PartialEq, Debug, Serialize, Deserialize)]
 pub enum Collidable {
@@ -23,10 +23,12 @@ pub struct TilePosition {
     pub y: i32,
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(Display, Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum Tile {
     Wall(Wall),
     Door(Door),
+    UpLadder,
+    DownLadder,
     EmptySpace,
     Boundary,
     NewLine,
@@ -39,6 +41,8 @@ impl Tile {
         match self {
             Tile::Wall(wall) => wall.character_icon,
             Tile::Door(door) => door.character_icon,
+            Tile::UpLadder => '^',
+            Tile::DownLadder => 'v',
             Tile::EmptySpace => ' ',
             Tile::Boundary => '#',
             Tile::NewLine => ' ',

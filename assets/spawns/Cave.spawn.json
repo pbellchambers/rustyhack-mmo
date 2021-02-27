@@ -1,0 +1,13 @@
+{
+  "monsters": [
+    {
+      "monster_type": "Rat",
+      "spawn_positions": [
+        {
+          "x": 5,
+          "y": 2
+        }
+      ]
+    }
+  ]
+}

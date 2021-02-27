@@ -1,0 +1,38 @@
+{
+  "monster_details": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "monster_type": "Snake",
+    "spawn_position": {
+      "x": 0,
+      "y": 0,
+      "map": "none"
+    },
+    "is_active": false,
+    "current_target": null,
+    "exp": 7,
+    "gold": 2
+  },
+  "display_details": {
+    "icon": "s",
+    "colour": "DarkGreen",
+    "visible": true,
+    "collidable": true
+  },
+  "position": {
+    "x": 0,
+    "y": 0,
+    "map": "none"
+  },
+  "velocity": {
+    "x": 0,
+    "y": 0
+  },
+  "stats": {
+    "current_hp": 20,
+    "max_hp": 20,
+    "str": 10,
+    "dex": 15,
+    "con": 5,
+    "armour": 5
+  }
+}

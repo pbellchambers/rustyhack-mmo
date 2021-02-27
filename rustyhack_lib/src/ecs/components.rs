@@ -1,6 +1,15 @@
 use crate::consts::{DEFAULT_PLAYER_COLOUR, DEFAULT_PLAYER_ICON};
+use crate::ecs::monster::Monster;
+use crate::ecs::player::Player;
 use console_engine::Color;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub enum EntityType {
+    Monster(Monster),
+    Player(Player),
+}
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Position {
@@ -44,4 +53,28 @@ pub struct PlayerDetails {
     pub player_name: String,
     pub client_addr: String,
     pub currently_online: bool,
+    pub level: u32,
+    pub exp: u32,
+    pub gold: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct MonsterDetails {
+    pub id: Uuid,
+    pub monster_type: String,
+    pub spawn_position: Position,
+    pub is_active: bool,
+    pub current_target: Option<String>,
+    pub exp: u32,
+    pub gold: u32,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Stats {
+    pub current_hp: u32,
+    pub max_hp: u32,
+    pub str: u32,
+    pub dex: u32,
+    pub con: u32,
+    pub armour: u32,
 }
