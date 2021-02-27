@@ -9,6 +9,7 @@ use crate::consts::{CONSOLE_HEIGHT, CONSOLE_WIDTH, GAME_TITLE, TARGET_FPS};
 use crate::networking::message_handler;
 use crate::screens::draw_screens;
 
+mod commands;
 mod input_handler;
 mod map_handler;
 mod new_player;
@@ -76,7 +77,13 @@ pub(crate) fn run(
             other_entities,
         );
 
-        input_handler::handle_other_input(&mut console, &mut status_messages, &player, &all_maps);
+        input_handler::handle_other_input(
+            &mut console,
+            &mut status_messages,
+            &player,
+            &all_maps,
+            &other_entities,
+        );
 
         //update and redraw the screens
         draw_screens(
