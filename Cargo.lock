@@ -649,7 +649,7 @@ dependencies = [
  "bincode",
  "chrono",
  "console_engine",
- "crossbeam-channel 0.4.4",
+ "crossbeam-channel 0.5.0",
  "crossterm",
  "laminar",
  "log",
@@ -678,7 +678,7 @@ version = "0.2.0"
 dependencies = [
  "bincode",
  "console_engine",
- "crossbeam-channel 0.4.4",
+ "crossbeam-channel 0.5.0",
  "crossterm",
  "laminar",
  "legion",
