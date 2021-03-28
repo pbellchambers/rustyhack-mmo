@@ -1,7 +1,7 @@
 use crate::consts;
 use regex::Regex;
 use rustyhack_lib::file_utils;
-use simplelog::{CombinedLogger, LevelFilter, TermLogger, TerminalMode, WriteLogger};
+use simplelog::{ColorChoice, CombinedLogger, LevelFilter, TermLogger, TerminalMode, WriteLogger};
 use std::fs::File;
 use std::net::SocketAddr;
 use std::{io, process};
@@ -21,6 +21,7 @@ pub(crate) fn initialise_log(args: Vec<String>) {
             LevelFilter::Warn,
             simplelog::Config::default(),
             TerminalMode::Mixed,
+            ColorChoice::Auto,
         ),
         WriteLogger::new(
             log_level,

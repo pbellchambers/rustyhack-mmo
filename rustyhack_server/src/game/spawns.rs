@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process;
 
 pub type AllSpawns = HashMap<String, Spawns>;
@@ -56,7 +56,7 @@ fn spawns_directory_location() -> PathBuf {
     file_location
 }
 
-fn get_spawns_definition_from_path(path: &PathBuf) -> Spawns {
+fn get_spawns_definition_from_path(path: &Path) -> Spawns {
     let file = File::open(path).unwrap_or_else(|err| {
         error!(
             "Problem getting spawns definition from file: {:?}, error: {}",

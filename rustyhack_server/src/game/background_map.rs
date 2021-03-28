@@ -4,7 +4,7 @@ use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::background_map::{character_map, BackgroundMap};
 use rustyhack_lib::file_utils;
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::{fs, process};
 
 pub(crate) fn initialise_all_maps() -> AllMaps {
@@ -38,15 +38,15 @@ fn maps_directory_location() -> PathBuf {
     file_location
 }
 
-fn initialise_map(path: &PathBuf) -> BackgroundMap {
+fn initialise_map(path: &Path) -> BackgroundMap {
     let unprocessed_map_data = load_map_data_from_file(path);
     let data = process_map_data(&unprocessed_map_data);
     BackgroundMap { data }
 }
 
-fn load_map_data_from_file(path: &PathBuf) -> String {
+fn load_map_data_from_file(path: &Path) -> String {
     info!("Loading map data from file: {:?}", &path);
-    fs::read_to_string(path.as_path()).unwrap_or_else(|err| {
+    fs::read_to_string(path).unwrap_or_else(|err| {
         error!(
             "Problem getting map data from file: {:?}, error: {}",
             path, err

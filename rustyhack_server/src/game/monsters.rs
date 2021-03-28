@@ -11,7 +11,7 @@ use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process;
 use uuid::Uuid;
 
@@ -45,7 +45,7 @@ fn monsters_directory_location() -> PathBuf {
     file_location
 }
 
-fn get_monster_definition_from_path(path: &PathBuf) -> Monster {
+fn get_monster_definition_from_path(path: &Path) -> Monster {
     let file = File::open(path).unwrap_or_else(|err| {
         error!(
             "Problem getting monster definition from file: {:?}, error: {}",
