@@ -49,7 +49,7 @@ pub(crate) fn run(
 
     //initialise console engine
     let mut console =
-        console_engine::ConsoleEngine::init(CONSOLE_WIDTH, CONSOLE_HEIGHT, TARGET_FPS);
+        console_engine::ConsoleEngine::init(CONSOLE_WIDTH, CONSOLE_HEIGHT, TARGET_FPS).unwrap();
     console.set_title(GAME_TITLE);
     info!("Initialised console engine.");
 
