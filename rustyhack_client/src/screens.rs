@@ -19,7 +19,7 @@ pub(crate) fn draw_screens(
 ) {
     //update the player viewport contents
     let viewport = viewport::draw_viewport_contents(
-        &player,
+        player,
         all_maps.get(&player.position.map).unwrap_or_else(|| {
             error!(
                 "There is no map for current player position: {}",
@@ -27,7 +27,7 @@ pub(crate) fn draw_screens(
             );
             process::exit(1);
         }),
-        &other_entities,
+        other_entities,
     );
 
     let top_status_bar = top_status_bar::draw(player);

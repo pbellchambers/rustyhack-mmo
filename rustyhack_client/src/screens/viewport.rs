@@ -30,11 +30,11 @@ pub(crate) fn draw_viewport_contents(
 ) -> Screen {
     let mut viewport = Viewport::default();
     let mut screen = Screen::new(viewport.width, viewport.height);
-    calculate_viewable_map_coords(&mut viewport, &player);
-    draw_viewable_map(&mut screen, &background_map, &viewport);
+    calculate_viewable_map_coords(&mut viewport, player);
+    draw_viewable_map(&mut screen, background_map, &viewport);
     draw_viewport_frame(&mut screen, &viewport);
-    draw_player(&mut screen, &viewport, &player);
-    draw_other_entities(&mut screen, &player, &entity_updates, &viewport);
+    draw_player(&mut screen, &viewport, player);
+    draw_other_entities(&mut screen, player, entity_updates, &viewport);
     screen
 }
 

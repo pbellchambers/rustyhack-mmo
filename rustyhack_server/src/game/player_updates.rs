@@ -28,7 +28,7 @@ pub(crate) fn process_player_messages(
                         "Player joined request received for {} from: {}",
                         &message.player_name, &message.client_addr
                     );
-                    join_player(world, message.player_name, message.client_addr, &sender);
+                    join_player(world, message.player_name, message.client_addr, sender);
                 }
                 PlayerMessage::UpdateVelocity(message) => {
                     debug!("Velocity update received for {}", &message.player_name);
@@ -100,7 +100,7 @@ fn join_player(world: &mut World, name: String, client_addr: String, sender: &Se
             });
             message_handler::send_packet(
                 Packet::reliable_ordered(client_addr.parse().unwrap(), response, Some(11)),
-                &sender,
+                sender,
             );
             should_create_new_player = false;
             break;
@@ -149,7 +149,7 @@ fn send_player_joined_response(player: Player, sender: &Sender<Packet>) {
             response,
             Some(11),
         ),
-        &sender,
+        sender,
     );
 }
 
@@ -181,7 +181,7 @@ pub(crate) fn send_player_updates(
                     response,
                     Some(20),
                 ),
-                &sender,
+                sender,
             );
         }
     }
@@ -231,7 +231,7 @@ pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>
                     response,
                     Some(21),
                 ),
-                &sender,
+                sender,
             );
         }
     }

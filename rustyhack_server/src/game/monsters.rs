@@ -118,7 +118,7 @@ pub(crate) fn update_velocities(world: &mut World) {
 
         if let Some(target) = monster.current_target.clone() {
             if let Some(current_target_position) = players_positions.get(&target) {
-                if is_specific_player_nearby(&current_target_position, &position) {
+                if is_specific_player_nearby(current_target_position, position) {
                     *velocity = move_towards_target(position, current_target_position);
                     moving_towards_existing_target = true;
                 }
@@ -126,7 +126,7 @@ pub(crate) fn update_velocities(world: &mut World) {
         }
 
         if !moving_towards_existing_target {
-            let nearby_player = is_any_player_nearby(&players_positions, &position);
+            let nearby_player = is_any_player_nearby(&players_positions, position);
             match nearby_player {
                 Some((player_name, player_position)) => {
                     monster.is_active = true;

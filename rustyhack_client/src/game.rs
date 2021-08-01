@@ -36,14 +36,14 @@ pub(crate) fn run(
 
     //get basic data from server needed to start game
     let all_maps =
-        map_handler::request_all_maps_data(&local_sender, &server_addr, &player_update_receiver);
+        map_handler::request_all_maps_data(&local_sender, server_addr, &player_update_receiver);
 
     //create player
     let mut player = new_player::send_new_player_request(
         &local_sender,
         player_name,
-        &server_addr,
-        &client_addr,
+        server_addr,
+        client_addr,
         &player_update_receiver,
     );
 
@@ -67,7 +67,7 @@ pub(crate) fn run(
         console.clear_screen();
 
         debug!("About to send player velocity update.");
-        updates_handler::send_player_updates(&local_sender, &console, &player, &server_addr);
+        updates_handler::send_player_updates(&local_sender, &console, &player, server_addr);
 
         debug!("About to wait for entity updates from server.");
         player =
