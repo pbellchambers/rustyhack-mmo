@@ -1,7 +1,7 @@
 use crate::consts::{DEFAULT_PLAYER_COLOUR, DEFAULT_PLAYER_ICON};
 use crate::ecs::monster::Monster;
 use crate::ecs::player::Player;
-use console_engine::Color;
+use crossterm::style::Color;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

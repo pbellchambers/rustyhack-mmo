@@ -1,4 +1,4 @@
-use console_engine::Color;
+use crossterm::style::Color;
 
 pub const DEFAULT_MAP: &str = "Home";
 pub const DEFAULT_PLAYER_ICON: char = '@';

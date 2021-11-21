@@ -14,7 +14,7 @@
   },
   "display_details": {
     "icon": "r",
-    "colour": "Grey",
+    "colour": "grey",
     "visible": true,
     "collidable": true
   },
