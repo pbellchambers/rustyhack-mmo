@@ -565,7 +565,7 @@ checksum = "61b3909d758bb75c79f23d4736fac9433868679d3ad2ea7a61e3c25cfda9a088"
 
 [[package]]
 name = "rustyhack_client"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "bincode",
  "chrono",
@@ -582,7 +582,7 @@ dependencies = [
 
 [[package]]
 name = "rustyhack_lib"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "console_engine",
  "crossterm",
@@ -596,7 +596,7 @@ dependencies = [
 
 [[package]]
 name = "rustyhack_server"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "bincode",
  "console_engine",
