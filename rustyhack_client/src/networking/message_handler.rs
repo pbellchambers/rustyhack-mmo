@@ -33,9 +33,8 @@ pub(crate) fn run(
                     let address = packet.addr();
 
                     let player_reply_result = deserialize::<PlayerReply>(msg);
-                    let player_reply;
-                    match player_reply_result {
-                        Ok(_) => player_reply = player_reply_result.unwrap(),
+                    let player_reply = match player_reply_result {
+                        Ok(_) => player_reply_result.unwrap(),
                         Err(error) => {
                             warn!(
                                 "Error when deserialising player reply packet from server: {}",
@@ -44,32 +43,26 @@ pub(crate) fn run(
                             //try again with next packet
                             continue;
                         }
-                    }
+                    };
                     debug!("Received {:?} from {:?}", player_reply, address);
 
-                    let channel_send_status;
-                    match player_reply {
+                    let channel_send_status = match player_reply {
                         PlayerReply::PlayerJoined(message) => {
-                            channel_send_status =
-                                player_update_sender.send(PlayerReply::PlayerJoined(message));
+                            player_update_sender.send(PlayerReply::PlayerJoined(message))
                         }
                         PlayerReply::AllMaps(message) => {
-                            channel_send_status =
-                                player_update_sender.send(PlayerReply::AllMaps(message));
+                            player_update_sender.send(PlayerReply::AllMaps(message))
                         }
                         PlayerReply::UpdatePosition(message) => {
-                            channel_send_status =
-                                player_update_sender.send(PlayerReply::UpdatePosition(message));
+                            player_update_sender.send(PlayerReply::UpdatePosition(message))
                         }
                         PlayerReply::UpdateOtherEntities(message) => {
-                            channel_send_status = entity_update_sender
-                                .send(PlayerReply::UpdateOtherEntities(message));
+                            entity_update_sender.send(PlayerReply::UpdateOtherEntities(message))
                         }
                         PlayerReply::PlayerAlreadyOnline => {
-                            channel_send_status =
-                                player_update_sender.send(PlayerReply::PlayerAlreadyOnline);
+                            player_update_sender.send(PlayerReply::PlayerAlreadyOnline)
                         }
-                    }
+                    };
 
                     match channel_send_status {
                         Ok(_) => {

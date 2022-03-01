@@ -31,9 +31,8 @@ pub(crate) fn run(
                     let address = packet.addr();
 
                     let player_message_result = deserialize::<PlayerMessage>(msg);
-                    let player_message;
-                    match player_message_result {
-                        Ok(_) => player_message = player_message_result.unwrap(),
+                    let player_message = match player_message_result {
+                        Ok(_) => player_message_result.unwrap(),
                         Err(error) => {
                             warn!(
                                 "Error when deserialising player message from client {}: {}",
@@ -43,7 +42,7 @@ pub(crate) fn run(
                             //try again with next packet
                             continue;
                         }
-                    }
+                    };
                     debug!("Received {:?} from {:?}", player_message, address);
 
                     match player_message {
