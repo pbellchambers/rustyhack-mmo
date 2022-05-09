@@ -10,7 +10,7 @@ license = "AGPL-3.0"
 
 [dependencies]
 rustyhack_lib = { path = "../rustyhack_lib" }
-log = "0.4.14"
+log = "0.4.17"
 simplelog = "0.11.0"
 console_engine = "2.2.0"
 crossterm = { version = "0.23.0", features = ["serde"] }
