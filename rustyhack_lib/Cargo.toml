@@ -14,6 +14,6 @@ simplelog = "0.12.0"
 serde = { version = "1.0.137", features = ["derive"] }
 console_engine = "2.4.0"
 crossterm = { version = "0.23.2", features = ["serde"] }
-uuid = { version = "1.1.1", features = ["serde", "v4"] }
-strum = "0.24.0"
-strum_macros = "0.24.0"
+uuid = { version = "1.1.2", features = ["serde", "v4"] }
+strum = "0.24.1"
+strum_macros = "0.24.2"
