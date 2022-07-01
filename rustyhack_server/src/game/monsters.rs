@@ -169,7 +169,7 @@ fn move_towards_target(monster_position: &Position, target_position: &Position) 
 }
 
 fn move_towards(diff: i32, position: i32) -> i32 {
-    if diff.abs() as u32 > 1 {
+    if diff.unsigned_abs() > 1 {
         return match diff.is_positive() {
             true => position - 1,
             false => position + 1,
