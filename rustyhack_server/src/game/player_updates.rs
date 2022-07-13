@@ -3,18 +3,17 @@ use bincode::serialize;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
 use legion::{IntoQuery, World};
-use rustyhack_lib::ecs::components;
 use rustyhack_lib::ecs::components::{
     DisplayDetails, MonsterDetails, PlayerDetails, Position, Stats, Velocity,
 };
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::player_message::{EntityUpdates, PlayerMessage, PlayerReply};
+use rustyhack_lib::message_handler::messages::{EntityUpdates, PlayerRequest, ServerMessage};
 use std::collections::HashMap;
 use std::process;
 
 pub(crate) fn process_player_messages(
     world: &mut World,
-    channel_receiver: &Receiver<PlayerMessage>,
+    channel_receiver: &Receiver<PlayerRequest>,
     sender: &Sender<Packet>,
     mut player_velocity_updates: HashMap<String, Velocity>,
 ) -> HashMap<String, Velocity> {
@@ -23,19 +22,19 @@ pub(crate) fn process_player_messages(
         let received = channel_receiver.try_recv();
         if let Ok(received_message) = received {
             match received_message {
-                PlayerMessage::PlayerJoin(message) => {
+                PlayerRequest::PlayerJoin(message) => {
                     info!(
                         "Player joined request received for {} from: {}",
                         &message.player_name, &message.client_addr
                     );
                     join_player(world, message.player_name, message.client_addr, sender);
                 }
-                PlayerMessage::UpdateVelocity(message) => {
+                PlayerRequest::UpdateVelocity(message) => {
                     debug!("Velocity update received for {}", &message.player_name);
                     player_velocity_updates.insert(message.player_name, message.velocity);
                     debug!("Processed velocity update: {:?}", &player_velocity_updates);
                 }
-                PlayerMessage::Timeout(address) => {
+                PlayerRequest::Timeout(address) => {
                     set_player_disconnected(world, address);
                 }
                 _ => {
@@ -91,9 +90,9 @@ fn join_player(world: &mut World, name: String, client_addr: String, sender: &Se
             break;
         } else if player_details.player_name == name && player_details.currently_online {
             warn!("Player join request from {} for existing player that's currently online ({} at {}).", &client_addr, &name, &player_details.client_addr);
-            let response = serialize(&PlayerReply::PlayerAlreadyOnline).unwrap_or_else(|err| {
+            let response = serialize(&ServerMessage::PlayerAlreadyOnline).unwrap_or_else(|err| {
                 error!(
-                    "Failed to serialise player already online response, error: {}",
+                    "Failed to serialize player already online response, error: {}",
                     err
                 );
                 process::exit(1);
@@ -129,16 +128,16 @@ fn create_player(world: &mut World, name: String, client_addr: String, sender: &
         player.display_details,
         player.position.clone(),
         player.stats,
-        components::Velocity { x: 0, y: 0 },
+        Velocity { x: 0, y: 0 },
     ));
     info!("New player \"{}\" created: {:?}", name, &player_entity);
     send_player_joined_response(player, sender);
 }
 
 fn send_player_joined_response(player: Player, sender: &Sender<Packet>) {
-    let response = serialize(&PlayerReply::PlayerJoined(player.clone())).unwrap_or_else(|err| {
+    let response = serialize(&ServerMessage::PlayerJoined(player.clone())).unwrap_or_else(|err| {
         error!(
-            "Failed to serialise player created response, error: {}",
+            "Failed to serialize player created response, error: {}",
             err
         );
         process::exit(1);
@@ -167,10 +166,10 @@ pub(crate) fn send_player_updates(
                 "Sending player velocity update for: {}",
                 &player_details.player_name
             );
-            let response = serialize(&PlayerReply::UpdatePosition(position.clone()))
+            let response = serialize(&ServerMessage::UpdatePosition(position.clone()))
                 .unwrap_or_else(|err| {
                     error!(
-                        "Failed to serialise player position: {:?}, error: {}",
+                        "Failed to serialize player position: {:?}, error: {}",
                         &position, err
                     );
                     process::exit(1);
@@ -214,13 +213,13 @@ pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>
     for player_details in query.iter(world) {
         if player_details.currently_online {
             debug!("Sending entity updates to: {}", &player_details.client_addr);
-            let response = serialize(&PlayerReply::UpdateOtherEntities(EntityUpdates {
+            let response = serialize(&ServerMessage::UpdateOtherEntities(EntityUpdates {
                 position_updates: position_updates.clone(),
                 display_details: display_details.clone(),
             }))
             .unwrap_or_else(|err| {
                 error!(
-                    "Failed to serialise entity updates: {:?}, error: {}",
+                    "Failed to serialize entity updates: {:?}, error: {}",
                     &position_updates, err
                 );
                 process::exit(1);

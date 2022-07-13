@@ -3,7 +3,7 @@ use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
 use std::collections::HashMap;
 
-use rustyhack_lib::message_handler::player_message::EntityUpdates;
+use rustyhack_lib::message_handler::messages::EntityUpdates;
 
 use crate::consts::{CONSOLE_HEIGHT, CONSOLE_WIDTH, GAME_TITLE, TARGET_FPS};
 use crate::networking::message_handler;
@@ -48,8 +48,7 @@ pub(crate) fn run(
     );
 
     //initialise console engine
-    let mut console =
-        console_engine::ConsoleEngine::init(CONSOLE_WIDTH, CONSOLE_HEIGHT, TARGET_FPS).unwrap();
+    let mut console = ConsoleEngine::init(CONSOLE_WIDTH, CONSOLE_HEIGHT, TARGET_FPS).unwrap();
     console.set_title(GAME_TITLE);
     info!("Initialised console engine.");
 

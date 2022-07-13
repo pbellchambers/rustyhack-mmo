@@ -26,7 +26,6 @@ pub(crate) fn bind_to_socket(server_addr: String) -> (Sender<Packet>, Receiver<S
 fn get_laminar_config() -> laminar::Config {
     laminar::Config {
         idle_connection_timeout: Duration::from_secs(10),
-        max_fragments: 255,
         ..Default::default()
     }
 }

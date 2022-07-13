@@ -56,7 +56,7 @@ fn get_monster_definition_from_path(path: &Path) -> Monster {
     let buf_reader = BufReader::new(file);
     serde_json::from_reader(buf_reader).unwrap_or_else(|err| {
         error!(
-            "Problem deserialising monster definition from file: {:?}, error: {}",
+            "Problem deserializing monster definition from file: {:?}, error: {}",
             path, err
         );
         process::exit(1);

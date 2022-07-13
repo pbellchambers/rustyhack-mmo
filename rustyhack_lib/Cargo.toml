@@ -1,6 +1,6 @@
 [package]
 name = "rustyhack_lib"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["pbellchambers <pbellchambers@users.noreply.github.com>"]
 edition = "2021"
 repository = "https://github.com/pbellchambers/rustyhack-mmo"
@@ -11,7 +11,7 @@ license = "AGPL-3.0"
 [dependencies]
 log = "0.4.17"
 simplelog = "0.12.0"
-serde = { version = "1.0.138", features = ["derive"] }
+serde = { version = "1.0.139", features = ["derive"] }
 console_engine = "2.4.0"
 crossterm = { version = "0.23.0", features = ["serde"] }
 uuid = { version = "1.1.2", features = ["serde", "v4"] }

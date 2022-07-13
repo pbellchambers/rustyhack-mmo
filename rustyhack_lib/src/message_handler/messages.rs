@@ -2,29 +2,32 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::background_map::AllMaps;
+use crate::background_map::{AllMaps, AllMapsChunk};
 use crate::ecs::components::{DisplayDetails, Position, Velocity};
 use crate::ecs::player::Player;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub enum PlayerMessage {
-    PlayerJoin(CreatePlayerMessage),
+pub enum PlayerRequest {
+    PlayerJoin(CreatePlayerRequest),
     UpdateVelocity(VelocityMessage),
-    GetAllMaps,
+    GetChunkedAllMaps,
     Timeout(String),
+    Undefined,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum PlayerReply {
+pub enum ServerMessage {
     PlayerJoined(Player),
     PlayerAlreadyOnline,
     AllMaps(AllMaps),
+    AllMapsChunk(AllMapsChunk),
+    AllMapsChunksComplete,
     UpdatePosition(Position),
     UpdateOtherEntities(EntityUpdates),
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct CreatePlayerMessage {
+pub struct CreatePlayerRequest {
     pub client_addr: String,
     pub player_name: String,
 }
