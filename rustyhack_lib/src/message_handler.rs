@@ -1,1 +1,1 @@
-pub mod player_message;
+pub mod messages;

@@ -2,7 +2,7 @@ use crate::consts;
 use console_engine::ConsoleEngine;
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::player_message::EntityUpdates;
+use rustyhack_lib::message_handler::messages::EntityUpdates;
 use std::process;
 
 mod bottom_text_window;

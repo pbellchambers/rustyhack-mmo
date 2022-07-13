@@ -5,7 +5,7 @@ use rustyhack_lib::background_map::tiles::{Tile, TilePosition};
 use rustyhack_lib::background_map::BackgroundMap;
 use rustyhack_lib::ecs::components::DisplayDetails;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::player_message::EntityUpdates;
+use rustyhack_lib::message_handler::messages::EntityUpdates;
 
 struct Viewport {
     width: u32,

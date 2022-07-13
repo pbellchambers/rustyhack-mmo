@@ -1,26 +1,23 @@
-use crate::networking::message_handler;
 use bincode::deserialize;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
-use rustyhack_lib::message_handler::player_message::PlayerReply;
+use rustyhack_lib::message_handler::messages::ServerMessage;
 use std::{process, thread};
 
 pub(crate) fn spawn_message_handler_thread(
     sender: Sender<Packet>,
     receiver: Receiver<SocketEvent>,
-    player_update_sender: Sender<PlayerReply>,
-    entity_update_sender: Sender<PlayerReply>,
+    player_update_sender: Sender<ServerMessage>,
+    entity_update_sender: Sender<ServerMessage>,
 ) {
-    thread::spawn(move || {
-        message_handler::run(sender, receiver, player_update_sender, entity_update_sender)
-    });
+    thread::spawn(move || run(sender, receiver, player_update_sender, entity_update_sender));
 }
 
 pub(crate) fn run(
     _sender: Sender<Packet>,
     receiver: Receiver<SocketEvent>,
-    player_update_sender: Sender<PlayerReply>,
-    entity_update_sender: Sender<PlayerReply>,
+    player_update_sender: Sender<ServerMessage>,
+    entity_update_sender: Sender<ServerMessage>,
 ) {
     info!("Spawned message handler thread.");
     loop {
@@ -32,12 +29,12 @@ pub(crate) fn run(
                     let msg = packet.payload();
                     let address = packet.addr();
 
-                    let player_reply_result = deserialize::<PlayerReply>(msg);
+                    let player_reply_result = deserialize::<ServerMessage>(msg);
                     let player_reply = match player_reply_result {
                         Ok(_) => player_reply_result.unwrap(),
                         Err(error) => {
                             warn!(
-                                "Error when deserialising player reply packet from server: {}",
+                                "Error when deserializing player reply packet from server: {}",
                                 error
                             );
                             //try again with next packet
@@ -47,26 +44,26 @@ pub(crate) fn run(
                     debug!("Received {:?} from {:?}", player_reply, address);
 
                     let channel_send_status = match player_reply {
-                        PlayerReply::PlayerJoined(message) => {
-                            player_update_sender.send(PlayerReply::PlayerJoined(message))
+                        ServerMessage::PlayerJoined(message) => {
+                            player_update_sender.send(ServerMessage::PlayerJoined(message))
                         }
-                        PlayerReply::AllMaps(message) => {
-                            player_update_sender.send(PlayerReply::AllMaps(message))
+                        ServerMessage::AllMaps(message) => {
+                            player_update_sender.send(ServerMessage::AllMaps(message))
                         }
-                        PlayerReply::AllMapsChunk(message) => {
-                            player_update_sender.send(PlayerReply::AllMapsChunk(message))
+                        ServerMessage::AllMapsChunk(message) => {
+                            player_update_sender.send(ServerMessage::AllMapsChunk(message))
                         }
-                        PlayerReply::AllMapsChunksComplete => {
-                            player_update_sender.send(PlayerReply::AllMapsChunksComplete)
+                        ServerMessage::AllMapsChunksComplete => {
+                            player_update_sender.send(ServerMessage::AllMapsChunksComplete)
                         }
-                        PlayerReply::UpdatePosition(message) => {
-                            player_update_sender.send(PlayerReply::UpdatePosition(message))
+                        ServerMessage::UpdatePosition(message) => {
+                            player_update_sender.send(ServerMessage::UpdatePosition(message))
                         }
-                        PlayerReply::UpdateOtherEntities(message) => {
-                            entity_update_sender.send(PlayerReply::UpdateOtherEntities(message))
+                        ServerMessage::UpdateOtherEntities(message) => {
+                            entity_update_sender.send(ServerMessage::UpdateOtherEntities(message))
                         }
-                        PlayerReply::PlayerAlreadyOnline => {
-                            player_update_sender.send(PlayerReply::PlayerAlreadyOnline)
+                        ServerMessage::PlayerAlreadyOnline => {
+                            player_update_sender.send(ServerMessage::PlayerAlreadyOnline)
                         }
                     };
 

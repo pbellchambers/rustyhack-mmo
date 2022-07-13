@@ -67,7 +67,7 @@ fn get_spawns_definition_from_path(path: &Path) -> Spawns {
     let buf_reader = BufReader::new(file);
     serde_json::from_reader(buf_reader).unwrap_or_else(|err| {
         error!(
-            "Problem deserialising spawns definition from file: {:?}, error: {}",
+            "Problem deserializing spawns definition from file: {:?}, error: {}",
             path, err
         );
         process::exit(1);

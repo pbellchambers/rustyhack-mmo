@@ -1,7 +1,7 @@
 use chrono::{DateTime, Local};
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::player_message::EntityUpdates;
+use rustyhack_lib::message_handler::messages::EntityUpdates;
 
 pub(crate) fn get_what_player_sees(
     status_messages: &mut Vec<String>,

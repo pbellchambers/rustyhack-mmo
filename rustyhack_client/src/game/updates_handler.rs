@@ -5,8 +5,8 @@ use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
 use rustyhack_lib::ecs::components::Velocity;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::player_message::{
-    EntityUpdates, PlayerMessage, PlayerReply, VelocityMessage,
+use rustyhack_lib::message_handler::messages::{
+    EntityUpdates, PlayerRequest, ServerMessage, VelocityMessage,
 };
 
 pub(crate) fn send_player_updates(
@@ -42,7 +42,7 @@ fn send_velocity_packet(
         server_addr
             .parse()
             .expect("Server address format is invalid."),
-        serialize(&PlayerMessage::UpdateVelocity(VelocityMessage {
+        serialize(&PlayerRequest::UpdateVelocity(VelocityMessage {
             player_name: player.player_details.player_name.clone(),
             velocity,
         }))
@@ -54,7 +54,7 @@ fn send_velocity_packet(
 }
 
 pub(crate) fn check_for_received_player_updates(
-    channel_receiver: &Receiver<PlayerReply>,
+    channel_receiver: &Receiver<ServerMessage>,
     mut player: Player,
 ) -> Player {
     debug!("Checking for received player position from server.");
@@ -62,7 +62,7 @@ pub(crate) fn check_for_received_player_updates(
         let received = channel_receiver.recv();
         if let Ok(received_message) = received {
             match received_message {
-                PlayerReply::UpdatePosition(new_position) => {
+                ServerMessage::UpdatePosition(new_position) => {
                     debug!("Player position update received: {:?}", &new_position);
                     player.position = new_position
                 }
@@ -79,7 +79,7 @@ pub(crate) fn check_for_received_player_updates(
 }
 
 pub(crate) fn check_for_received_entity_updates(
-    channel_receiver: &Receiver<PlayerReply>,
+    channel_receiver: &Receiver<ServerMessage>,
     mut entity_updates: EntityUpdates,
 ) -> EntityUpdates {
     debug!("Checking for received entity updates from server.");
@@ -87,7 +87,7 @@ pub(crate) fn check_for_received_entity_updates(
         let received = channel_receiver.recv();
         if let Ok(received_message) = received {
             match received_message {
-                PlayerReply::UpdateOtherEntities(new_updates) => {
+                ServerMessage::UpdateOtherEntities(new_updates) => {
                     debug!("Entity updates received: {:?}", &new_updates);
                     entity_updates = new_updates;
                 }
