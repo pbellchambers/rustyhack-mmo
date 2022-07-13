@@ -67,6 +67,46 @@ pub(crate) fn run(
                                 Packet::reliable_ordered(packet.addr(), response, Some(2)),
                                 &sender,
                             );
+
+                            let complete_response = serialize(&PlayerReply::AllMapsChunksComplete).expect("Error serialising AllMapsChunksComplete response.");
+                            send_packet(
+                                Packet::reliable_ordered(packet.addr(), complete_response, Some(3)),
+                                &sender,
+                            );
+                        }
+                        PlayerMessage::GetChunkedAllMaps => {
+                            let full_response = serialize(&PlayerReply::AllMaps(all_maps.clone()))
+                                .expect("Error serialising AllMaps response.");
+                            let chunked_response = full_response.chunks(1450).map(|s| s.into()).enumerate();
+                            let chunked_response_length = chunked_response.size_hint();
+                            for (i, chunk) in chunked_response {
+                                let chunk_packet = serialize(&PlayerReply::AllMapsChunk((i, chunk))).expect("Error serialising AllMapsChunk.");
+                                if i == 0 {
+                                    warn!("Sending first AllMapsChunk packet {}", i);
+                                    send_packet(
+                                        Packet::reliable_ordered(packet.addr(), chunk_packet, Some(i as u8)),
+                                        &sender,
+                                    );
+                                } else if i == chunked_response_length.1.unwrap() - 1 {
+                                    warn!("Sending last AllMapsChunk packet {}", i);
+                                    send_packet(
+                                        Packet::reliable_ordered(packet.addr(), chunk_packet, Some(i as u8)),
+                                        &sender,
+                                    );
+
+                                    let complete_response = serialize(&PlayerReply::AllMapsChunksComplete).expect("Error serialising AllMapsChunksComplete response.");
+                                    send_packet(
+                                        Packet::reliable_ordered(packet.addr(), complete_response, Some(i as u8 + 1)),
+                                        &sender,
+                                    );
+                                } else {
+                                    warn!("Sending AllMapsChunk packet {}", i);
+                                    send_packet(
+                                        Packet::reliable_ordered(packet.addr(), chunk_packet, Some(i as u8)),
+                                        &sender,
+                                    );
+                                }
+                            }
                         }
                         _ => {}
                     }

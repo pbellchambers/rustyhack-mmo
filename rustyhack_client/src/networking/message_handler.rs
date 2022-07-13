@@ -53,6 +53,12 @@ pub(crate) fn run(
                         PlayerReply::AllMaps(message) => {
                             player_update_sender.send(PlayerReply::AllMaps(message))
                         }
+                        PlayerReply::AllMapsChunk(message) => {
+                            player_update_sender.send(PlayerReply::AllMapsChunk(message))
+                        }
+                        PlayerReply::AllMapsChunksComplete => {
+                            player_update_sender.send(PlayerReply::AllMapsChunksComplete)
+                        }
                         PlayerReply::UpdatePosition(message) => {
                             player_update_sender.send(PlayerReply::UpdatePosition(message))
                         }

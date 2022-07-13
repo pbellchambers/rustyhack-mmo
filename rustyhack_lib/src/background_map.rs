@@ -21,3 +21,5 @@ impl BackgroundMap {
 }
 
 pub type AllMaps = HashMap<String, BackgroundMap>;
+
+pub type AllMapsChunk = (usize, Vec<u8>);

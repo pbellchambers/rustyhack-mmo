@@ -572,13 +572,14 @@ checksum = "a0a5f7c728f5d284929a1cccb5bc19884422bfe6ef4d6c409da2c41838983fcf"
 
 [[package]]
 name = "rustyhack_client"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "bincode",
  "chrono",
  "console_engine",
  "crossbeam-channel",
  "crossterm",
+ "itertools",
  "laminar",
  "log",
  "regex",
@@ -589,7 +590,7 @@ dependencies = [
 
 [[package]]
 name = "rustyhack_lib"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "console_engine",
  "crossterm",
@@ -603,7 +604,7 @@ dependencies = [
 
 [[package]]
 name = "rustyhack_server"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "bincode",
  "console_engine",

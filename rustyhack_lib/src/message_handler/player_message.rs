@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::background_map::AllMaps;
+use crate::background_map::{AllMaps, AllMapsChunk};
 use crate::ecs::components::{DisplayDetails, Position, Velocity};
 use crate::ecs::player::Player;
 
@@ -11,6 +11,7 @@ pub enum PlayerMessage {
     PlayerJoin(CreatePlayerMessage),
     UpdateVelocity(VelocityMessage),
     GetAllMaps,
+    GetChunkedAllMaps,
     Timeout(String),
 }
 
@@ -19,6 +20,8 @@ pub enum PlayerReply {
     PlayerJoined(Player),
     PlayerAlreadyOnline,
     AllMaps(AllMaps),
+    AllMapsChunk(AllMapsChunk),
+    AllMapsChunksComplete,
     UpdatePosition(Position),
     UpdateOtherEntities(EntityUpdates),
 }
