@@ -34,6 +34,13 @@ pub(crate) fn process_player_messages(
                     player_velocity_updates.insert(message.player_name, message.velocity);
                     debug!("Processed velocity update: {:?}", &player_velocity_updates);
                 }
+                PlayerRequest::PlayerLogout(message) => {
+                    info!(
+                        "Player logout notification received for {} from: {}",
+                        &message.player_name, &message.client_addr
+                    );
+                    set_player_logged_out(world, message.client_addr, message.player_name);
+                }
                 PlayerRequest::Timeout(address) => {
                     set_player_disconnected(world, address);
                 }
@@ -46,6 +53,26 @@ pub(crate) fn process_player_messages(
         }
     }
     player_velocity_updates
+}
+
+fn set_player_logged_out(world: &mut World, address: String, originating_player_name: String) {
+    let mut query = <(&mut PlayerDetails, &mut DisplayDetails)>::query();
+    for (player_details, display_details) in query.iter_mut(world) {
+        if player_details.client_addr == address
+            && player_details.player_name == originating_player_name
+        {
+            display_details.visible = false;
+            display_details.collidable = false;
+            player_details.currently_online = false;
+            player_details.client_addr = "".to_string();
+
+            info!(
+                "Player {} at {} logged out successfully.",
+                &player_details.player_name, &address
+            );
+            break;
+        }
+    }
 }
 
 fn set_player_disconnected(world: &mut World, address: String) {

@@ -56,20 +56,32 @@ pub(crate) fn run(
                                 &sender,
                             );
                         }
+                        PlayerRequest::PlayerLogout(message) => {
+                            send_channel_message(
+                                PlayerRequest::PlayerLogout(message),
+                                &channel_sender,
+                            );
+                        }
                         _ => {}
                     }
                 }
                 SocketEvent::Connect(connect_event) => {
                     info!("Client connected from: {}", connect_event)
                 }
-                SocketEvent::Timeout(address) => {
-                    info!("Client timed out: {}", address);
+                SocketEvent::Disconnect(address) => {
+                    info!("Client disconnected from: {}", address);
                     send_channel_message(
                         PlayerRequest::Timeout(address.to_string()),
                         &channel_sender,
                     );
                 }
-                _ => {}
+                SocketEvent::Timeout(address) => {
+                    info!("Client timed out from: {}", address);
+                    send_channel_message(
+                        PlayerRequest::Timeout(address.to_string()),
+                        &channel_sender,
+                    );
+                }
             }
         }
     }

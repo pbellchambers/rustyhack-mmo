@@ -5,19 +5,17 @@ use rustyhack_lib::message_handler::messages::ServerMessage;
 use std::{process, thread};
 
 pub(crate) fn spawn_message_handler_thread(
-    sender: Sender<Packet>,
     receiver: Receiver<SocketEvent>,
-    player_update_sender: Sender<ServerMessage>,
-    entity_update_sender: Sender<ServerMessage>,
+    incoming_server_messages: Sender<ServerMessage>,
+    entity_update_messages: Sender<ServerMessage>,
 ) {
-    thread::spawn(move || run(sender, receiver, player_update_sender, entity_update_sender));
+    thread::spawn(move || run(receiver, incoming_server_messages, entity_update_messages));
 }
 
 pub(crate) fn run(
-    _sender: Sender<Packet>,
     receiver: Receiver<SocketEvent>,
-    player_update_sender: Sender<ServerMessage>,
-    entity_update_sender: Sender<ServerMessage>,
+    incoming_server_messages: Sender<ServerMessage>,
+    entity_update_messages: Sender<ServerMessage>,
 ) {
     info!("Spawned message handler thread.");
     loop {
@@ -43,29 +41,28 @@ pub(crate) fn run(
                     };
                     debug!("Received {:?} from {:?}", player_reply, address);
 
-                    let channel_send_status = match player_reply {
-                        ServerMessage::PlayerJoined(message) => {
-                            player_update_sender.send(ServerMessage::PlayerJoined(message))
-                        }
-                        ServerMessage::AllMaps(message) => {
-                            player_update_sender.send(ServerMessage::AllMaps(message))
-                        }
-                        ServerMessage::AllMapsChunk(message) => {
-                            player_update_sender.send(ServerMessage::AllMapsChunk(message))
-                        }
-                        ServerMessage::AllMapsChunksComplete => {
-                            player_update_sender.send(ServerMessage::AllMapsChunksComplete)
-                        }
-                        ServerMessage::UpdatePosition(message) => {
-                            player_update_sender.send(ServerMessage::UpdatePosition(message))
-                        }
-                        ServerMessage::UpdateOtherEntities(message) => {
-                            entity_update_sender.send(ServerMessage::UpdateOtherEntities(message))
-                        }
-                        ServerMessage::PlayerAlreadyOnline => {
-                            player_update_sender.send(ServerMessage::PlayerAlreadyOnline)
-                        }
-                    };
+                    let channel_send_status =
+                        match player_reply {
+                            ServerMessage::PlayerJoined(message) => {
+                                incoming_server_messages.send(ServerMessage::PlayerJoined(message))
+                            }
+                            ServerMessage::AllMaps(message) => {
+                                incoming_server_messages.send(ServerMessage::AllMaps(message))
+                            }
+                            ServerMessage::AllMapsChunk(message) => {
+                                incoming_server_messages.send(ServerMessage::AllMapsChunk(message))
+                            }
+                            ServerMessage::AllMapsChunksComplete => {
+                                incoming_server_messages.send(ServerMessage::AllMapsChunksComplete)
+                            }
+                            ServerMessage::UpdatePosition(message) => incoming_server_messages
+                                .send(ServerMessage::UpdatePosition(message)),
+                            ServerMessage::UpdateOtherEntities(message) => entity_update_messages
+                                .send(ServerMessage::UpdateOtherEntities(message)),
+                            ServerMessage::PlayerAlreadyOnline => {
+                                incoming_server_messages.send(ServerMessage::PlayerAlreadyOnline)
+                            }
+                        };
 
                     match channel_send_status {
                         Ok(_) => {

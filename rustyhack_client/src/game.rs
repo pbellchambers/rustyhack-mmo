@@ -2,6 +2,8 @@ use console_engine::{ConsoleEngine, KeyCode, KeyModifiers};
 use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
 use std::collections::HashMap;
+use std::thread;
+use std::time::Duration;
 
 use rustyhack_lib::message_handler::messages::EntityUpdates;
 
@@ -11,6 +13,7 @@ use crate::screens::draw_screens;
 
 mod commands;
 mod input_handler;
+mod logout;
 mod map_handler;
 mod new_player;
 mod updates_handler;
@@ -26,9 +29,7 @@ pub(crate) fn run(
     let (player_update_sender, player_update_receiver) = crossbeam_channel::unbounded();
     let (entity_update_sender, entity_update_receiver) = crossbeam_channel::unbounded();
     debug!("Spawned thread channels.");
-    let local_sender = sender.clone();
     message_handler::spawn_message_handler_thread(
-        sender,
         receiver,
         player_update_sender,
         entity_update_sender,
@@ -36,11 +37,11 @@ pub(crate) fn run(
 
     //get basic data from server needed to start game
     let all_maps =
-        map_handler::request_all_maps_data(&local_sender, server_addr, &player_update_receiver);
+        map_handler::request_all_maps_data(&sender, server_addr, &player_update_receiver);
 
     //create player
     let mut player = new_player::send_new_player_request(
-        &local_sender,
+        &sender,
         player_name,
         server_addr,
         client_addr,
@@ -66,7 +67,7 @@ pub(crate) fn run(
         console.clear_screen();
 
         debug!("About to send player velocity update.");
-        updates_handler::send_player_updates(&local_sender, &console, &player, server_addr);
+        updates_handler::send_player_updates(&sender, &console, &player, server_addr);
 
         debug!("About to wait for entity updates from server.");
         player =
@@ -96,6 +97,9 @@ pub(crate) fn run(
         //check if we should quit
         if should_quit(&console) {
             info!("Ctrl-q detected - quitting app.");
+            logout::send_logout_notification(&sender, player, server_addr);
+            //sleep for a second just to make sure the logout notification is sent
+            thread::sleep(Duration::from_millis(1000));
             break;
         }
     }

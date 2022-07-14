@@ -26,7 +26,6 @@ fn get_laminar_config() -> laminar::Config {
     laminar::Config {
         idle_connection_timeout: Duration::from_secs(10),
         heartbeat_interval: Some(Duration::from_secs(2)),
-        max_fragments: 255,
         ..Default::default()
     }
 }

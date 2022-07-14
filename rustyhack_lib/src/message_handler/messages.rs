@@ -8,7 +8,8 @@ use crate::ecs::player::Player;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum PlayerRequest {
-    PlayerJoin(CreatePlayerRequest),
+    PlayerJoin(ClientDetails),
+    PlayerLogout(ClientDetails),
     UpdateVelocity(VelocityMessage),
     GetChunkedAllMaps,
     Timeout(String),
@@ -27,7 +28,7 @@ pub enum ServerMessage {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct CreatePlayerRequest {
+pub struct ClientDetails {
     pub client_addr: String,
     pub player_name: String,
 }
