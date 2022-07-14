@@ -43,4 +43,5 @@ pub struct VelocityMessage {
 pub struct EntityUpdates {
     pub position_updates: HashMap<String, Position>,
     pub display_details: HashMap<String, DisplayDetails>,
+    pub monster_type_map: HashMap<String, String>,
 }

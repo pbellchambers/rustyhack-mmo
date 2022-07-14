@@ -62,20 +62,31 @@ pub(crate) fn get_what_player_sees(
 }
 
 fn return_visible_entity_at(
-    mut text: String,
+    mut entity_name: String,
     other_entities: &EntityUpdates,
     player: &Player,
     x: i32,
     y: i32,
 ) -> String {
-    for (name, position) in other_entities.position_updates.clone() {
-        if name != player.player_details.player_name
+    for (entity_id_or_name, position) in other_entities.position_updates.clone() {
+        if entity_id_or_name != player.player_details.player_name
             && position.map == player.position.map
             && position.x == x
             && position.y == y
         {
-            text = name;
+            if other_entities
+                .monster_type_map
+                .contains_key(&*entity_id_or_name)
+            {
+                entity_name = other_entities
+                    .monster_type_map
+                    .get(&*entity_id_or_name)
+                    .unwrap()
+                    .clone();
+            } else {
+                entity_name = entity_id_or_name;
+            }
         }
     }
-    text
+    entity_name
 }

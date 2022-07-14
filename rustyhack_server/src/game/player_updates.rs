@@ -219,6 +219,7 @@ pub(crate) fn send_player_updates(
 pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>) {
     let mut position_updates: HashMap<String, Position> = HashMap::new();
     let mut display_details: HashMap<String, DisplayDetails> = HashMap::new();
+    let mut monster_type_map: HashMap<String, String> = HashMap::new();
     let mut query = <(&PlayerDetails, &Position, &DisplayDetails)>::query();
     debug!("Getting all players positions");
     for (player_details, position, display) in query.iter(world) {
@@ -233,6 +234,10 @@ pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>
     for (monster_details, position, display) in query.iter(world) {
         position_updates.insert(monster_details.id.to_string(), position.clone());
         display_details.insert(monster_details.id.to_string(), *display);
+        monster_type_map.insert(
+            monster_details.id.to_string(),
+            monster_details.monster_type.to_string(),
+        );
     }
 
     let mut query = <&PlayerDetails>::query();
@@ -243,6 +248,7 @@ pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>
             let response = serialize(&ServerMessage::UpdateOtherEntities(EntityUpdates {
                 position_updates: position_updates.clone(),
                 display_details: display_details.clone(),
+                monster_type_map: monster_type_map.clone(),
             }))
             .unwrap_or_else(|err| {
                 error!(

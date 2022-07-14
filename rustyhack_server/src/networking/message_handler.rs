@@ -166,8 +166,8 @@ pub(crate) fn send_packet(packet: Packet, sender: &Sender<Packet>) {
     }
 }
 
-fn send_channel_message(message: PlayerRequest, sender: &Sender<PlayerRequest>) {
-    let send_result = sender.send(message);
+fn send_channel_message(message: PlayerRequest, channel_sender: &Sender<PlayerRequest>) {
+    let send_result = channel_sender.send(message);
     match send_result {
         Ok(_) => {
             //send successful

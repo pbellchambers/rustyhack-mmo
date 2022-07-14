@@ -56,6 +56,7 @@ pub(crate) fn run(
     let mut other_entities = EntityUpdates {
         position_updates: HashMap::new(),
         display_details: HashMap::new(),
+        monster_type_map: HashMap::new(),
     };
 
     let mut status_messages: Vec<String> = vec![];
