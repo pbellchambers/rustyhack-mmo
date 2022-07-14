@@ -1,9 +1,9 @@
-use crate::game::map_state;
-use crate::game::map_state::AllMapStates;
+use crate::game::map_state::{AllMapStates, MapState};
+use crate::game::{combat, map_state};
 use legion::world::SubWorld;
 use legion::*;
 use rustyhack_lib::background_map::tiles::{Collidable, Tile};
-use rustyhack_lib::background_map::AllMaps;
+use rustyhack_lib::background_map::{AllMaps, BackgroundMap};
 use rustyhack_lib::consts::DEFAULT_MAP;
 use rustyhack_lib::ecs::components::{
     DisplayDetails, EntityType, MonsterDetails, PlayerDetails, Position, Stats, Velocity,
@@ -24,6 +24,7 @@ pub(crate) fn build_map_state_update_schedule() -> Schedule {
 pub(crate) fn build_player_update_schedule() -> Schedule {
     let schedule = Schedule::builder()
         .add_system(update_player_input_system())
+        .add_system(resolve_combat_system())
         .add_system(update_entities_position_system())
         .build();
     info!("Built player update system schedule.");
@@ -103,36 +104,96 @@ fn update_player_input(
 
 #[system]
 #[read_component(DisplayDetails)]
+fn resolve_combat(
+    world: &mut SubWorld,
+    velocity_query: &mut Query<(&mut Velocity, &mut Position)>,
+    #[resource] all_map_states: &AllMapStates,
+) {
+    for (velocity, position) in velocity_query.iter_mut(world) {
+        debug!("Updating world entities positions after velocity updates.");
+        if velocity.x == 0 && velocity.y == 0 {
+            //no velocity, no updates
+            continue;
+        }
+        let current_map_states = get_current_map_states(all_map_states, &position.map);
+
+        let player_collision_status = map_state::is_colliding_with_other_player(
+            (position.x + velocity.x) as usize,
+            (position.y + velocity.y) as usize,
+            current_map_states,
+        );
+
+        let monster_collision_status = map_state::is_colliding_with_monster(
+            (position.x + velocity.x) as usize,
+            (position.y + velocity.y) as usize,
+            current_map_states,
+        );
+
+        if player_collision_status.0 {
+            combat::resolve_player_combat(
+                player_collision_status.1,
+                position.x,
+                position.y,
+                velocity.x,
+                velocity.y,
+            );
+            velocity.x = 0;
+            velocity.y = 0;
+        } else if monster_collision_status.0 {
+            combat::resolve_monster_combat(
+                monster_collision_status.1,
+                position.x,
+                position.y,
+                velocity.x,
+                velocity.y,
+            );
+            velocity.x = 0;
+            velocity.y = 0;
+        }
+    }
+}
+
+fn get_current_map_states<'a>(all_map_states: &'a AllMapStates, map: &String) -> &'a MapState {
+    all_map_states.get(map).unwrap_or_else(|| {
+        error!("Entity is located on a map that does not exist: {}", &map);
+        warn!("Will return the default map, but this may cause problems.");
+        all_map_states.get(DEFAULT_MAP).unwrap()
+    })
+}
+
+#[system]
+#[read_component(DisplayDetails)]
 fn update_entities_position(
     world: &mut SubWorld,
     velocity_query: &mut Query<(&mut Velocity, &mut Position)>,
     #[resource] all_maps: &AllMaps,
-    #[resource] all_map_states: &mut AllMapStates,
 ) {
     for (velocity, position) in velocity_query.iter_mut(world) {
         debug!("Updating world entities positions after velocity updates.");
-        let current_map = all_maps.get(&position.map).unwrap_or_else(|| {
-            error!(
-                "Entity is located on a map that does not exist: {}",
-                &position.map
-            );
-            warn!("Will return the default map, but this may cause problems.");
-            all_maps.get(DEFAULT_MAP).unwrap()
-        });
+        if velocity.x == 0 && velocity.y == 0 {
+            //no velocity, no updates
+            continue;
+        }
+        let current_map = get_current_map(all_maps, &position.map);
+
         if !entity_is_colliding_with_tile(current_map.get_tile_at(
             (position.x + velocity.x) as usize,
             (position.y + velocity.y) as usize,
-        )) && !map_state::is_colliding(
-            (position.x + velocity.x) as usize,
-            (position.y + velocity.y) as usize,
-            all_map_states.get_mut(&position.map).unwrap(),
-        ) {
+        )) {
             position.x += velocity.x;
             position.y += velocity.y;
         }
         velocity.x = 0;
         velocity.y = 0;
     }
+}
+
+fn get_current_map<'a>(all_maps: &'a AllMaps, map: &String) -> &'a BackgroundMap {
+    all_maps.get(map).unwrap_or_else(|| {
+        error!("Entity is located on a map that does not exist: {}", &map);
+        warn!("Will return the default map, but this may cause problems.");
+        all_maps.get(DEFAULT_MAP).unwrap()
+    })
 }
 
 fn entity_is_colliding_with_tile(tile: Tile) -> bool {

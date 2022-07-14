@@ -12,6 +12,7 @@ use crate::consts;
 use crate::networking::message_handler;
 
 mod background_map;
+mod combat;
 mod map_state;
 mod monsters;
 mod player_updates;

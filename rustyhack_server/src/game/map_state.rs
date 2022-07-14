@@ -1,6 +1,7 @@
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::components::EntityType;
 use std::collections::HashMap;
+use uuid::Uuid;
 
 pub(crate) type MapState = Vec<Vec<Vec<EntityType>>>;
 
@@ -41,16 +42,30 @@ pub(crate) fn clear_all_entities(map_states: &mut AllMapStates) -> &mut AllMapSt
     map_states
 }
 
-pub(crate) fn is_colliding(x: usize, y: usize, map_state: &mut MapState) -> bool {
+pub(crate) fn is_colliding_with_other_player(
+    x: usize,
+    y: usize,
+    map_state: &MapState,
+) -> (bool, String) {
     let mut colliding = false;
+    let mut player_name = "".to_string();
     for entity_type in map_state[y][x].iter() {
-        match entity_type {
-            EntityType::Monster(monster) => colliding = monster.display_details.collidable,
-            EntityType::Player(player) => {
-                colliding =
-                    player.player_details.currently_online && player.display_details.collidable
-            }
+        if let EntityType::Player(player) = entity_type {
+            colliding = player.player_details.currently_online && player.display_details.collidable;
+            player_name = player.player_details.player_name.clone();
         }
     }
-    colliding
+    (colliding, player_name)
+}
+
+pub(crate) fn is_colliding_with_monster(x: usize, y: usize, map_state: &MapState) -> (bool, Uuid) {
+    let mut colliding = false;
+    let mut monster_id = Uuid::new_v4();
+    for entity_type in map_state[y][x].iter() {
+        if let EntityType::Monster(monster) = entity_type {
+            colliding = monster.display_details.collidable;
+            monster_id = monster.monster_details.id;
+        }
+    }
+    (colliding, monster_id)
 }
