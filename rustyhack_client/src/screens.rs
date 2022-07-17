@@ -2,6 +2,7 @@ use crate::client_consts;
 use console_engine::ConsoleEngine;
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::player::Player;
+use rustyhack_lib::math_utils::i32_from;
 use rustyhack_lib::message_handler::messages::EntityUpdates;
 use std::process;
 
@@ -38,10 +39,10 @@ pub(crate) fn draw_screens(
 
     //final draw step
     console.print_screen(0, 0, &top_status_bar);
-    console.print_screen(client_consts::VIEWPORT_WIDTH as i32, 1, &side_status_bar);
+    console.print_screen(i32_from(client_consts::VIEWPORT_WIDTH), 1, &side_status_bar);
     console.print_screen(
         0,
-        client_consts::VIEWPORT_HEIGHT as i32,
+        i32_from(client_consts::VIEWPORT_HEIGHT),
         &bottom_text_window,
     );
     console.print_screen(0, 1, &viewport);

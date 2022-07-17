@@ -4,8 +4,8 @@ use rustyhack_lib::ecs::player::Player;
 
 pub(crate) fn draw(player: &Player) -> Screen {
     let mut screen = Screen::new(
-        (client_consts::CONSOLE_WIDTH - client_consts::VIEWPORT_WIDTH) as u32,
-        client_consts::VIEWPORT_HEIGHT as u32,
+        client_consts::CONSOLE_WIDTH - client_consts::VIEWPORT_WIDTH,
+        client_consts::VIEWPORT_HEIGHT,
     );
 
     let lvl_string = "Lvl: ".to_owned() + &player.player_details.level.to_string();

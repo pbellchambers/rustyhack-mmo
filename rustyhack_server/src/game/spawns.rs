@@ -22,8 +22,8 @@ pub struct MonsterSpawnPositions {
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PositionWithoutMap {
-    pub x: usize,
-    pub y: usize,
+    pub x: u32,
+    pub y: u32,
 }
 
 pub(crate) fn initialise_all_spawn_definitions() -> AllSpawnsMap {

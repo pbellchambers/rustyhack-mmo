@@ -11,7 +11,7 @@ pub struct Door {
 
 impl Door {
     #[must_use]
-    pub fn new(x: usize, y: usize, open_state: OpenState) -> Door {
+    pub fn new(x: u32, y: u32, open_state: OpenState) -> Door {
         Door {
             tile_position: TilePosition { x, y },
             character_icon: match open_state {

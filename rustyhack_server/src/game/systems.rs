@@ -11,6 +11,7 @@ use rustyhack_lib::ecs::components::{
 };
 use rustyhack_lib::ecs::monster::Monster;
 use rustyhack_lib::ecs::player::Player;
+use rustyhack_lib::math_utils::{i32_from, u32_from};
 use std::collections::HashMap;
 
 pub(crate) fn build_map_state_update_schedule() -> Schedule {
@@ -67,8 +68,8 @@ fn add_entities_to_map_state(
         map_state::insert_entity_at(
             all_map_states.get_mut(&position.current_map).unwrap(),
             EntityType::Monster(monster),
-            position.pos_x as usize,
-            position.pos_y as usize,
+            position.pos_x,
+            position.pos_y,
         );
     }
     if let Some(player_details) = player_details_option {
@@ -81,8 +82,8 @@ fn add_entities_to_map_state(
         map_state::insert_entity_at(
             all_map_states.get_mut(&position.current_map).unwrap(),
             EntityType::Player(player),
-            position.pos_x as usize,
-            position.pos_y as usize,
+            position.pos_x,
+            position.pos_y,
         );
     }
 }
@@ -122,16 +123,18 @@ fn check_for_combat(
             continue;
         }
         let current_map_states = get_current_map_states(all_map_states, &position.current_map);
+        let potential_pos_x = u32_from(i32_from(position.pos_x) + position.velocity_x);
+        let potential_pos_y = u32_from(i32_from(position.pos_y) + position.velocity_y);
 
         let player_collision_status = map_state::is_colliding_with_other_player(
-            (position.pos_x as isize + position.velocity_x) as usize,
-            (position.pos_y as isize + position.velocity_y) as usize,
+            potential_pos_x,
+            potential_pos_y,
             current_map_states,
         );
 
         let monster_collision_status = map_state::is_colliding_with_monster(
-            (position.pos_x as isize + position.velocity_x) as usize,
-            (position.pos_y as isize + position.velocity_y) as usize,
+            potential_pos_x,
+            potential_pos_y,
             current_map_states,
         );
 
@@ -222,13 +225,13 @@ fn update_entities_position(
             continue;
         }
         let current_map = get_current_map(all_maps, &position.current_map);
+        let potential_pos_x = u32_from(i32_from(position.pos_x) + position.velocity_x);
+        let potential_pos_y = u32_from(i32_from(position.pos_y) + position.velocity_y);
 
-        if !entity_is_colliding_with_tile(current_map.get_tile_at(
-            (position.pos_x as isize + position.velocity_x) as usize,
-            (position.pos_y as isize + position.velocity_y) as usize,
-        )) {
-            position.pos_x = (position.pos_x as isize + position.velocity_x) as usize;
-            position.pos_y = (position.pos_y as isize + position.velocity_y) as usize;
+        if !entity_is_colliding_with_tile(current_map.get_tile_at(potential_pos_x, potential_pos_y))
+        {
+            position.pos_x = potential_pos_x;
+            position.pos_y = potential_pos_y;
         }
         position.velocity_x = 0;
         position.velocity_y = 0;

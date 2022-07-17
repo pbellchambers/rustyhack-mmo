@@ -7,6 +7,7 @@ use rand::Rng;
 use rustyhack_lib::ecs::components::{DisplayDetails, MonsterDetails, Position, Stats};
 use rustyhack_lib::ecs::monster::{AllMonsterDefinitions, Monster};
 use rustyhack_lib::file_utils;
+use rustyhack_lib::math_utils::i32_from;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fs::File;
@@ -142,28 +143,30 @@ pub(crate) fn update_velocities(world: &mut World) {
 }
 
 fn move_towards_target(monster_position: &mut Position, target_position: &Position) {
-    let diff_x: isize = monster_position.pos_x as isize - target_position.pos_x as isize;
-    let diff_y: isize = monster_position.pos_y as isize - target_position.pos_y as isize;
-    let mut new_pos_x = monster_position.pos_x;
-    let mut new_pos_y = monster_position.pos_y;
+    let monster_position_x = i32_from(monster_position.pos_x);
+    let monster_position_y = i32_from(monster_position.pos_y);
+    let diff_x: i32 = monster_position_x - i32_from(target_position.pos_x);
+    let diff_y: i32 = monster_position_y - i32_from(target_position.pos_y);
+    let mut new_pos_x = monster_position_x;
+    let mut new_pos_y = monster_position_y;
 
     match diff_x.abs().cmp(&diff_y.abs()) {
-        Ordering::Greater => new_pos_x = move_towards(diff_x, monster_position.pos_x),
-        Ordering::Less => new_pos_y = move_towards(diff_y, monster_position.pos_y),
+        Ordering::Greater => new_pos_x = move_towards(diff_x, monster_position_x),
+        Ordering::Less => new_pos_y = move_towards(diff_y, monster_position_y),
         Ordering::Equal => {
             let mut rng = rand::thread_rng();
             if rng.gen::<bool>() {
-                new_pos_x = move_towards(diff_x, monster_position.pos_x);
+                new_pos_x = move_towards(diff_x, monster_position_x);
             } else {
-                new_pos_y = move_towards(diff_y, monster_position.pos_y);
+                new_pos_y = move_towards(diff_y, monster_position_y);
             }
         }
     }
-    monster_position.velocity_x = new_pos_x as isize - monster_position.pos_x as isize;
-    monster_position.velocity_y = new_pos_y as isize - monster_position.pos_y as isize;
+    monster_position.velocity_x = new_pos_x - monster_position_x;
+    monster_position.velocity_y = new_pos_y - monster_position_y;
 }
 
-fn move_towards(diff: isize, position: usize) -> usize {
+fn move_towards(diff: i32, position: i32) -> i32 {
     if diff.unsigned_abs() > 1 {
         return if diff.is_positive() {
             position - 1
@@ -178,13 +181,15 @@ fn is_any_player_nearby<'a>(
     player_positions: &'a HashMap<String, Position>,
     monster_position: &Position,
 ) -> Option<(&'a String, &'a Position)> {
-    let monster_x_range = (monster_position.pos_x as isize - MONSTER_DISTANCE_ACTIVATION)
-        ..(monster_position.pos_x as isize + MONSTER_DISTANCE_ACTIVATION);
-    let monster_y_range = (monster_position.pos_y as isize - MONSTER_DISTANCE_ACTIVATION)
-        ..(monster_position.pos_y as isize + MONSTER_DISTANCE_ACTIVATION);
+    let monster_position_x = i32_from(monster_position.pos_x);
+    let monster_position_y = i32_from(monster_position.pos_y);
+    let monster_x_range = (monster_position_x - MONSTER_DISTANCE_ACTIVATION)
+        ..(monster_position_x + MONSTER_DISTANCE_ACTIVATION);
+    let monster_y_range = (monster_position_y - MONSTER_DISTANCE_ACTIVATION)
+        ..(monster_position_y + MONSTER_DISTANCE_ACTIVATION);
     for (player_name, position) in player_positions {
-        if monster_x_range.contains(&(position.pos_x as isize))
-            && monster_y_range.contains(&(position.pos_y as isize))
+        if monster_x_range.contains(&(i32_from(position.pos_x)))
+            && monster_y_range.contains(&(i32_from(position.pos_y)))
             && monster_position.current_map == position.current_map
         {
             debug!("There is a player near a monster");
@@ -198,13 +203,15 @@ fn is_specific_player_nearby(
     current_target_position: &Position,
     monster_position: &Position,
 ) -> bool {
-    let monster_x_range = (monster_position.pos_x as isize - MONSTER_DISTANCE_ACTIVATION)
-        ..(monster_position.pos_x as isize + MONSTER_DISTANCE_ACTIVATION);
-    let monster_y_range = (monster_position.pos_y as isize - MONSTER_DISTANCE_ACTIVATION)
-        ..(monster_position.pos_y as isize + MONSTER_DISTANCE_ACTIVATION);
+    let monster_position_x = i32_from(monster_position.pos_x);
+    let monster_position_y = i32_from(monster_position.pos_y);
+    let monster_x_range = (monster_position_x - MONSTER_DISTANCE_ACTIVATION)
+        ..(monster_position_x + MONSTER_DISTANCE_ACTIVATION);
+    let monster_y_range = (monster_position_y - MONSTER_DISTANCE_ACTIVATION)
+        ..(monster_position_y + MONSTER_DISTANCE_ACTIVATION);
 
-    if monster_x_range.contains(&(current_target_position.pos_x as isize))
-        && monster_y_range.contains(&(current_target_position.pos_y as isize))
+    if monster_x_range.contains(&(i32_from(current_target_position.pos_x)))
+        && monster_y_range.contains(&(i32_from(current_target_position.pos_y)))
         && monster_position.current_map == current_target_position.current_map
     {
         return true;

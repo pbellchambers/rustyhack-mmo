@@ -49,12 +49,7 @@ pub(crate) fn run(
     );
 
     //initialise console engine
-    let mut console = ConsoleEngine::init(
-        CONSOLE_WIDTH as u32,
-        CONSOLE_HEIGHT as u32,
-        TARGET_FPS as u32,
-    )
-    .unwrap();
+    let mut console = ConsoleEngine::init(CONSOLE_WIDTH, CONSOLE_HEIGHT, TARGET_FPS).unwrap();
     console.set_title(GAME_TITLE);
     info!("Initialised console engine.");
 
@@ -107,7 +102,7 @@ pub(crate) fn run(
             info!("Ctrl-q detected - quitting app.");
             client_logout::send_logout_notification(sender, player, server_addr);
             //sleep for a second just to make sure the logout notification is sent
-            thread::sleep(Duration::from_millis(1000));
+            thread::sleep(Duration::from_millis(250));
             break;
         }
     }

@@ -13,13 +13,21 @@ pub(crate) fn get_what_player_sees(
     let time = date_time.format("[%H:%M:%S] ").to_string();
     let current_map = all_maps.get(&player.position.current_map).unwrap();
 
-    let underneath = current_map.data[player.position.pos_y][player.position.pos_x].to_string();
-    let mut north =
-        current_map.data[(player.position.pos_y - 1)][player.position.pos_x].to_string();
-    let mut south =
-        current_map.data[(player.position.pos_y + 1)][player.position.pos_x].to_string();
-    let mut east = current_map.data[player.position.pos_y][(player.position.pos_x + 1)].to_string();
-    let mut west = current_map.data[player.position.pos_y][(player.position.pos_x - 1)].to_string();
+    let underneath = current_map.data[player.position.pos_y as usize]
+        [player.position.pos_x as usize]
+        .to_string();
+    let mut north = current_map.data[(player.position.pos_y - 1) as usize]
+        [player.position.pos_x as usize]
+        .to_string();
+    let mut south = current_map.data[(player.position.pos_y + 1) as usize]
+        [player.position.pos_x as usize]
+        .to_string();
+    let mut east = current_map.data[player.position.pos_y as usize]
+        [(player.position.pos_x + 1) as usize]
+        .to_string();
+    let mut west = current_map.data[player.position.pos_y as usize]
+        [(player.position.pos_x - 1) as usize]
+        .to_string();
 
     north = return_visible_entity_at(
         north,
@@ -62,8 +70,8 @@ fn return_visible_entity_at(
     mut entity_name: String,
     other_entities: &EntityUpdates,
     player: &Player,
-    x: usize,
-    y: usize,
+    x: u32,
+    y: u32,
 ) -> String {
     for (entity_id_or_name, position) in other_entities.position_updates.clone() {
         if entity_id_or_name != player.player_details.player_name

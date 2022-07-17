@@ -13,11 +13,11 @@ pub enum EntityType {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Position {
-    pub pos_x: usize,
-    pub pos_y: usize,
+    pub pos_x: u32,
+    pub pos_y: u32,
     pub current_map: String,
-    pub velocity_x: isize,
-    pub velocity_y: isize,
+    pub velocity_x: i32,
+    pub velocity_y: i32,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -49,9 +49,9 @@ pub struct PlayerDetails {
     pub player_name: String,
     pub client_addr: String,
     pub currently_online: bool,
-    pub level: usize,
-    pub exp: usize,
-    pub gold: usize,
+    pub level: u32,
+    pub exp: u32,
+    pub gold: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -61,16 +61,16 @@ pub struct MonsterDetails {
     pub spawn_position: Position,
     pub is_active: bool,
     pub current_target: Option<String>,
-    pub exp: usize,
-    pub gold: usize,
+    pub exp: u32,
+    pub gold: u32,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Stats {
-    pub current_hp: isize,
-    pub max_hp: isize,
-    pub str: isize,
-    pub dex: isize,
-    pub con: isize,
-    pub armour: isize,
+    pub current_hp: i32,
+    pub max_hp: i32,
+    pub str: i32,
+    pub dex: i32,
+    pub con: i32,
+    pub armour: i32,
 }

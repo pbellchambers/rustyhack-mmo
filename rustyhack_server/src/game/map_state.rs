@@ -26,8 +26,8 @@ pub(crate) fn initialise_all_map_states(all_maps: &AllMaps) -> AllMapStates {
     all_map_states
 }
 
-pub(crate) fn insert_entity_at(map: &mut MapState, entity: EntityType, x: usize, y: usize) {
-    map[y][x].push(entity);
+pub(crate) fn insert_entity_at(map: &mut MapState, entity: EntityType, x: u32, y: u32) {
+    map[y as usize][x as usize].push(entity);
 }
 
 pub(crate) fn clear_all_entities(map_states: &mut AllMapStates) -> &mut AllMapStates {
@@ -42,8 +42,8 @@ pub(crate) fn clear_all_entities(map_states: &mut AllMapStates) -> &mut AllMapSt
 }
 
 pub(crate) fn is_colliding_with_other_player(
-    x: usize,
-    y: usize,
+    x: u32,
+    y: u32,
     map_state: &MapState,
 ) -> (bool, String) {
     let mut colliding = false;
@@ -52,7 +52,7 @@ pub(crate) fn is_colliding_with_other_player(
         //don't bother checking for collisions at y == 0 as map_state overflows
         (colliding, player_name)
     } else {
-        for entity_type in &map_state[y][x] {
+        for entity_type in &map_state[y as usize][x as usize] {
             if let EntityType::Player(player) = entity_type {
                 colliding =
                     player.player_details.currently_online && player.display_details.collidable;
@@ -63,18 +63,14 @@ pub(crate) fn is_colliding_with_other_player(
     }
 }
 
-pub(crate) fn is_colliding_with_monster(
-    x: usize,
-    y: usize,
-    map_state: &MapState,
-) -> (bool, String) {
+pub(crate) fn is_colliding_with_monster(x: u32, y: u32, map_state: &MapState) -> (bool, String) {
     let mut colliding = false;
     let mut monster_id = "".to_string();
     if y == 0 {
         //don't bother checking for collisions at y == 0 as map_state overflows
         (colliding, monster_id)
     } else {
-        for entity_type in &map_state[y][x] {
+        for entity_type in &map_state[y as usize][x as usize] {
             if let EntityType::Monster(monster) = entity_type {
                 colliding = monster.display_details.collidable;
                 monster_id = monster.monster_details.id.to_string();

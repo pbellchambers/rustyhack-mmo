@@ -2,13 +2,14 @@ use crate::client_consts;
 use console_engine::pixel;
 use console_engine::screen::Screen;
 use rustyhack_lib::ecs::player::Player;
+use rustyhack_lib::math_utils::i32_from;
 
 pub(crate) fn draw(player: &Player) -> Screen {
-    let mut screen = Screen::new(client_consts::CONSOLE_WIDTH as u32, 1);
+    let mut screen = Screen::new(client_consts::CONSOLE_WIDTH, 1);
     screen.line(
         0,
         0,
-        (client_consts::CONSOLE_WIDTH - 1) as i32,
+        i32_from(client_consts::CONSOLE_WIDTH - 1),
         0,
         pixel::pxl('='),
     );
@@ -19,7 +20,7 @@ pub(crate) fn draw(player: &Player) -> Screen {
         + &player.position.pos_y.to_string()
         + ")";
     screen.print(
-        (client_consts::CONSOLE_WIDTH / 4) as i32,
+        i32_from(client_consts::CONSOLE_WIDTH / 4),
         0,
         &player_update_text,
     );

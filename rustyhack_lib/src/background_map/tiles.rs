@@ -19,8 +19,8 @@ pub enum OpenState {
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct TilePosition {
-    pub x: usize,
-    pub y: usize,
+    pub x: u32,
+    pub y: u32,
 }
 
 #[derive(Display, Clone, Copy, Debug, Serialize, Deserialize)]

@@ -3,7 +3,7 @@ use crate::background_map::tiles::wall::Wall;
 use crate::background_map::tiles::{OpenState, Tile};
 
 #[must_use]
-pub fn map_character_to_tile(x: usize, y: usize, character: char) -> Tile {
+pub fn map_character_to_tile(x: u32, y: u32, character: char) -> Tile {
     match character {
         '\n' => Tile::NewLine,
         '\r' => Tile::CarriageReturn,
