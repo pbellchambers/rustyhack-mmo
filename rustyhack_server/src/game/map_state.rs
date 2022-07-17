@@ -48,13 +48,19 @@ pub(crate) fn is_colliding_with_other_player(
 ) -> (bool, String) {
     let mut colliding = false;
     let mut player_name = "".to_string();
-    for entity_type in map_state[y][x].iter() {
-        if let EntityType::Player(player) = entity_type {
-            colliding = player.player_details.currently_online && player.display_details.collidable;
-            player_name = player.player_details.player_name.clone();
+    if y == 0 {
+        //don't bother checking for collisions at y == 0 as map_state overflows
+        (colliding, player_name)
+    } else {
+        info!("x {}, y {}", x, y);
+        for entity_type in map_state[y][x].iter() {
+            if let EntityType::Player(player) = entity_type {
+                colliding = player.player_details.currently_online && player.display_details.collidable;
+                player_name = player.player_details.player_name.clone();
+            }
         }
+        (colliding, player_name)
     }
-    (colliding, player_name)
 }
 
 pub(crate) fn is_colliding_with_monster(
@@ -64,11 +70,16 @@ pub(crate) fn is_colliding_with_monster(
 ) -> (bool, String) {
     let mut colliding = false;
     let mut monster_id = "".to_string();
-    for entity_type in map_state[y][x].iter() {
-        if let EntityType::Monster(monster) = entity_type {
-            colliding = monster.display_details.collidable;
-            monster_id = monster.monster_details.id.to_string();
+    if y == 0 {
+        //don't bother checking for collisions at y == 0 as map_state overflows
+        (colliding, monster_id)
+    } else {
+        for entity_type in map_state[y][x].iter() {
+            if let EntityType::Monster(monster) = entity_type {
+                colliding = monster.display_details.collidable;
+                monster_id = monster.monster_details.id.to_string();
+            }
         }
+        (colliding, monster_id)
     }
-    (colliding, monster_id)
 }
