@@ -98,39 +98,53 @@ fn send_all_maps_chunks(all_maps_serialized: &[u8], address: SocketAddr, sender:
         .enumerate();
     let chunked_response_length = all_maps_chunks.size_hint();
 
-    for (i, chunk) in all_maps_chunks {
-        let chunk_packet = serialize(&ServerMessage::AllMapsChunk((i, chunk)))
+    let mut stream_id: u8 = 1;
+    for (chunk_count, chunk) in all_maps_chunks {
+        let chunk_packet = serialize(&ServerMessage::AllMapsChunk((chunk_count, chunk)))
             .expect("Error serializing AllMapsChunk.");
-        if i == 0 {
-            info!("Sending first AllMapsChunk packet {} to: {}", i, address);
+        if chunk_count == 0 {
+            info!(
+                "Sending first AllMapsChunk packet {} to: {}",
+                chunk_count, address
+            );
             rustyhack_lib::message_handler::send_packet(
-                Packet::reliable_ordered(address, chunk_packet, Some(i as u8)),
+                Packet::reliable_ordered(address, chunk_packet, Some(stream_id)),
                 sender,
             );
-        } else if i
+        } else if chunk_count
             == chunked_response_length
                 .1
                 .expect("Error: chunked all maps length is zero")
                 - 1
         {
-            info!("Sending last AllMapsChunk packet {} to: {}", i, address);
+            info!(
+                "Sending last AllMapsChunk packet {} to: {}",
+                chunk_count, address
+            );
             rustyhack_lib::message_handler::send_packet(
-                Packet::reliable_ordered(address, chunk_packet, Some(i as u8)),
+                Packet::reliable_ordered(address, chunk_packet, Some(stream_id)),
                 sender,
             );
 
             let complete_response = serialize(&ServerMessage::AllMapsChunksComplete)
                 .expect("Error serializing AllMapsChunksComplete response.");
             rustyhack_lib::message_handler::send_packet(
-                Packet::reliable_ordered(address, complete_response, Some(i as u8 + 1)),
+                Packet::reliable_ordered(address, complete_response, Some(stream_id + 1)),
                 sender,
             );
         } else {
-            debug!("Sending AllMapsChunk packet {} to: {}", i, address);
+            debug!(
+                "Sending AllMapsChunk packet {} to: {}",
+                chunk_count, address
+            );
             rustyhack_lib::message_handler::send_packet(
-                Packet::reliable_ordered(address, chunk_packet, Some(i as u8)),
+                Packet::reliable_ordered(address, chunk_packet, Some(stream_id)),
                 sender,
             );
+        }
+        stream_id += 1;
+        if stream_id > (u8::MAX - 1) {
+            stream_id = 1;
         }
     }
 }
