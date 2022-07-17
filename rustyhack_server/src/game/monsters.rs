@@ -142,8 +142,8 @@ pub(crate) fn update_velocities(world: &mut World) {
 }
 
 fn move_towards_target(monster_position: &mut Position, target_position: &Position) {
-    let diff_x = monster_position.pos_x as isize - target_position.pos_x as isize;
-    let diff_y = monster_position.pos_y as isize - target_position.pos_y as isize;
+    let diff_x: isize = monster_position.pos_x as isize - target_position.pos_x as isize;
+    let diff_y: isize = monster_position.pos_y as isize - target_position.pos_y as isize;
     let mut new_pos_x = monster_position.pos_x;
     let mut new_pos_y = monster_position.pos_y;
 

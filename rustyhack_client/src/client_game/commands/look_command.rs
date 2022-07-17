@@ -13,21 +13,13 @@ pub(crate) fn get_what_player_sees(
     let time = date_time.format("[%H:%M:%S] ").to_string();
     let current_map = all_maps.get(&player.position.current_map).unwrap();
 
-    let underneath = current_map.data[player.position.pos_y as usize]
-        [player.position.pos_x as usize]
-        .to_string();
-    let mut north = current_map.data[(player.position.pos_y - 1) as usize]
-        [player.position.pos_x as usize]
-        .to_string();
-    let mut south = current_map.data[(player.position.pos_y + 1) as usize]
-        [player.position.pos_x as usize]
-        .to_string();
-    let mut east = current_map.data[player.position.pos_y as usize]
-        [(player.position.pos_x + 1) as usize]
-        .to_string();
-    let mut west = current_map.data[player.position.pos_y as usize]
-        [(player.position.pos_x - 1) as usize]
-        .to_string();
+    let underneath = current_map.data[player.position.pos_y][player.position.pos_x].to_string();
+    let mut north =
+        current_map.data[(player.position.pos_y - 1)][player.position.pos_x].to_string();
+    let mut south =
+        current_map.data[(player.position.pos_y + 1)][player.position.pos_x].to_string();
+    let mut east = current_map.data[player.position.pos_y][(player.position.pos_x + 1)].to_string();
+    let mut west = current_map.data[player.position.pos_y][(player.position.pos_x - 1)].to_string();
 
     north = return_visible_entity_at(
         north,
@@ -58,11 +50,11 @@ pub(crate) fn get_what_player_sees(
         player.position.pos_y,
     );
 
-    status_messages.push(time.to_owned() + "You see...");
-    status_messages.push(time.to_owned() + "Underneath: " + &*underneath);
-    status_messages.push(time.to_owned() + "North: " + &*north);
-    status_messages.push(time.to_owned() + "South: " + &*south);
-    status_messages.push(time.to_owned() + "East: " + &*east);
+    status_messages.push(time.clone() + "You see...");
+    status_messages.push(time.clone() + "Underneath: " + &*underneath);
+    status_messages.push(time.clone() + "North: " + &*north);
+    status_messages.push(time.clone() + "South: " + &*south);
+    status_messages.push(time.clone() + "East: " + &*east);
     status_messages.push(time + "West: " + &*west);
 }
 

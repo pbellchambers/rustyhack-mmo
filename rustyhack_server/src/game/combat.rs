@@ -39,22 +39,22 @@ pub(crate) fn resolve_combat(attacker_stats: &Stats, defender_stats: &Stats) -> 
             defender_stats.armour,
         );
         info!("Damage taken: {}", actual_damage_received);
-        actual_damage_received as isize
+        actual_damage_received
     } else {
         info!("Attack missed...");
         0
     }
 }
 
-fn calculate_damage_dealt(attacker_weapon_damage: usize, attacker_str: usize) -> usize {
+fn calculate_damage_dealt(attacker_weapon_damage: isize, attacker_str: isize) -> isize {
     attacker_weapon_damage * ((attacker_str / 100) + 1)
 }
 
-fn calculate_actual_damage_received(damage_dealt: usize, defender_armour: usize) -> usize {
+fn calculate_actual_damage_received(damage_dealt: isize, defender_armour: isize) -> isize {
     damage_dealt * (1 - (defender_armour / 100))
 }
 
-fn check_attack_success(attacker_dex: usize, defender_dex: usize) -> bool {
+fn check_attack_success(attacker_dex: isize, defender_dex: isize) -> bool {
     let mut rng = thread_rng();
     let combat_accuracy = BASE_COMBAT_ACCURACY
         + ((100 - BASE_COMBAT_ACCURACY) * (attacker_dex / 100))

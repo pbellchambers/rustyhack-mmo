@@ -9,5 +9,5 @@ pub(crate) const ASSETS_DIRECTORY: &str = "assets";
 pub(crate) const MAPS_DIRECTORY: &str = "maps";
 pub(crate) const MONSTERS_DIRECTORY: &str = "monsters";
 pub(crate) const SPAWNS_DIRECTORY: &str = "spawns";
-pub(crate) const BASE_COMBAT_ACCURACY: usize = 75;
-pub(crate) const BASE_WEAPON_DAMAGE: usize = 10;
+pub(crate) const BASE_COMBAT_ACCURACY: isize = 75;
+pub(crate) const BASE_WEAPON_DAMAGE: isize = 10;
