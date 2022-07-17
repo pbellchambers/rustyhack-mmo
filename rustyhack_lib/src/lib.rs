@@ -1,3 +1,6 @@
+#![warn(clippy::cargo)]
+#![allow(clippy::multiple_crate_versions)]
+
 pub mod background_map;
 pub mod consts;
 pub mod ecs;

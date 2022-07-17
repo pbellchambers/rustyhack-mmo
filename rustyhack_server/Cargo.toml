@@ -3,8 +3,14 @@ name = "rustyhack_server"
 version = "0.3.0"
 authors = ["pbellchambers <pbellchambers@users.noreply.github.com>"]
 edition = "2021"
+homepage = "https://github.com/pbellchambers/rustyhack-mmo"
 repository = "https://github.com/pbellchambers/rustyhack-mmo"
 license = "AGPL-3.0"
+readme = "../README.md"
+description = "Server for Rustyhack MMO - An ASCII \"roguelike\" MMORPG"
+keywords = ["game", "games", "roguelike", "mmorpg", "ascii-art", "ascii-game", "console-game", "terminal-game", "terminal-based", "server"]
+categories = ["games"]
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

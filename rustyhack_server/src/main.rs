@@ -1,3 +1,6 @@
+#![warn(clippy::cargo)]
+#![allow(clippy::multiple_crate_versions)]
+
 use std::env;
 
 mod consts;

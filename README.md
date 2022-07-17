@@ -21,3 +21,4 @@ Use arrow keys to move around, spacebar to look, ctrl-q to quit.
 - **rustyhack_client** - contains all the client code
 - **rustyhack_server** - contains all the server code
 - **rustyhack_lib** - contains modules that are shared between both client and server
+- **assets** - assets required for the server to run, note: assets directory must be in the same location as `rustyhack_server`
