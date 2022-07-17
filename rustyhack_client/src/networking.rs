@@ -3,7 +3,7 @@ use laminar::{Packet, Socket, SocketEvent};
 use std::time::Duration;
 use std::{process, thread};
 
-pub(crate) mod message_handler;
+pub(crate) mod client_message_handler;
 
 pub(crate) fn bind_to_socket(client_addr: &str) -> (Sender<Packet>, Receiver<SocketEvent>) {
     info!("Attempting to bind listen socket to: {}", &client_addr);

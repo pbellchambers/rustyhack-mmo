@@ -1,10 +1,10 @@
-use crate::consts;
+use crate::client_consts;
 use console_engine::screen::Screen;
 
 pub(crate) fn draw(status_messages: &[String]) -> Screen {
     let mut screen = Screen::new(
-        consts::CONSOLE_WIDTH,
-        consts::CONSOLE_HEIGHT - consts::VIEWPORT_HEIGHT,
+        client_consts::CONSOLE_WIDTH,
+        client_consts::CONSOLE_HEIGHT - client_consts::VIEWPORT_HEIGHT,
     );
     if !status_messages.is_empty() {
         for (count, message) in status_messages.iter().rev().enumerate() {

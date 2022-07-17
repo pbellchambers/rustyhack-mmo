@@ -1,4 +1,4 @@
-use crate::networking::message_handler;
+use crate::networking::client_message_handler;
 use bincode::serialize;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
@@ -24,7 +24,7 @@ pub(crate) fn send_new_player_request(
         }))
         .unwrap(),
     );
-    message_handler::send_packet(create_player_request_packet, sender);
+    client_message_handler::send_packet(create_player_request_packet, sender);
     info!("Sent new player request to server.");
     wait_for_new_player_response(channel_receiver)
 }
@@ -56,7 +56,7 @@ fn wait_for_new_player_response(channel_receiver: &Receiver<ServerMessage>) -> P
             }
         }
         if new_player_confirmed {
-            info!("Got all data needed to begin game.");
+            info!("Got all data needed to begin client_game.");
             break;
         }
         thread::sleep(Duration::from_millis(1));

@@ -1,4 +1,4 @@
-use crate::consts;
+use crate::client_consts;
 use console_engine::pixel;
 use console_engine::screen::Screen;
 use rustyhack_lib::background_map::tiles::{Tile, TilePosition};
@@ -16,8 +16,8 @@ struct Viewport {
 impl Default for Viewport {
     fn default() -> Self {
         Viewport {
-            width: consts::VIEWPORT_WIDTH,
-            height: consts::VIEWPORT_HEIGHT,
+            width: client_consts::VIEWPORT_WIDTH,
+            height: client_consts::VIEWPORT_HEIGHT,
             viewable_map_topleft: TilePosition { x: 0, y: 0 },
         }
     }

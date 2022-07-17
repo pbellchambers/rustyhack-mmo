@@ -1,4 +1,4 @@
-use crate::consts;
+use crate::client_consts;
 use console_engine::ConsoleEngine;
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::player::Player;
@@ -38,8 +38,12 @@ pub(crate) fn draw_screens(
 
     //final draw step
     console.print_screen(0, 0, &top_status_bar);
-    console.print_screen(consts::VIEWPORT_WIDTH as i32, 1, &side_status_bar);
-    console.print_screen(0, consts::VIEWPORT_HEIGHT as i32, &bottom_text_window);
+    console.print_screen(client_consts::VIEWPORT_WIDTH as i32, 1, &side_status_bar);
+    console.print_screen(
+        0,
+        client_consts::VIEWPORT_HEIGHT as i32,
+        &bottom_text_window,
+    );
     console.print_screen(0, 1, &viewport);
     console.draw();
 }

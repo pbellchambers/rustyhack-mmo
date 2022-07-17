@@ -7,16 +7,16 @@ use std::time::Duration;
 
 use rustyhack_lib::message_handler::messages::EntityUpdates;
 
-use crate::consts::{CONSOLE_HEIGHT, CONSOLE_WIDTH, GAME_TITLE, TARGET_FPS};
-use crate::networking::message_handler;
+use crate::client_consts::{CONSOLE_HEIGHT, CONSOLE_WIDTH, GAME_TITLE, TARGET_FPS};
+use crate::networking::client_message_handler;
 use crate::screens::draw_screens;
 
+mod client_input_handler;
+mod client_logout;
+mod client_map_handler;
+mod client_updates_handler;
 mod commands;
-mod input_handler;
-mod logout;
-mod map_handler;
 mod new_player;
-mod updates_handler;
 
 pub(crate) fn run(
     sender: Sender<Packet>,
@@ -29,15 +29,15 @@ pub(crate) fn run(
     let (player_update_sender, player_update_receiver) = crossbeam_channel::unbounded();
     let (entity_update_sender, entity_update_receiver) = crossbeam_channel::unbounded();
     debug!("Spawned thread channels.");
-    message_handler::spawn_message_handler_thread(
+    client_message_handler::spawn_message_handler_thread(
         receiver,
         player_update_sender,
         entity_update_sender,
     );
 
-    //get basic data from server needed to start game
+    //get basic data from server needed to start client_game
     let all_maps =
-        map_handler::request_all_maps_data(&sender, server_addr, &player_update_receiver);
+        client_map_handler::request_all_maps_data(&sender, server_addr, &player_update_receiver);
 
     //create player
     let mut player = new_player::send_new_player_request(
@@ -61,24 +61,26 @@ pub(crate) fn run(
 
     let mut status_messages: Vec<String> = vec![];
 
-    info!("Starting game loop");
+    info!("Starting client_game loop");
     loop {
         //wait for target fps, and clear screen between frames
         console.wait_frame();
         console.clear_screen();
 
         debug!("About to send player velocity update.");
-        updates_handler::send_player_updates(&sender, &console, &mut player, server_addr);
+        client_updates_handler::send_player_updates(&sender, &console, &mut player, server_addr);
 
         debug!("About to wait for entity updates from server.");
-        player =
-            updates_handler::check_for_received_player_updates(&player_update_receiver, player);
-        other_entities = updates_handler::check_for_received_entity_updates(
+        player = client_updates_handler::check_for_received_player_updates(
+            &player_update_receiver,
+            player,
+        );
+        other_entities = client_updates_handler::check_for_received_entity_updates(
             &entity_update_receiver,
             other_entities,
         );
 
-        input_handler::handle_other_input(
+        client_input_handler::handle_other_input(
             &mut console,
             &mut status_messages,
             &player,
@@ -98,7 +100,7 @@ pub(crate) fn run(
         //check if we should quit
         if should_quit(&console) {
             info!("Ctrl-q detected - quitting app.");
-            logout::send_logout_notification(&sender, player, server_addr);
+            client_logout::send_logout_notification(&sender, player, server_addr);
             //sleep for a second just to make sure the logout notification is sent
             thread::sleep(Duration::from_millis(1000));
             break;

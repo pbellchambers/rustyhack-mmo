@@ -1,4 +1,4 @@
-use crate::networking::message_handler;
+use crate::networking::client_message_handler;
 use bincode::serialize;
 use crossbeam_channel::Sender;
 use laminar::Packet;
@@ -16,6 +16,6 @@ pub(crate) fn send_logout_notification(sender: &Sender<Packet>, player: Player, 
         }))
         .unwrap(),
     );
-    message_handler::send_packet(logout_notification_packet, sender);
+    client_message_handler::send_packet(logout_notification_packet, sender);
     info!("Logout notification sent to server.");
 }

@@ -1,4 +1,4 @@
-use crate::networking::message_handler;
+use crate::networking::client_message_handler;
 use bincode::{deserialize, serialize};
 use crossbeam_channel::{Receiver, Sender};
 use itertools::Itertools;
@@ -22,7 +22,7 @@ pub(crate) fn request_all_maps_data(
             .expect("Error serializing GetAllMaps request."),
         Some(1),
     );
-    message_handler::send_packet(get_all_maps_request_packet, sender);
+    client_message_handler::send_packet(get_all_maps_request_packet, sender);
     info!("Requested all maps data from server.");
     wait_for_all_maps_response(channel_receiver)
 }

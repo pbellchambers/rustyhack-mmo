@@ -1,4 +1,4 @@
-use crate::game::commands;
+use crate::client_game::commands;
 use console_engine::{ConsoleEngine, KeyCode};
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::player::Player;

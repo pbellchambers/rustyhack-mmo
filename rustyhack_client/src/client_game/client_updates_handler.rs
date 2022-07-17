@@ -1,4 +1,4 @@
-use crate::networking::message_handler;
+use crate::networking::client_message_handler;
 use bincode::serialize;
 use console_engine::{ConsoleEngine, KeyCode};
 use crossbeam_channel::{Receiver, Sender};
@@ -44,7 +44,7 @@ fn send_velocity_packet(sender: &Sender<Packet>, server_addr: &str, player: &Pla
         .unwrap(),
         Some(10),
     );
-    message_handler::send_packet(packet, sender);
+    client_message_handler::send_packet(packet, sender);
     debug!("Sent velocity packet to server.");
 }
 
