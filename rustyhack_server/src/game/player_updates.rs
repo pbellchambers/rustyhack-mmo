@@ -4,7 +4,7 @@ use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
 use legion::{IntoQuery, World};
 use rustyhack_lib::ecs::components::{
-    DisplayDetails, MonsterDetails, PlayerDetails, Position, Stats, Velocity,
+    DisplayDetails, MonsterDetails, PlayerDetails, Position, Stats,
 };
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::{EntityUpdates, PlayerRequest, ServerMessage};
@@ -15,8 +15,8 @@ pub(crate) fn process_player_messages(
     world: &mut World,
     channel_receiver: &Receiver<PlayerRequest>,
     sender: &Sender<Packet>,
-    mut player_velocity_updates: HashMap<String, Velocity>,
-) -> HashMap<String, Velocity> {
+    mut player_velocity_updates: HashMap<String, Position>,
+) -> HashMap<String, Position> {
     while !channel_receiver.is_empty() {
         debug!("Player messages are present.");
         let received = channel_receiver.try_recv();
@@ -31,7 +31,7 @@ pub(crate) fn process_player_messages(
                 }
                 PlayerRequest::UpdateVelocity(message) => {
                     debug!("Velocity update received for {}", &message.player_name);
-                    player_velocity_updates.insert(message.player_name, message.velocity);
+                    player_velocity_updates.insert(message.player_name, message.position);
                     debug!("Processed velocity update: {:?}", &player_velocity_updates);
                 }
                 PlayerRequest::PlayerLogout(message) => {
@@ -155,7 +155,6 @@ fn create_player(world: &mut World, name: String, client_addr: String, sender: &
         player.display_details,
         player.position.clone(),
         player.stats,
-        Velocity { x: 0, y: 0 },
     ));
     info!("New player \"{}\" created: {:?}", name, &player_entity);
     send_player_joined_response(player, sender);
@@ -182,8 +181,8 @@ fn send_player_joined_response(player: Player, sender: &Sender<Packet>) {
 pub(crate) fn send_player_updates(
     world: &mut World,
     sender: &Sender<Packet>,
-    mut player_velocity_updates: HashMap<String, Velocity>,
-) -> HashMap<String, Velocity> {
+    mut player_velocity_updates: HashMap<String, Position>,
+) -> HashMap<String, Position> {
     let mut query = <(&PlayerDetails, &mut Position)>::query();
     for (player_details, position) in query.iter_mut(world) {
         if player_velocity_updates.contains_key(&player_details.player_name)

@@ -30,7 +30,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let combat_attacker_stats: CombatAttackerStats = HashMap::new();
     let all_monster_definitions = monsters::initialise_all_monster_definitions();
     let all_spawns = spawns::initialise_all_spawn_definitions();
-    let mut player_velocity_updates: HashMap<String, Velocity> = HashMap::new();
+    let mut player_velocity_updates: HashMap<String, Position> = HashMap::new();
     let mut world = World::default();
     info!("Initialised ECS World");
     let mut player_update_schedule = systems::build_player_update_schedule();

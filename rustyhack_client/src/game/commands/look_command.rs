@@ -11,46 +11,51 @@ pub(crate) fn get_what_player_sees(
 ) {
     let date_time: DateTime<Local> = Local::now();
     let time = date_time.format("[%H:%M:%S] ").to_string();
-    let current_map = all_maps.get(&player.position.map).unwrap();
+    let current_map = all_maps.get(&player.position.current_map).unwrap();
 
-    let underneath =
-        current_map.data[player.position.y as usize][player.position.x as usize].to_string();
-    let mut north =
-        current_map.data[(player.position.y - 1) as usize][player.position.x as usize].to_string();
-    let mut south =
-        current_map.data[(player.position.y + 1) as usize][player.position.x as usize].to_string();
-    let mut east =
-        current_map.data[player.position.y as usize][(player.position.x + 1) as usize].to_string();
-    let mut west =
-        current_map.data[player.position.y as usize][(player.position.x - 1) as usize].to_string();
+    let underneath = current_map.data[player.position.pos_y as usize]
+        [player.position.pos_x as usize]
+        .to_string();
+    let mut north = current_map.data[(player.position.pos_y - 1) as usize]
+        [player.position.pos_x as usize]
+        .to_string();
+    let mut south = current_map.data[(player.position.pos_y + 1) as usize]
+        [player.position.pos_x as usize]
+        .to_string();
+    let mut east = current_map.data[player.position.pos_y as usize]
+        [(player.position.pos_x + 1) as usize]
+        .to_string();
+    let mut west = current_map.data[player.position.pos_y as usize]
+        [(player.position.pos_x - 1) as usize]
+        .to_string();
 
     north = return_visible_entity_at(
         north,
         other_entities,
         player,
-        player.position.x,
-        player.position.y - 1,
+        player.position.pos_x,
+        player.position.pos_y - 1,
     );
     south = return_visible_entity_at(
         south,
         other_entities,
         player,
-        player.position.x,
-        player.position.y + 1,
+        player.position.pos_x,
+        player.position.pos_y + 1,
     );
     east = return_visible_entity_at(
         east,
         other_entities,
         player,
-        player.position.x + 1,
-        player.position.y,
+        player.position.pos_x + 1,
+        player.position.pos_y,
     );
     west = return_visible_entity_at(
         west,
         other_entities,
         player,
-        player.position.x - 1,
-        player.position.y,
+        player.position.pos_x - 1,
+        player.position.pos_y,
     );
 
     status_messages.push(time.to_owned() + "You see...");
@@ -70,9 +75,9 @@ fn return_visible_entity_at(
 ) -> String {
     for (entity_id_or_name, position) in other_entities.position_updates.clone() {
         if entity_id_or_name != player.player_details.player_name
-            && position.map == player.position.map
-            && position.x == x
-            && position.y == y
+            && position.current_map == player.position.current_map
+            && position.pos_x == x
+            && position.pos_y == y
         {
             if other_entities
                 .monster_type_map

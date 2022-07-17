@@ -68,7 +68,7 @@ pub(crate) fn run(
         console.clear_screen();
 
         debug!("About to send player velocity update.");
-        updates_handler::send_player_updates(&sender, &console, &player, server_addr);
+        updates_handler::send_player_updates(&sender, &console, &mut player, server_addr);
 
         debug!("About to wait for entity updates from server.");
         player =

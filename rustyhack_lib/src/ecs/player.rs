@@ -23,9 +23,11 @@ impl Default for Player {
             },
             display_details: DisplayDetails::default(),
             position: Position {
-                x: DEFAULT_PLAYER_POSITION_X,
-                y: DEFAULT_PLAYER_POSITION_Y,
-                map: DEFAULT_MAP.to_string(),
+                pos_x: DEFAULT_PLAYER_POSITION_X,
+                pos_y: DEFAULT_PLAYER_POSITION_Y,
+                current_map: DEFAULT_MAP.to_string(),
+                velocity_x: 0,
+                velocity_y: 0,
             },
             stats: Stats {
                 current_hp: 50,

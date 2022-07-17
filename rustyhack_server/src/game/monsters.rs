@@ -4,7 +4,7 @@ use crate::game::players;
 use crate::game::spawns::AllSpawns;
 use legion::{IntoQuery, World};
 use rand::Rng;
-use rustyhack_lib::ecs::components::{DisplayDetails, MonsterDetails, Position, Stats, Velocity};
+use rustyhack_lib::ecs::components::{DisplayDetails, MonsterDetails, Position, Stats};
 use rustyhack_lib::ecs::monster::{AllMonsterDefinitions, Monster};
 use rustyhack_lib::file_utils;
 use std::cmp::Ordering;
@@ -69,7 +69,7 @@ pub(crate) fn spawn_initial_monsters(
     all_spawns: &AllSpawns,
 ) {
     info!("Spawning initial monsters.");
-    let mut monsters_vec: Vec<(MonsterDetails, DisplayDetails, Position, Velocity, Stats)> = vec![];
+    let mut monsters_vec: Vec<(MonsterDetails, DisplayDetails, Position, Stats)> = vec![];
     for (map, spawns) in all_spawns {
         for monster in &spawns.monsters {
             let mut current_monster = all_monster_definitions
@@ -84,9 +84,11 @@ pub(crate) fn spawn_initial_monsters(
                 .clone();
             for spawn_position in &monster.spawn_positions {
                 let position = Position {
-                    x: spawn_position.x,
-                    y: spawn_position.y,
-                    map: map.clone(),
+                    pos_x: spawn_position.x,
+                    pos_y: spawn_position.y,
+                    current_map: map.clone(),
+                    velocity_x: 0,
+                    velocity_y: 0,
                 };
                 current_monster.monster_details.id = Uuid::new_v4();
                 current_monster.monster_details.spawn_position = position.clone();
@@ -99,7 +101,6 @@ pub(crate) fn spawn_initial_monsters(
                     current_monster.monster_details.clone(),
                     current_monster.display_details,
                     current_monster.position,
-                    current_monster.velocity,
                     current_monster.stats,
                 ));
             }
@@ -112,14 +113,14 @@ pub(crate) fn update_velocities(world: &mut World) {
     debug!("Updating monster velocities.");
     let players_positions = players::get_current_player_positions(world);
 
-    let mut query = <(&Position, &mut Velocity, &mut MonsterDetails)>::query();
-    for (position, velocity, monster) in query.iter_mut(world) {
+    let mut query = <(&mut Position, &mut MonsterDetails)>::query();
+    for (position, monster) in query.iter_mut(world) {
         let mut moving_towards_existing_target = false;
 
         if let Some(target) = monster.current_target.clone() {
             if let Some(current_target_position) = players_positions.get(&target) {
                 if is_specific_player_nearby(current_target_position, position) {
-                    *velocity = move_towards_target(position, current_target_position);
+                    move_towards_target(position, current_target_position);
                     moving_towards_existing_target = true;
                 }
             }
@@ -131,41 +132,39 @@ pub(crate) fn update_velocities(world: &mut World) {
                 Some((player_name, player_position)) => {
                     monster.is_active = true;
                     monster.current_target = Some(player_name.clone());
-                    *velocity = move_towards_target(position, player_position);
+                    move_towards_target(position, player_position);
                 }
                 None => {
                     debug!("Monster returning to spawn location");
                     monster.is_active = false;
                     monster.current_target = None;
-                    *velocity = move_towards_target(position, &monster.spawn_position);
+                    move_towards_target(position, &monster.spawn_position);
                 }
             }
         }
     }
 }
 
-fn move_towards_target(monster_position: &Position, target_position: &Position) -> Velocity {
-    let diff_x = monster_position.x - target_position.x;
-    let diff_y = monster_position.y - target_position.y;
-    let mut new_pos_x = monster_position.x;
-    let mut new_pos_y = monster_position.y;
+fn move_towards_target(monster_position: &mut Position, target_position: &Position) {
+    let diff_x = monster_position.pos_x - target_position.pos_x;
+    let diff_y = monster_position.pos_y - target_position.pos_y;
+    let mut new_pos_x = monster_position.pos_x;
+    let mut new_pos_y = monster_position.pos_y;
 
     match diff_x.abs().cmp(&diff_y.abs()) {
-        Ordering::Greater => new_pos_x = move_towards(diff_x, monster_position.x),
-        Ordering::Less => new_pos_y = move_towards(diff_y, monster_position.y),
+        Ordering::Greater => new_pos_x = move_towards(diff_x, monster_position.pos_x),
+        Ordering::Less => new_pos_y = move_towards(diff_y, monster_position.pos_y),
         Ordering::Equal => {
             let mut rng = rand::thread_rng();
             if rng.gen::<bool>() {
-                new_pos_x = move_towards(diff_x, monster_position.x)
+                new_pos_x = move_towards(diff_x, monster_position.pos_x)
             } else {
-                new_pos_y = move_towards(diff_y, monster_position.y)
+                new_pos_y = move_towards(diff_y, monster_position.pos_y)
             }
         }
     }
-    Velocity {
-        x: new_pos_x - monster_position.x,
-        y: new_pos_y - monster_position.y,
-    }
+    monster_position.velocity_x = new_pos_x - monster_position.pos_x;
+    monster_position.velocity_y = new_pos_y - monster_position.pos_y;
 }
 
 fn move_towards(diff: i32, position: i32) -> i32 {
@@ -182,14 +181,14 @@ fn is_any_player_nearby<'a>(
     player_positions: &'a HashMap<String, Position>,
     monster_position: &Position,
 ) -> Option<(&'a String, &'a Position)> {
-    let monster_x_range = (monster_position.x - MONSTER_DISTANCE_ACTIVATION)
-        ..(monster_position.x + MONSTER_DISTANCE_ACTIVATION);
-    let monster_y_range = (monster_position.y - MONSTER_DISTANCE_ACTIVATION)
-        ..(monster_position.y + MONSTER_DISTANCE_ACTIVATION);
+    let monster_x_range = (monster_position.pos_x - MONSTER_DISTANCE_ACTIVATION)
+        ..(monster_position.pos_x + MONSTER_DISTANCE_ACTIVATION);
+    let monster_y_range = (monster_position.pos_y - MONSTER_DISTANCE_ACTIVATION)
+        ..(monster_position.pos_y + MONSTER_DISTANCE_ACTIVATION);
     for (player_name, position) in player_positions {
-        if monster_x_range.contains(&position.x)
-            && monster_y_range.contains(&position.y)
-            && monster_position.map == position.map
+        if monster_x_range.contains(&position.pos_x)
+            && monster_y_range.contains(&position.pos_y)
+            && monster_position.current_map == position.current_map
         {
             debug!("There is a player near a monster");
             return Some((player_name, position));
@@ -202,14 +201,14 @@ fn is_specific_player_nearby(
     current_target_position: &Position,
     monster_position: &Position,
 ) -> bool {
-    let monster_x_range = (monster_position.x - MONSTER_DISTANCE_ACTIVATION)
-        ..(monster_position.x + MONSTER_DISTANCE_ACTIVATION);
-    let monster_y_range = (monster_position.y - MONSTER_DISTANCE_ACTIVATION)
-        ..(monster_position.y + MONSTER_DISTANCE_ACTIVATION);
+    let monster_x_range = (monster_position.pos_x - MONSTER_DISTANCE_ACTIVATION)
+        ..(monster_position.pos_x + MONSTER_DISTANCE_ACTIVATION);
+    let monster_y_range = (monster_position.pos_y - MONSTER_DISTANCE_ACTIVATION)
+        ..(monster_position.pos_y + MONSTER_DISTANCE_ACTIVATION);
 
-    if monster_x_range.contains(&current_target_position.x)
-        && monster_y_range.contains(&current_target_position.y)
-        && monster_position.map == current_target_position.map
+    if monster_x_range.contains(&current_target_position.pos_x)
+        && monster_y_range.contains(&current_target_position.pos_y)
+        && monster_position.current_map == current_target_position.current_map
     {
         return true;
     }

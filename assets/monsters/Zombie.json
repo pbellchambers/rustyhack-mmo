@@ -3,9 +3,11 @@
     "id": "00000000-0000-0000-0000-000000000000",
     "monster_type": "Zombie",
     "spawn_position": {
-      "x": 0,
-      "y": 0,
-      "map": "none"
+      "pos_x": 0,
+      "pos_y": 0,
+      "current_map": "none",
+      "velocity_x": 0,
+      "velocity_y": 0
     },
     "is_active": false,
     "current_target": null,
@@ -19,13 +21,11 @@
     "collidable": true
   },
   "position": {
-    "x": 0,
-    "y": 0,
-    "map": "none"
-  },
-  "velocity": {
-    "x": 0,
-    "y": 0
+    "pos_x": 0,
+    "pos_y": 0,
+    "current_map": "none",
+    "velocity_x": 0,
+    "velocity_y": 0
   },
   "stats": {
     "current_hp": 50,

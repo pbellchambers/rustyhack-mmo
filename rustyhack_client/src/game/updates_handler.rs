@@ -3,48 +3,43 @@ use bincode::serialize;
 use console_engine::{ConsoleEngine, KeyCode};
 use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
-use rustyhack_lib::ecs::components::Velocity;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::{
-    EntityUpdates, PlayerRequest, ServerMessage, VelocityMessage,
+    EntityUpdates, PlayerRequest, PositionMessage, ServerMessage,
 };
 
 pub(crate) fn send_player_updates(
     sender: &Sender<Packet>,
     console: &ConsoleEngine,
-    player: &Player,
+    player: &mut Player,
     server_addr: &str,
 ) {
-    let mut velocity = Velocity { x: 0, y: 0 };
     if console.is_key_held(KeyCode::Up) {
-        velocity.y = -1;
+        player.position.velocity_y = -1;
     } else if console.is_key_held(KeyCode::Down) {
-        velocity.y = 1;
+        player.position.velocity_y = 1;
     } else if console.is_key_held(KeyCode::Left) {
-        velocity.x = -1;
+        player.position.velocity_x = -1;
     } else if console.is_key_held(KeyCode::Right) {
-        velocity.x = 1;
+        player.position.velocity_x = 1;
     }
 
-    if velocity.y != 0 || velocity.x != 0 {
+    if player.position.velocity_y != 0 || player.position.velocity_x != 0 {
         debug!("Movement detected, sending velocity packet to server.");
-        send_velocity_packet(sender, server_addr, player, velocity);
+        send_velocity_packet(sender, server_addr, player);
     }
+    player.position.velocity_x = 0;
+    player.position.velocity_y = 0;
 }
 
-fn send_velocity_packet(
-    sender: &Sender<Packet>,
-    server_addr: &str,
-    player: &Player,
-    velocity: Velocity,
-) {
+fn send_velocity_packet(sender: &Sender<Packet>, server_addr: &str, player: &Player) {
     let packet = Packet::unreliable_sequenced(
         server_addr
             .parse()
             .expect("Server address format is invalid."),
-        serialize(&PlayerRequest::UpdateVelocity(VelocityMessage {
+        serialize(&PlayerRequest::UpdateVelocity(PositionMessage {
             player_name: player.player_details.player_name.clone(),
-            velocity,
+            position: player.position.clone(),
         }))
         .unwrap(),
         Some(10),

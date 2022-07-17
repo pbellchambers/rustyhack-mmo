@@ -20,13 +20,15 @@ pub(crate) fn draw_screens(
     //update the player viewport contents
     let viewport = viewport::draw_viewport_contents(
         player,
-        all_maps.get(&player.position.map).unwrap_or_else(|| {
-            error!(
-                "There is no map for current player position: {}",
-                &player.position.map
-            );
-            process::exit(1);
-        }),
+        all_maps
+            .get(&player.position.current_map)
+            .unwrap_or_else(|| {
+                error!(
+                    "There is no map for current player position: {}",
+                    &player.position.current_map
+                );
+                process::exit(1);
+            }),
         other_entities,
     );
 

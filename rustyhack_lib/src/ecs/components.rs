@@ -13,15 +13,11 @@ pub enum EntityType {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Position {
-    pub x: i32,
-    pub y: i32,
-    pub map: String,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Velocity {
-    pub x: i32,
-    pub y: i32,
+    pub pos_x: i32,
+    pub pos_y: i32,
+    pub current_map: String,
+    pub velocity_x: i32,
+    pub velocity_y: i32,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]

@@ -3,14 +3,14 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::background_map::{AllMaps, AllMapsChunk};
-use crate::ecs::components::{DisplayDetails, Position, Velocity};
+use crate::ecs::components::{DisplayDetails, Position};
 use crate::ecs::player::Player;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum PlayerRequest {
     PlayerJoin(ClientDetails),
     PlayerLogout(ClientDetails),
-    UpdateVelocity(VelocityMessage),
+    UpdateVelocity(PositionMessage),
     GetChunkedAllMaps,
     Timeout(String),
     Undefined,
@@ -34,9 +34,9 @@ pub struct ClientDetails {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct VelocityMessage {
+pub struct PositionMessage {
     pub player_name: String,
-    pub velocity: Velocity,
+    pub position: Position,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
