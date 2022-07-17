@@ -12,14 +12,14 @@ pub(crate) fn spawn_message_handler_thread(
     all_maps: AllMaps,
     channel_sender: Sender<PlayerRequest>,
 ) {
-    thread::spawn(move || run(sender, receiver, all_maps, channel_sender));
+    thread::spawn(move || run(&sender, &receiver, &all_maps, &channel_sender));
 }
 
 pub(crate) fn run(
-    sender: Sender<Packet>,
-    receiver: Receiver<SocketEvent>,
-    all_maps: AllMaps,
-    channel_sender: Sender<PlayerRequest>,
+    sender: &Sender<Packet>,
+    receiver: &Receiver<SocketEvent>,
+    all_maps: &AllMaps,
+    channel_sender: &Sender<PlayerRequest>,
 ) {
     info!("Spawned message handler thread.");
     loop {
@@ -40,46 +40,46 @@ pub(crate) fn run(
                             create_player_request.client_addr = address.to_string();
                             send_channel_message(
                                 PlayerRequest::PlayerJoin(create_player_request),
-                                &channel_sender,
+                                channel_sender,
                             );
                         }
                         PlayerRequest::UpdateVelocity(message) => {
                             send_channel_message(
                                 PlayerRequest::UpdateVelocity(message),
-                                &channel_sender,
+                                channel_sender,
                             );
                         }
                         PlayerRequest::GetChunkedAllMaps => {
                             send_all_maps_chunks(
-                                serialize_all_maps(all_maps.clone()),
+                                &serialize_all_maps(all_maps.clone()),
                                 address,
-                                &sender,
+                                sender,
                             );
                         }
                         PlayerRequest::PlayerLogout(message) => {
                             send_channel_message(
                                 PlayerRequest::PlayerLogout(message),
-                                &channel_sender,
+                                channel_sender,
                             );
                         }
                         _ => {}
                     }
                 }
                 SocketEvent::Connect(connect_event) => {
-                    info!("Client connected from: {}", connect_event)
+                    info!("Client connected from: {}", connect_event);
                 }
                 SocketEvent::Disconnect(address) => {
                     info!("Client disconnected from: {}", address);
                     send_channel_message(
                         PlayerRequest::Timeout(address.to_string()),
-                        &channel_sender,
+                        channel_sender,
                     );
                 }
                 SocketEvent::Timeout(address) => {
                     info!("Client timed out from: {}", address);
                     send_channel_message(
                         PlayerRequest::Timeout(address.to_string()),
-                        &channel_sender,
+                        channel_sender,
                     );
                 }
             }
@@ -91,14 +91,10 @@ fn serialize_all_maps(all_maps: AllMaps) -> Vec<u8> {
     serialize(&ServerMessage::AllMaps(all_maps)).expect("Error serializing AllMaps data.")
 }
 
-fn send_all_maps_chunks(
-    all_maps_serialized: Vec<u8>,
-    address: SocketAddr,
-    sender: &Sender<Packet>,
-) {
+fn send_all_maps_chunks(all_maps_serialized: &[u8], address: SocketAddr, sender: &Sender<Packet>) {
     let all_maps_chunks = all_maps_serialized
         .chunks(1450)
-        .map(|s| s.into())
+        .map(std::convert::Into::into)
         .enumerate();
     let chunked_response_length = all_maps_chunks.size_hint();
 

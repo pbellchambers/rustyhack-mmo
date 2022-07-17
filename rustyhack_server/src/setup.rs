@@ -7,7 +7,7 @@ use std::fs::File;
 use std::net::SocketAddr;
 use std::{io, process};
 
-pub(crate) fn initialise_log(args: Vec<String>) {
+pub(crate) fn initialise_log(args: &[String]) {
     let mut log_level = LevelFilter::Info;
     if args.len() > 1 && args[1] == "--debug" {
         println!("Debug logging enabled.");

@@ -26,7 +26,7 @@ pub(crate) fn process_player_messages(
                         "Player joined request received for {} from: {}",
                         &message.player_name, &message.client_addr
                     );
-                    join_player(world, message.player_name, message.client_addr, sender);
+                    join_player(world, &message.player_name, message.client_addr, sender);
                 }
                 PlayerRequest::UpdateVelocity(message) => {
                     debug!("Velocity update received for {}", &message.player_name);
@@ -38,23 +38,23 @@ pub(crate) fn process_player_messages(
                         "Player logout notification received for {} from: {}",
                         &message.player_name, &message.client_addr
                     );
-                    set_player_logged_out(world, message.client_addr, message.player_name);
+                    set_player_logged_out(world, &message.client_addr, &message.player_name);
                 }
                 PlayerRequest::Timeout(address) => {
-                    set_player_disconnected(world, address);
+                    set_player_disconnected(world, &address);
                 }
                 _ => {
-                    warn!("Didn't match any known message to process.")
+                    warn!("Didn't match any known message to process.");
                 }
             }
         } else {
-            debug!("Player messages channel receiver is now empty.")
+            debug!("Player messages channel receiver is now empty.");
         }
     }
     player_velocity_updates
 }
 
-fn set_player_logged_out(world: &mut World, address: String, originating_player_name: String) {
+fn set_player_logged_out(world: &mut World, address: &str, originating_player_name: &str) {
     let mut query = <(&mut PlayerDetails, &mut DisplayDetails)>::query();
     for (player_details, display_details) in query.iter_mut(world) {
         if player_details.client_addr == address
@@ -74,7 +74,7 @@ fn set_player_logged_out(world: &mut World, address: String, originating_player_
     }
 }
 
-fn set_player_disconnected(world: &mut World, address: String) {
+fn set_player_disconnected(world: &mut World, address: &str) {
     let mut query = <(&mut PlayerDetails, &mut DisplayDetails)>::query();
     for (player_details, display_details) in query.iter_mut(world) {
         if player_details.client_addr == address {
@@ -92,7 +92,7 @@ fn set_player_disconnected(world: &mut World, address: String) {
     }
 }
 
-fn join_player(world: &mut World, name: String, client_addr: String, sender: &Sender<Packet>) {
+fn join_player(world: &mut World, name: &str, client_addr: String, sender: &Sender<Packet>) {
     let mut query = <(&mut PlayerDetails, &mut DisplayDetails, &Position, &Stats)>::query();
     let mut should_create_new_player = true;
     for (player_details, display_details, position, stats) in query.iter_mut(world) {
@@ -111,7 +111,7 @@ fn join_player(world: &mut World, name: String, client_addr: String, sender: &Se
                 position: position.clone(),
                 stats: *stats,
             };
-            send_player_joined_response(player, sender);
+            send_player_joined_response(&player, sender);
             should_create_new_player = false;
             break;
         } else if player_details.player_name == name && player_details.currently_online {
@@ -136,10 +136,12 @@ fn join_player(world: &mut World, name: String, client_addr: String, sender: &Se
     }
 }
 
-fn create_player(world: &mut World, name: String, client_addr: String, sender: &Sender<Packet>) {
+fn create_player(world: &mut World, name: &str, client_addr: String, sender: &Sender<Packet>) {
     let player = Player {
         player_details: PlayerDetails {
-            player_name: name.clone(),
+            player_name: name
+                .parse()
+                .expect("Something went wrong parsing player name."),
             client_addr,
             currently_online: true,
             level: 1,
@@ -156,10 +158,10 @@ fn create_player(world: &mut World, name: String, client_addr: String, sender: &
         player.stats,
     ));
     info!("New player \"{}\" created: {:?}", name, &player_entity);
-    send_player_joined_response(player, sender);
+    send_player_joined_response(&player, sender);
 }
 
-fn send_player_joined_response(player: Player, sender: &Sender<Packet>) {
+fn send_player_joined_response(player: &Player, sender: &Sender<Packet>) {
     let response = serialize(&ServerMessage::PlayerJoined(player.clone())).unwrap_or_else(|err| {
         error!(
             "Failed to serialize player created response, error: {}",

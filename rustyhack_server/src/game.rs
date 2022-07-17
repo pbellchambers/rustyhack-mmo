@@ -4,9 +4,9 @@ use std::time::Instant;
 
 use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
-use legion::*;
+use legion::{Resources, World};
 
-use rustyhack_lib::ecs::components::*;
+use rustyhack_lib::ecs::components::Position;
 
 use crate::consts;
 use crate::game::combat::{CombatAttackerStats, CombatParties};
@@ -70,7 +70,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
 
         if !player_velocity_updates.is_empty() {
             debug!("Player velocity updates available, proceeding with world update.");
-            resources.insert(player_velocity_updates.to_owned());
+            resources.insert(player_velocity_updates.clone());
             debug!("Added player velocity updates to world resources.");
 
             debug!("Executing player update schedule...");
@@ -108,12 +108,11 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             );
             loop_tick_time = Instant::now();
             continue;
-        } else {
-            let duration_to_sleep = consts::LOOP_TICK - loop_tick_time.elapsed();
-            if duration_to_sleep.as_nanos() > 0 {
-                thread::sleep(duration_to_sleep);
-            }
-            loop_tick_time = Instant::now();
         }
+        let duration_to_sleep = consts::LOOP_TICK - loop_tick_time.elapsed();
+        if duration_to_sleep.as_nanos() > 0 {
+            thread::sleep(duration_to_sleep);
+        }
+        loop_tick_time = Instant::now();
     }
 }

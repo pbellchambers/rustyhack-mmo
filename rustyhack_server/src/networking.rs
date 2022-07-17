@@ -5,7 +5,7 @@ use std::{process, thread};
 
 pub(crate) mod message_handler;
 
-pub(crate) fn bind_to_socket(server_addr: String) -> (Sender<Packet>, Receiver<SocketEvent>) {
+pub(crate) fn bind_to_socket(server_addr: &str) -> (Sender<Packet>, Receiver<SocketEvent>) {
     info!("Attempting to bind socket to: {}", &server_addr);
     let mut socket =
         Socket::bind_with_config(&server_addr, get_laminar_config()).unwrap_or_else(|err| {

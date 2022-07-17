@@ -2,7 +2,7 @@ use crate::game::combat::{CombatAttackerStats, CombatParties};
 use crate::game::map_state::{AllMapStates, MapState};
 use crate::game::{combat, map_state};
 use legion::world::SubWorld;
-use legion::*;
+use legion::{system, Query, Schedule};
 use rustyhack_lib::background_map::tiles::{Collidable, Tile};
 use rustyhack_lib::background_map::{AllMaps, BackgroundMap};
 use rustyhack_lib::consts::DEFAULT_MAP;

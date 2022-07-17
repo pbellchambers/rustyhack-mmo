@@ -7,15 +7,15 @@ use std::io::BufReader;
 use std::path::Path;
 use std::process;
 
-pub type AllSpawns = HashMap<String, Spawns>;
+pub type AllSpawnsMap = HashMap<String, Spawns>;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Spawns {
-    pub monsters: Vec<MonsterSpawns>,
+    pub monsters: Vec<MonsterSpawnPositions>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct MonsterSpawns {
+pub struct MonsterSpawnPositions {
     pub monster_type: String,
     pub spawn_positions: Vec<PositionWithoutMap>,
 }
@@ -26,7 +26,7 @@ pub struct PositionWithoutMap {
     pub y: usize,
 }
 
-pub(crate) fn initialise_all_spawn_definitions() -> AllSpawns {
+pub(crate) fn initialise_all_spawn_definitions() -> AllSpawnsMap {
     info!("About to initialise all spawn definitions");
     let mut all_spawns: HashMap<String, Spawns> = HashMap::new();
     let mut file_location = file_utils::current_exe_location();

@@ -14,9 +14,10 @@ extern crate log;
 extern crate simplelog;
 
 fn main() {
-    setup::initialise_log(env::args().collect());
+    let args: Vec<String> = env::args().collect();
+    setup::initialise_log(&args);
 
-    let (sender, receiver) = networking::bind_to_socket(setup::get_server_addr());
+    let (sender, receiver) = networking::bind_to_socket(&setup::get_server_addr());
 
     game::run(sender, receiver);
 

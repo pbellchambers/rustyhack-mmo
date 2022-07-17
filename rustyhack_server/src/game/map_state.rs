@@ -11,7 +11,7 @@ pub(crate) fn initialise_all_map_states(all_maps: &AllMaps) -> AllMapStates {
     let mut all_map_states: AllMapStates = HashMap::new();
     for (map_name, background_map) in all_maps {
         let mut map_state: MapState = vec![vec![vec![]]];
-        for row in background_map.data.iter() {
+        for row in &background_map.data {
             let mut row_vec: Vec<Vec<EntityType>> = vec![vec![]];
             for _tile in row.iter() {
                 //push an empty map state vector for each tile
@@ -52,7 +52,7 @@ pub(crate) fn is_colliding_with_other_player(
         //don't bother checking for collisions at y == 0 as map_state overflows
         (colliding, player_name)
     } else {
-        for entity_type in map_state[y][x].iter() {
+        for entity_type in &map_state[y][x] {
             if let EntityType::Player(player) = entity_type {
                 colliding =
                     player.player_details.currently_online && player.display_details.collidable;
@@ -74,7 +74,7 @@ pub(crate) fn is_colliding_with_monster(
         //don't bother checking for collisions at y == 0 as map_state overflows
         (colliding, monster_id)
     } else {
-        for entity_type in map_state[y][x].iter() {
+        for entity_type in &map_state[y][x] {
             if let EntityType::Monster(monster) = entity_type {
                 colliding = monster.display_details.collidable;
                 monster_id = monster.monster_details.id.to_string();

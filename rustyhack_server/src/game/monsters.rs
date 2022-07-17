@@ -1,7 +1,7 @@
 use crate::consts;
 use crate::consts::MONSTER_DISTANCE_ACTIVATION;
 use crate::game::players;
-use crate::game::spawns::AllSpawns;
+use crate::game::spawns::AllSpawnsMap;
 use legion::{IntoQuery, World};
 use rand::Rng;
 use rustyhack_lib::ecs::components::{DisplayDetails, MonsterDetails, Position, Stats};
@@ -62,7 +62,7 @@ fn get_monster_definition_from_path(path: &Path) -> Monster {
 pub(crate) fn spawn_initial_monsters(
     world: &mut World,
     all_monster_definitions: &AllMonsterDefinitions,
-    all_spawns: &AllSpawns,
+    all_spawns: &AllSpawnsMap,
 ) {
     info!("Spawning initial monsters.");
     let mut monsters_vec: Vec<(MonsterDetails, DisplayDetails, Position, Stats)> = vec![];
@@ -153,9 +153,9 @@ fn move_towards_target(monster_position: &mut Position, target_position: &Positi
         Ordering::Equal => {
             let mut rng = rand::thread_rng();
             if rng.gen::<bool>() {
-                new_pos_x = move_towards(diff_x, monster_position.pos_x)
+                new_pos_x = move_towards(diff_x, monster_position.pos_x);
             } else {
-                new_pos_y = move_towards(diff_y, monster_position.pos_y)
+                new_pos_y = move_towards(diff_y, monster_position.pos_y);
             }
         }
     }
@@ -165,9 +165,10 @@ fn move_towards_target(monster_position: &mut Position, target_position: &Positi
 
 fn move_towards(diff: isize, position: usize) -> usize {
     if diff.unsigned_abs() > 1 {
-        return match diff.is_positive() {
-            true => position - 1,
-            false => position + 1,
+        return if diff.is_positive() {
+            position - 1
+        } else {
+            position + 1
         };
     }
     position
