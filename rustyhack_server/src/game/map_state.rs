@@ -1,7 +1,6 @@
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::components::EntityType;
 use std::collections::HashMap;
-use uuid::Uuid;
 
 pub(crate) type MapState = Vec<Vec<Vec<EntityType>>>;
 
@@ -58,13 +57,17 @@ pub(crate) fn is_colliding_with_other_player(
     (colliding, player_name)
 }
 
-pub(crate) fn is_colliding_with_monster(x: usize, y: usize, map_state: &MapState) -> (bool, Uuid) {
+pub(crate) fn is_colliding_with_monster(
+    x: usize,
+    y: usize,
+    map_state: &MapState,
+) -> (bool, String) {
     let mut colliding = false;
-    let mut monster_id = Uuid::new_v4();
+    let mut monster_id = "".to_string();
     for entity_type in map_state[y][x].iter() {
         if let EntityType::Monster(monster) = entity_type {
             colliding = monster.display_details.collidable;
-            monster_id = monster.monster_details.id;
+            monster_id = monster.monster_details.id.to_string();
         }
     }
     (colliding, monster_id)

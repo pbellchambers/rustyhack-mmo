@@ -1,3 +1,4 @@
+use crate::game::combat::{CombatAttackerStats, CombatParties};
 use crate::game::map_state::{AllMapStates, MapState};
 use crate::game::{combat, map_state};
 use legion::world::SubWorld;
@@ -24,6 +25,7 @@ pub(crate) fn build_map_state_update_schedule() -> Schedule {
 pub(crate) fn build_player_update_schedule() -> Schedule {
     let schedule = Schedule::builder()
         .add_system(update_player_input_system())
+        .add_system(check_for_combat_system())
         .add_system(resolve_combat_system())
         .add_system(update_entities_position_system())
         .build();
@@ -49,7 +51,7 @@ fn reset_map_state(#[resource] all_map_states: &mut AllMapStates) {
 fn add_entities_to_map_state(
     position: &Position,
     velocity: &Velocity,
-    display_detals: &DisplayDetails,
+    display_details: &DisplayDetails,
     monster_details_option: Option<&MonsterDetails>,
     player_details_option: Option<&PlayerDetails>,
     stats_option: Option<&Stats>,
@@ -59,7 +61,7 @@ fn add_entities_to_map_state(
     if let Some(monster_details) = monster_details_option {
         let monster = Monster {
             monster_details: monster_details.clone(),
-            display_details: *display_detals,
+            display_details: *display_details,
             position: position.clone(),
             velocity: *velocity,
             stats: *stats_option.unwrap(),
@@ -74,7 +76,7 @@ fn add_entities_to_map_state(
     if let Some(player_details) = player_details_option {
         let player = Player {
             player_details: player_details.clone(),
-            display_details: *display_detals,
+            display_details: *display_details,
             position: position.clone(),
             stats: *stats_option.unwrap(),
         };
@@ -103,14 +105,23 @@ fn update_player_input(
 }
 
 #[system]
-#[read_component(DisplayDetails)]
-fn resolve_combat(
+fn check_for_combat(
     world: &mut SubWorld,
-    velocity_query: &mut Query<(&mut Velocity, &mut Position)>,
+    velocity_query: &mut Query<(
+        &mut Velocity,
+        &mut Position,
+        Option<&MonsterDetails>,
+        Option<&PlayerDetails>,
+        &Stats,
+    )>,
     #[resource] all_map_states: &AllMapStates,
+    #[resource] combat_parties: &mut CombatParties,
+    #[resource] combat_attacker_stats: &mut CombatAttackerStats,
 ) {
-    for (velocity, position) in velocity_query.iter_mut(world) {
-        debug!("Updating world entities positions after velocity updates.");
+    for (velocity, position, monster_details_option, player_details_option, stats) in
+        velocity_query.iter_mut(world)
+    {
+        debug!("Checking for possible combat after velocity updates.");
         if velocity.x == 0 && velocity.y == 0 {
             //no velocity, no updates
             continue;
@@ -129,28 +140,70 @@ fn resolve_combat(
             current_map_states,
         );
 
+        let attacker_name_or_id =
+            get_attacker_name_or_id(player_details_option, monster_details_option);
+        debug!("Combat detected, attacker is: {}", attacker_name_or_id);
+
         if player_collision_status.0 {
-            combat::resolve_player_combat(
-                player_collision_status.1,
-                position.x,
-                position.y,
-                velocity.x,
-                velocity.y,
-            );
+            combat_parties.insert(player_collision_status.1, attacker_name_or_id.clone());
+            combat_attacker_stats.insert(attacker_name_or_id.clone(), *stats);
             velocity.x = 0;
             velocity.y = 0;
         } else if monster_collision_status.0 {
-            combat::resolve_monster_combat(
-                monster_collision_status.1,
-                position.x,
-                position.y,
-                velocity.x,
-                velocity.y,
-            );
+            combat_parties.insert(monster_collision_status.1, attacker_name_or_id.clone());
+            combat_attacker_stats.insert(attacker_name_or_id.clone(), *stats);
             velocity.x = 0;
             velocity.y = 0;
         }
     }
+}
+
+fn get_attacker_name_or_id(
+    player_details_option: Option<&PlayerDetails>,
+    monster_details_option: Option<&MonsterDetails>,
+) -> String {
+    if let Some(player_details) = player_details_option {
+        player_details.player_name.clone()
+    } else if let Some(monster_details) = monster_details_option {
+        monster_details.id.to_string()
+    } else {
+        error!("Attacker was somehow not a player or monster, returning empty string.");
+        "".to_string()
+    }
+}
+
+#[system]
+fn resolve_combat(
+    world: &mut SubWorld,
+    combat_query: &mut Query<(&mut Stats, Option<&MonsterDetails>, Option<&PlayerDetails>)>,
+    #[resource] combat_parties: &mut CombatParties,
+    #[resource] combat_attacker_stats: &mut CombatAttackerStats,
+) {
+    for (stats, monster_details_option, player_details_option) in combat_query.iter_mut(world) {
+        debug!("Resolving combat.");
+        if let Some(player_details) = player_details_option {
+            if combat_parties.contains_key(&player_details.player_name) {
+                let attacker_name_or_id = combat_parties.get(&player_details.player_name).unwrap();
+                let damage = combat::resolve_combat(
+                    combat_attacker_stats.get(attacker_name_or_id).unwrap(),
+                    stats,
+                );
+                stats.current_hp -= damage;
+            }
+        } else if let Some(monster_details) = monster_details_option {
+            if combat_parties.contains_key(&monster_details.id.to_string()) {
+                let attacker_name_or_id =
+                    combat_parties.get(&monster_details.id.to_string()).unwrap();
+                let damage = combat::resolve_combat(
+                    combat_attacker_stats.get(attacker_name_or_id).unwrap(),
+                    stats,
+                );
+                stats.current_hp -= damage;
+            }
+        }
+    }
+    combat_parties.clear();
+    combat_attacker_stats.clear();
 }
 
 fn get_current_map_states<'a>(all_map_states: &'a AllMapStates, map: &String) -> &'a MapState {
@@ -162,14 +215,13 @@ fn get_current_map_states<'a>(all_map_states: &'a AllMapStates, map: &String) ->
 }
 
 #[system]
-#[read_component(DisplayDetails)]
 fn update_entities_position(
     world: &mut SubWorld,
     velocity_query: &mut Query<(&mut Velocity, &mut Position)>,
     #[resource] all_maps: &AllMaps,
 ) {
     for (velocity, position) in velocity_query.iter_mut(world) {
-        debug!("Updating world entities positions after velocity updates.");
+        debug!("Checking for possible movement after velocity updates and combat check.");
         if velocity.x == 0 && velocity.y == 0 {
             //no velocity, no updates
             continue;

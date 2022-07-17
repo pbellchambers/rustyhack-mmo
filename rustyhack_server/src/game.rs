@@ -9,6 +9,7 @@ use legion::*;
 use rustyhack_lib::ecs::components::*;
 
 use crate::consts;
+use crate::game::combat::{CombatAttackerStats, CombatParties};
 use crate::networking::message_handler;
 
 mod background_map;
@@ -25,6 +26,8 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let all_maps = background_map::initialise_all_maps();
     let all_maps_resource = all_maps.clone();
     let all_map_states = map_state::initialise_all_map_states(&all_maps);
+    let combat_parties: CombatParties = HashMap::new();
+    let combat_attacker_stats: CombatAttackerStats = HashMap::new();
     let all_monster_definitions = monsters::initialise_all_monster_definitions();
     let all_spawns = spawns::initialise_all_spawn_definitions();
     let mut player_velocity_updates: HashMap<String, Velocity> = HashMap::new();
@@ -44,6 +47,8 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let mut resources = Resources::default();
     resources.insert(all_maps_resource);
     resources.insert(all_map_states);
+    resources.insert(combat_parties);
+    resources.insert(combat_attacker_stats);
     info!("Finished loading resources into world.");
 
     //spawn initial monsters

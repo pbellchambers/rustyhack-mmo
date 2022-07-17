@@ -71,7 +71,7 @@ pub struct MonsterDetails {
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Stats {
-    pub current_hp: u32,
+    pub current_hp: i32,
     pub max_hp: u32,
     pub str: u32,
     pub dex: u32,
