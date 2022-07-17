@@ -19,7 +19,7 @@ mod commands;
 mod new_player;
 
 pub(crate) fn run(
-    sender: Sender<Packet>,
+    sender: &Sender<Packet>,
     receiver: Receiver<SocketEvent>,
     server_addr: &str,
     client_addr: &str,
@@ -37,11 +37,11 @@ pub(crate) fn run(
 
     //get basic data from server needed to start client_game
     let all_maps =
-        client_map_handler::request_all_maps_data(&sender, server_addr, &player_update_receiver);
+        client_map_handler::request_all_maps_data(sender, server_addr, &player_update_receiver);
 
     //create player
     let mut player = new_player::send_new_player_request(
-        &sender,
+        sender,
         player_name,
         server_addr,
         client_addr,
@@ -73,7 +73,7 @@ pub(crate) fn run(
         console.clear_screen();
 
         debug!("About to send player velocity update.");
-        client_updates_handler::send_player_updates(&sender, &console, &mut player, server_addr);
+        client_updates_handler::send_player_updates(sender, &console, &mut player, server_addr);
 
         debug!("About to wait for entity updates from server.");
         player = client_updates_handler::check_for_received_player_updates(
@@ -105,7 +105,7 @@ pub(crate) fn run(
         //check if we should quit
         if should_quit(&console) {
             info!("Ctrl-q detected - quitting app.");
-            client_logout::send_logout_notification(&sender, player, server_addr);
+            client_logout::send_logout_notification(sender, player, server_addr);
             //sleep for a second just to make sure the logout notification is sent
             thread::sleep(Duration::from_millis(1000));
             break;

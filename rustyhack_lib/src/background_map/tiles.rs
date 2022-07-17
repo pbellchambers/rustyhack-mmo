@@ -37,17 +37,15 @@ pub enum Tile {
 }
 
 impl Tile {
+    #[must_use]
     pub fn character(&self) -> char {
         match self {
             Tile::Wall(wall) => wall.character_icon,
             Tile::Door(door) => door.character_icon,
             Tile::UpLadder => '^',
             Tile::DownLadder => 'v',
-            Tile::EmptySpace => ' ',
             Tile::Boundary => '#',
-            Tile::NewLine => ' ',
-            Tile::CarriageReturn => ' ',
-            Tile::EndOfFile => ' ',
+            Tile::EmptySpace | Tile::NewLine | Tile::CarriageReturn | Tile::EndOfFile => ' ',
         }
     }
 }

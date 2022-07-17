@@ -1,4 +1,3 @@
-use crate::networking::message_handler;
 use bincode::serialize;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
@@ -124,7 +123,7 @@ fn join_player(world: &mut World, name: String, client_addr: String, sender: &Se
                 );
                 process::exit(1);
             });
-            message_handler::send_packet(
+            rustyhack_lib::message_handler::send_packet(
                 Packet::reliable_ordered(client_addr.parse().unwrap(), response, Some(11)),
                 sender,
             );
@@ -168,7 +167,7 @@ fn send_player_joined_response(player: Player, sender: &Sender<Packet>) {
         );
         process::exit(1);
     });
-    message_handler::send_packet(
+    rustyhack_lib::message_handler::send_packet(
         Packet::reliable_ordered(
             player.player_details.client_addr.parse().unwrap(),
             response,
@@ -200,7 +199,7 @@ pub(crate) fn send_player_updates(
                     );
                     process::exit(1);
                 });
-            message_handler::send_packet(
+            rustyhack_lib::message_handler::send_packet(
                 Packet::unreliable_sequenced(
                     player_details.client_addr.parse().unwrap(),
                     response,
@@ -256,7 +255,7 @@ pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>
                 );
                 process::exit(1);
             });
-            message_handler::send_packet(
+            rustyhack_lib::message_handler::send_packet(
                 Packet::unreliable_sequenced(
                     player_details.client_addr.parse().unwrap(),
                     response,

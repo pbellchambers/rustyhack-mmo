@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process;
 
 pub type AllSpawns = HashMap<String, Spawns>;
@@ -29,7 +29,11 @@ pub struct PositionWithoutMap {
 pub(crate) fn initialise_all_spawn_definitions() -> AllSpawns {
     info!("About to initialise all spawn definitions");
     let mut all_spawns: HashMap<String, Spawns> = HashMap::new();
-    let paths = file_utils::get_all_files_in_location(spawns_directory_location());
+    let mut file_location = file_utils::current_exe_location();
+    file_location.pop();
+    file_location.push(consts::ASSETS_DIRECTORY);
+    file_location.push(consts::SPAWNS_DIRECTORY);
+    let paths = file_utils::get_all_files_in_location(&file_location);
     for path in paths {
         let unwrapped_path = path.unwrap();
         let name = String::from(
@@ -46,14 +50,6 @@ pub(crate) fn initialise_all_spawn_definitions() -> AllSpawns {
         all_spawns.insert(name, spawns);
     }
     all_spawns
-}
-
-fn spawns_directory_location() -> PathBuf {
-    let mut file_location = file_utils::current_exe_location();
-    file_location.pop();
-    file_location.push(consts::ASSETS_DIRECTORY);
-    file_location.push(consts::SPAWNS_DIRECTORY);
-    file_location
 }
 
 fn get_spawns_definition_from_path(path: &Path) -> Spawns {

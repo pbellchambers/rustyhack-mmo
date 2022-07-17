@@ -11,14 +11,18 @@ use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process;
 use uuid::Uuid;
 
 pub(crate) fn initialise_all_monster_definitions() -> AllMonsterDefinitions {
     info!("About to initialise all monster definitions");
     let mut all_monster_definitions: AllMonsterDefinitions = HashMap::new();
-    let paths = file_utils::get_all_files_in_location(monsters_directory_location());
+    let mut file_location = file_utils::current_exe_location();
+    file_location.pop();
+    file_location.push(consts::ASSETS_DIRECTORY);
+    file_location.push(consts::MONSTERS_DIRECTORY);
+    let paths = file_utils::get_all_files_in_location(&file_location);
     for path in paths {
         let unwrapped_path = path.unwrap();
         let name = String::from(
@@ -35,14 +39,6 @@ pub(crate) fn initialise_all_monster_definitions() -> AllMonsterDefinitions {
         all_monster_definitions.insert(name, monster);
     }
     all_monster_definitions
-}
-
-fn monsters_directory_location() -> PathBuf {
-    let mut file_location = file_utils::current_exe_location();
-    file_location.pop();
-    file_location.push(consts::ASSETS_DIRECTORY);
-    file_location.push(consts::MONSTERS_DIRECTORY);
-    file_location
 }
 
 fn get_monster_definition_from_path(path: &Path) -> Monster {

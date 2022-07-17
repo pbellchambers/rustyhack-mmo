@@ -8,8 +8,8 @@ use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::EntityUpdates;
 
 struct Viewport {
-    width: usize,
-    height: usize,
+    width: u32,
+    height: u32,
     viewable_map_topleft: TilePosition,
 }
 
@@ -44,7 +44,7 @@ fn draw_player(screen: &mut Screen, viewport: &Viewport, player: &Player) {
         (viewport.width / 2) as i32,
         (viewport.height / 2) as i32,
         pixel::pxl_fg(player.display_details.icon, player.display_details.colour),
-    )
+    );
 }
 
 fn draw_other_entities(
@@ -78,7 +78,7 @@ fn draw_other_entities(
                     relative_entity_position.x as i32,
                     relative_entity_position.y as i32,
                     pixel::pxl_fg(display_details.icon, display_details.colour),
-                )
+                );
             }
         }
     }
@@ -86,8 +86,8 @@ fn draw_other_entities(
 
 fn calculate_viewable_map_coords(viewport: &mut Viewport, player: &Player) {
     debug!("Calculating viewable map coordinates.");
-    let x_view_distance: usize = viewport.width / 2;
-    let y_view_distance: usize = viewport.height / 2;
+    let x_view_distance: u32 = viewport.width / 2;
+    let y_view_distance: u32 = viewport.height / 2;
     viewport.viewable_map_topleft = TilePosition {
         x: player.position.pos_x as isize - x_view_distance as isize,
         y: player.position.pos_y as isize - y_view_distance as isize,

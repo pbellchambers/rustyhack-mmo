@@ -107,7 +107,7 @@ fn send_all_maps_chunks(
             .expect("Error serializing AllMapsChunk.");
         if i == 0 {
             info!("Sending first AllMapsChunk packet {} to: {}", i, address);
-            send_packet(
+            rustyhack_lib::message_handler::send_packet(
                 Packet::reliable_ordered(address, chunk_packet, Some(i as u8)),
                 sender,
             );
@@ -118,20 +118,20 @@ fn send_all_maps_chunks(
                 - 1
         {
             info!("Sending last AllMapsChunk packet {} to: {}", i, address);
-            send_packet(
+            rustyhack_lib::message_handler::send_packet(
                 Packet::reliable_ordered(address, chunk_packet, Some(i as u8)),
                 sender,
             );
 
             let complete_response = serialize(&ServerMessage::AllMapsChunksComplete)
                 .expect("Error serializing AllMapsChunksComplete response.");
-            send_packet(
+            rustyhack_lib::message_handler::send_packet(
                 Packet::reliable_ordered(address, complete_response, Some(i as u8 + 1)),
                 sender,
             );
         } else {
             debug!("Sending AllMapsChunk packet {} to: {}", i, address);
-            send_packet(
+            rustyhack_lib::message_handler::send_packet(
                 Packet::reliable_ordered(address, chunk_packet, Some(i as u8)),
                 sender,
             );
@@ -149,19 +149,6 @@ fn deserialize_player_request(msg: &[u8], address: SocketAddr) -> PlayerRequest 
                 &address, error
             );
             PlayerRequest::Undefined
-        }
-    }
-}
-
-pub(crate) fn send_packet(packet: Packet, sender: &Sender<Packet>) {
-    let send_result = sender.send(packet);
-    match send_result {
-        Ok(_) => {
-            //send successful
-        }
-        Err(message) => {
-            warn!("Error sending packet: {}", message);
-            warn!("Will try to continue, but things may be broken.");
         }
     }
 }

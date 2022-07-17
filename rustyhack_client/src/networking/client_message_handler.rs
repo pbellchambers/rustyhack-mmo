@@ -1,6 +1,6 @@
 use bincode::deserialize;
 use crossbeam_channel::{Receiver, Sender};
-use laminar::{Packet, SocketEvent};
+use laminar::SocketEvent;
 use rustyhack_lib::message_handler::messages::ServerMessage;
 use std::{process, thread};
 
@@ -9,13 +9,19 @@ pub(crate) fn spawn_message_handler_thread(
     incoming_server_messages: Sender<ServerMessage>,
     entity_update_messages: Sender<ServerMessage>,
 ) {
-    thread::spawn(move || run(receiver, incoming_server_messages, entity_update_messages));
+    thread::spawn(move || {
+        run(
+            &receiver,
+            &incoming_server_messages,
+            &entity_update_messages,
+        );
+    });
 }
 
 pub(crate) fn run(
-    receiver: Receiver<SocketEvent>,
-    incoming_server_messages: Sender<ServerMessage>,
-    entity_update_messages: Sender<ServerMessage>,
+    receiver: &Receiver<SocketEvent>,
+    incoming_server_messages: &Sender<ServerMessage>,
+    entity_update_messages: &Sender<ServerMessage>,
 ) {
     info!("Spawned message handler thread.");
     loop {
@@ -74,28 +80,19 @@ pub(crate) fn run(
                     }
                 }
                 SocketEvent::Connect(connect_event) => {
-                    info!("Server connected at: {}", connect_event)
+                    info!("Server connected at: {}", connect_event);
                 }
                 SocketEvent::Timeout(address) => {
                     error!("Server connection timed out: {}", address);
                     warn!("Please check that the server is online and the address is correct.");
                     process::exit(1);
                 }
-                _ => {}
+                SocketEvent::Disconnect(address) => {
+                    error!("Server connection disconnected: {}", address);
+                    warn!("Please check that the server is online and the address is correct.");
+                    process::exit(1);
+                }
             }
-        }
-    }
-}
-
-pub(crate) fn send_packet(packet: Packet, sender: &Sender<Packet>) {
-    let send_result = sender.send(packet);
-    match send_result {
-        Ok(_) => {
-            //packet send successful
-        }
-        Err(message) => {
-            warn!("Error sending packet: {}", message);
-            warn!("Will try to continue, but things may be broken.");
         }
     }
 }

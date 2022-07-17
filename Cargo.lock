@@ -593,7 +593,9 @@ name = "rustyhack_lib"
 version = "0.3.0"
 dependencies = [
  "console_engine",
+ "crossbeam-channel",
  "crossterm",
+ "laminar",
  "log",
  "serde",
  "simplelog",

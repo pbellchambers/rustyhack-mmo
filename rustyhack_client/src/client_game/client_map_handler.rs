@@ -1,4 +1,3 @@
-use crate::networking::client_message_handler;
 use bincode::{deserialize, serialize};
 use crossbeam_channel::{Receiver, Sender};
 use itertools::Itertools;
@@ -22,7 +21,7 @@ pub(crate) fn request_all_maps_data(
             .expect("Error serializing GetAllMaps request."),
         Some(1),
     );
-    client_message_handler::send_packet(get_all_maps_request_packet, sender);
+    rustyhack_lib::message_handler::send_packet(get_all_maps_request_packet, sender);
     info!("Requested all maps data from server.");
     wait_for_all_maps_response(channel_receiver)
 }
@@ -48,7 +47,7 @@ fn wait_for_all_maps_response(channel_receiver: &Receiver<ServerMessage>) -> All
                     info!(
                         "Ignoring other message types until maps downloaded. {:?}",
                         received_message
-                    )
+                    );
                 }
             }
         }
@@ -65,7 +64,7 @@ fn wait_for_all_maps_response(channel_receiver: &Receiver<ServerMessage>) -> All
 fn combine_all_maps_chunks(
     all_maps_chunks: &HashMap<usize, Vec<u8>>,
 ) -> HashMap<String, BackgroundMap> {
-    deserialize_all_maps_reply(combine_chunks(all_maps_chunks))
+    deserialize_all_maps_reply(&combine_chunks(all_maps_chunks))
 }
 
 fn combine_chunks(all_maps_chunks: &HashMap<usize, Vec<u8>>) -> Vec<u8> {
@@ -80,8 +79,8 @@ fn combine_chunks(all_maps_chunks: &HashMap<usize, Vec<u8>>) -> Vec<u8> {
     combined_all_maps_chunks
 }
 
-fn deserialize_all_maps_reply(combined_chunks: Vec<u8>) -> HashMap<String, BackgroundMap> {
-    let deserialized_chunks = deserialize::<ServerMessage>(&combined_chunks)
+fn deserialize_all_maps_reply(combined_chunks: &[u8]) -> HashMap<String, BackgroundMap> {
+    let deserialized_chunks = deserialize::<ServerMessage>(combined_chunks)
         .expect("Error deserializing combined all maps chunks.");
     return if let ServerMessage::AllMaps(message) = deserialized_chunks {
         message

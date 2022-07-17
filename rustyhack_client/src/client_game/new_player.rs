@@ -1,4 +1,3 @@
-use crate::networking::client_message_handler;
 use bincode::serialize;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
@@ -24,7 +23,7 @@ pub(crate) fn send_new_player_request(
         }))
         .unwrap(),
     );
-    client_message_handler::send_packet(create_player_request_packet, sender);
+    rustyhack_lib::message_handler::send_packet(create_player_request_packet, sender);
     info!("Sent new player request to server.");
     wait_for_new_player_response(channel_receiver)
 }
@@ -51,7 +50,7 @@ fn wait_for_new_player_response(channel_receiver: &Receiver<ServerMessage>) -> P
                     info!(
                         "Ignoring other message types until new player confirmed. {:?}",
                         received_message
-                    )
+                    );
                 }
             }
         }

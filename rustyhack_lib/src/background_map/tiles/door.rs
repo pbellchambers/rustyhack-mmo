@@ -10,6 +10,7 @@ pub struct Door {
 }
 
 impl Door {
+    #[must_use]
     pub fn new(x: isize, y: isize, open_state: OpenState) -> Door {
         Door {
             tile_position: TilePosition { x, y },

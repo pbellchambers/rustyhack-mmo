@@ -1,4 +1,3 @@
-use crate::networking::client_message_handler;
 use bincode::serialize;
 use console_engine::{ConsoleEngine, KeyCode};
 use crossbeam_channel::{Receiver, Sender};
@@ -44,7 +43,7 @@ fn send_velocity_packet(sender: &Sender<Packet>, server_addr: &str, player: &Pla
         .unwrap(),
         Some(10),
     );
-    client_message_handler::send_packet(packet, sender);
+    rustyhack_lib::message_handler::send_packet(packet, sender);
     debug!("Sent velocity packet to server.");
 }
 
@@ -59,14 +58,14 @@ pub(crate) fn check_for_received_player_updates(
             match received_message {
                 ServerMessage::UpdatePosition(new_position) => {
                     debug!("Player position update received: {:?}", &new_position);
-                    player.position = new_position
+                    player.position = new_position;
                 }
                 //todo receive updated hp from server
                 _ => {
                     warn!(
                         "Unexpected message on channel from message handler: {:?}",
                         received_message
-                    )
+                    );
                 }
             }
         }
@@ -91,7 +90,7 @@ pub(crate) fn check_for_received_entity_updates(
                     warn!(
                         "Unexpected message on channel from message handler: {:?}",
                         received_message
-                    )
+                    );
                 }
             }
         }
