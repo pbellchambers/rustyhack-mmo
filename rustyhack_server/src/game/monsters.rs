@@ -146,8 +146,8 @@ pub(crate) fn update_velocities(world: &mut World) {
 }
 
 fn move_towards_target(monster_position: &mut Position, target_position: &Position) {
-    let diff_x = monster_position.pos_x - target_position.pos_x;
-    let diff_y = monster_position.pos_y - target_position.pos_y;
+    let diff_x = monster_position.pos_x as isize - target_position.pos_x as isize;
+    let diff_y = monster_position.pos_y as isize - target_position.pos_y as isize;
     let mut new_pos_x = monster_position.pos_x;
     let mut new_pos_y = monster_position.pos_y;
 
@@ -163,11 +163,11 @@ fn move_towards_target(monster_position: &mut Position, target_position: &Positi
             }
         }
     }
-    monster_position.velocity_x = new_pos_x - monster_position.pos_x;
-    monster_position.velocity_y = new_pos_y - monster_position.pos_y;
+    monster_position.velocity_x = new_pos_x as isize - monster_position.pos_x as isize;
+    monster_position.velocity_y = new_pos_y as isize - monster_position.pos_y as isize;
 }
 
-fn move_towards(diff: i32, position: i32) -> i32 {
+fn move_towards(diff: isize, position: usize) -> usize {
     if diff.unsigned_abs() > 1 {
         return match diff.is_positive() {
             true => position - 1,
@@ -181,13 +181,13 @@ fn is_any_player_nearby<'a>(
     player_positions: &'a HashMap<String, Position>,
     monster_position: &Position,
 ) -> Option<(&'a String, &'a Position)> {
-    let monster_x_range = (monster_position.pos_x - MONSTER_DISTANCE_ACTIVATION)
-        ..(monster_position.pos_x + MONSTER_DISTANCE_ACTIVATION);
-    let monster_y_range = (monster_position.pos_y - MONSTER_DISTANCE_ACTIVATION)
-        ..(monster_position.pos_y + MONSTER_DISTANCE_ACTIVATION);
+    let monster_x_range = (monster_position.pos_x as isize - MONSTER_DISTANCE_ACTIVATION)
+        ..(monster_position.pos_x as isize + MONSTER_DISTANCE_ACTIVATION);
+    let monster_y_range = (monster_position.pos_y as isize - MONSTER_DISTANCE_ACTIVATION)
+        ..(monster_position.pos_y as isize + MONSTER_DISTANCE_ACTIVATION);
     for (player_name, position) in player_positions {
-        if monster_x_range.contains(&position.pos_x)
-            && monster_y_range.contains(&position.pos_y)
+        if monster_x_range.contains(&(position.pos_x as isize))
+            && monster_y_range.contains(&(position.pos_y as isize))
             && monster_position.current_map == position.current_map
         {
             debug!("There is a player near a monster");
@@ -201,13 +201,13 @@ fn is_specific_player_nearby(
     current_target_position: &Position,
     monster_position: &Position,
 ) -> bool {
-    let monster_x_range = (monster_position.pos_x - MONSTER_DISTANCE_ACTIVATION)
-        ..(monster_position.pos_x + MONSTER_DISTANCE_ACTIVATION);
-    let monster_y_range = (monster_position.pos_y - MONSTER_DISTANCE_ACTIVATION)
-        ..(monster_position.pos_y + MONSTER_DISTANCE_ACTIVATION);
+    let monster_x_range = (monster_position.pos_x as isize - MONSTER_DISTANCE_ACTIVATION)
+        ..(monster_position.pos_x as isize + MONSTER_DISTANCE_ACTIVATION);
+    let monster_y_range = (monster_position.pos_y as isize - MONSTER_DISTANCE_ACTIVATION)
+        ..(monster_position.pos_y as isize + MONSTER_DISTANCE_ACTIVATION);
 
-    if monster_x_range.contains(&current_target_position.pos_x)
-        && monster_y_range.contains(&current_target_position.pos_y)
+    if monster_x_range.contains(&(current_target_position.pos_x as isize))
+        && monster_y_range.contains(&(current_target_position.pos_y as isize))
         && monster_position.current_map == current_target_position.current_map
     {
         return true;

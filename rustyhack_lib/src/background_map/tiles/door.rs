@@ -10,7 +10,7 @@ pub struct Door {
 }
 
 impl Door {
-    pub fn new(x: i32, y: i32, open_state: OpenState) -> Door {
+    pub fn new(x: isize, y: isize, open_state: OpenState) -> Door {
         Door {
             tile_position: TilePosition { x, y },
             character_icon: match open_state {

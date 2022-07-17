@@ -1,5 +1,6 @@
 #![warn(clippy::cargo)]
 #![allow(clippy::multiple_crate_versions)]
+#![warn(clippy::pedantic)]
 
 use std::env;
 

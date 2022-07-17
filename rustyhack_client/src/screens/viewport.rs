@@ -8,8 +8,8 @@ use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::EntityUpdates;
 
 struct Viewport {
-    width: u32,
-    height: u32,
+    width: usize,
+    height: usize,
     viewable_map_topleft: TilePosition,
 }
 
@@ -29,7 +29,7 @@ pub(crate) fn draw_viewport_contents(
     entity_updates: &EntityUpdates,
 ) -> Screen {
     let mut viewport = Viewport::default();
-    let mut screen = Screen::new(viewport.width, viewport.height);
+    let mut screen = Screen::new(viewport.width as u32, viewport.height as u32);
     calculate_viewable_map_coords(&mut viewport, player);
     draw_viewable_map(&mut screen, background_map, &viewport);
     draw_viewport_frame(&mut screen, &viewport);
@@ -61,22 +61,22 @@ fn draw_other_entities(
             && position.current_map == player.position.current_map
         {
             let relative_entity_position = TilePosition {
-                x: position.pos_x - viewport.viewable_map_topleft.x,
-                y: position.pos_y - viewport.viewable_map_topleft.y,
+                x: position.pos_x as isize - viewport.viewable_map_topleft.x,
+                y: position.pos_y as isize - viewport.viewable_map_topleft.y,
             };
 
             if relative_entity_position.x > 0
                 && relative_entity_position.y > 0
-                && relative_entity_position.x < (viewport.width - 1) as i32
-                && relative_entity_position.y < (viewport.height - 1) as i32
+                && relative_entity_position.x < (viewport.width - 1) as isize
+                && relative_entity_position.y < (viewport.height - 1) as isize
             {
                 let display_details = entity_updates.display_details.get(&name).unwrap_or_else(|| {
                     warn!("Entity update for {} doesn't have a corresponding display detail, using default.", &name);
                     &default_display_details});
 
                 screen.set_pxl(
-                    relative_entity_position.x,
-                    relative_entity_position.y,
+                    relative_entity_position.x as i32,
+                    relative_entity_position.y as i32,
                     pixel::pxl_fg(display_details.icon, display_details.colour),
                 )
             }
@@ -86,20 +86,20 @@ fn draw_other_entities(
 
 fn calculate_viewable_map_coords(viewport: &mut Viewport, player: &Player) {
     debug!("Calculating viewable map coordinates.");
-    let x_view_distance = viewport.width / 2;
-    let y_view_distance = viewport.height / 2;
+    let x_view_distance: usize = viewport.width / 2;
+    let y_view_distance: usize = viewport.height / 2;
     viewport.viewable_map_topleft = TilePosition {
-        x: player.position.pos_x - x_view_distance as i32,
-        y: player.position.pos_y - y_view_distance as i32,
+        x: player.position.pos_x as isize - x_view_distance as isize,
+        y: player.position.pos_y as isize - y_view_distance as isize,
     }
 }
 
 fn draw_viewable_map(screen: &mut Screen, world_map: &BackgroundMap, viewport: &Viewport) {
     debug!("Drawing viewable map.");
-    let mut viewport_print_y_loc: i32 = 0;
-    while viewport_print_y_loc < viewport.height as i32 {
-        let mut viewport_print_x_loc: i32 = 0;
-        while viewport_print_x_loc < viewport.width as i32 {
+    let mut viewport_print_y_loc: isize = 0;
+    while viewport_print_y_loc < viewport.height as isize {
+        let mut viewport_print_x_loc: isize = 0;
+        while viewport_print_x_loc < viewport.width as isize {
             let current_map_print_loc = TilePosition {
                 x: viewport.viewable_map_topleft.x + viewport_print_x_loc,
                 y: viewport.viewable_map_topleft.y + viewport_print_y_loc,
@@ -111,12 +111,12 @@ fn draw_viewable_map(screen: &mut Screen, world_map: &BackgroundMap, viewport: &
                         .data()
                         .get(current_map_print_loc.y as usize)
                         .unwrap_or(&vec![Tile::EmptySpace])
-                        .len() as i32)
-                && (current_map_print_loc.y < world_map.data().len() as i32)
+                        .len() as isize)
+                && (current_map_print_loc.y < world_map.data().len() as isize)
             {
                 screen.print(
-                    viewport_print_x_loc,
-                    viewport_print_y_loc,
+                    viewport_print_x_loc as i32,
+                    viewport_print_y_loc as i32,
                     &world_map
                         .data()
                         .get(current_map_print_loc.y as usize)
@@ -127,7 +127,11 @@ fn draw_viewable_map(screen: &mut Screen, world_map: &BackgroundMap, viewport: &
                         .to_string(),
                 );
             } else {
-                screen.print(viewport_print_x_loc, viewport_print_y_loc, " ");
+                screen.print(
+                    viewport_print_x_loc as i32,
+                    viewport_print_y_loc as i32,
+                    " ",
+                );
             }
             viewport_print_x_loc += 1;
         }

@@ -70,8 +70,8 @@ fn return_visible_entity_at(
     mut entity_name: String,
     other_entities: &EntityUpdates,
     player: &Player,
-    x: i32,
-    y: i32,
+    x: usize,
+    y: usize,
 ) -> String {
     for (entity_id_or_name, position) in other_entities.position_updates.clone() {
         if entity_id_or_name != player.player_details.player_name

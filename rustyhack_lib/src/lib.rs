@@ -1,5 +1,6 @@
 #![warn(clippy::cargo)]
 #![allow(clippy::multiple_crate_versions)]
+#![warn(clippy::pedantic)]
 
 pub mod background_map;
 pub mod consts;

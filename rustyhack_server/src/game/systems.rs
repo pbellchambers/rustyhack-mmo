@@ -124,14 +124,14 @@ fn check_for_combat(
         let current_map_states = get_current_map_states(all_map_states, &position.current_map);
 
         let player_collision_status = map_state::is_colliding_with_other_player(
-            (position.pos_x + position.velocity_x) as usize,
-            (position.pos_y + position.velocity_y) as usize,
+            (position.pos_x as isize + position.velocity_x) as usize,
+            (position.pos_y as isize + position.velocity_y) as usize,
             current_map_states,
         );
 
         let monster_collision_status = map_state::is_colliding_with_monster(
-            (position.pos_x + position.velocity_x) as usize,
-            (position.pos_y + position.velocity_y) as usize,
+            (position.pos_x as isize + position.velocity_x) as usize,
+            (position.pos_y as isize + position.velocity_y) as usize,
             current_map_states,
         );
 
@@ -224,11 +224,11 @@ fn update_entities_position(
         let current_map = get_current_map(all_maps, &position.current_map);
 
         if !entity_is_colliding_with_tile(current_map.get_tile_at(
-            (position.pos_x + position.velocity_x) as usize,
-            (position.pos_y + position.velocity_y) as usize,
+            (position.pos_x as isize + position.velocity_x) as usize,
+            (position.pos_y as isize + position.velocity_y) as usize,
         )) {
-            position.pos_x += position.velocity_x;
-            position.pos_y += position.velocity_y;
+            position.pos_x = (position.pos_x as isize + position.velocity_x) as usize;
+            position.pos_y = (position.pos_y as isize + position.velocity_y) as usize;
         }
         position.velocity_x = 0;
         position.velocity_y = 0;

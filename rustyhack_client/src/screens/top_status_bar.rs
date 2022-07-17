@@ -4,7 +4,7 @@ use console_engine::screen::Screen;
 use rustyhack_lib::ecs::player::Player;
 
 pub(crate) fn draw(player: &Player) -> Screen {
-    let mut screen = Screen::new(client_consts::CONSOLE_WIDTH, 1);
+    let mut screen = Screen::new(client_consts::CONSOLE_WIDTH as u32, 1);
     screen.line(
         0,
         0,

@@ -52,10 +52,10 @@ pub(crate) fn is_colliding_with_other_player(
         //don't bother checking for collisions at y == 0 as map_state overflows
         (colliding, player_name)
     } else {
-        info!("x {}, y {}", x, y);
         for entity_type in map_state[y][x].iter() {
             if let EntityType::Player(player) = entity_type {
-                colliding = player.player_details.currently_online && player.display_details.collidable;
+                colliding =
+                    player.player_details.currently_online && player.display_details.collidable;
                 player_name = player.player_details.player_name.clone();
             }
         }

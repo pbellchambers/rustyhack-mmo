@@ -11,10 +11,12 @@ pub struct BackgroundMap {
 }
 
 impl BackgroundMap {
+    #[must_use]
     pub fn data(&self) -> &Vec<Vec<Tile>> {
         &self.data
     }
 
+    #[must_use]
     pub fn get_tile_at(&self, x: usize, y: usize) -> Tile {
         self.data[y][x]
     }

@@ -29,7 +29,7 @@ pub(crate) type Attacker = String;
 pub(crate) type Defender = String;
 pub(crate) type CombatAttackerStats = HashMap<String, Stats>;
 
-pub(crate) fn resolve_combat(attacker_stats: &Stats, defender_stats: &Stats) -> i32 {
+pub(crate) fn resolve_combat(attacker_stats: &Stats, defender_stats: &Stats) -> isize {
     info!("Resolving combat...");
     if check_attack_success(attacker_stats.dex, defender_stats.dex) {
         info!("Attack hit...");
@@ -39,22 +39,22 @@ pub(crate) fn resolve_combat(attacker_stats: &Stats, defender_stats: &Stats) -> 
             defender_stats.armour,
         );
         info!("Damage taken: {}", actual_damage_received);
-        actual_damage_received as i32
+        actual_damage_received as isize
     } else {
         info!("Attack missed...");
         0
     }
 }
 
-fn calculate_damage_dealt(attacker_weapon_damage: u32, attacker_str: u32) -> u32 {
+fn calculate_damage_dealt(attacker_weapon_damage: usize, attacker_str: usize) -> usize {
     attacker_weapon_damage * ((attacker_str / 100) + 1)
 }
 
-fn calculate_actual_damage_received(damage_dealt: u32, defender_armour: u32) -> u32 {
+fn calculate_actual_damage_received(damage_dealt: usize, defender_armour: usize) -> usize {
     damage_dealt * (1 - (defender_armour / 100))
 }
 
-fn check_attack_success(attacker_dex: u32, defender_dex: u32) -> bool {
+fn check_attack_success(attacker_dex: usize, defender_dex: usize) -> bool {
     let mut rng = thread_rng();
     let combat_accuracy = BASE_COMBAT_ACCURACY
         + ((100 - BASE_COMBAT_ACCURACY) * (attacker_dex / 100))
