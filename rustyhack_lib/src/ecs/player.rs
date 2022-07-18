@@ -35,7 +35,7 @@ impl Default for Player {
                 update_available: false,
                 current_hp: 50.0,
                 max_hp: 50.0,
-                str: 70.0,
+                str: 10.0,
                 dex: 10.0,
                 con: 10.0,
                 armour: 5.0,
