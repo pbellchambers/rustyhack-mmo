@@ -46,6 +46,7 @@ impl Default for DisplayDetails {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PlayerDetails {
+    pub id: Uuid,
     pub player_name: String,
     pub client_addr: String,
     pub currently_online: bool,

@@ -2,6 +2,7 @@ use crate::consts::{BASE_COMBAT_ACCURACY, BASE_WEAPON_DAMAGE};
 use rand::prelude::*;
 use rustyhack_lib::ecs::components::Stats;
 use std::collections::HashMap;
+use uuid::Uuid;
 
 /*
 Initial thoughts on combat stats...
@@ -25,15 +26,15 @@ Accuracy% = Base accuracy + ((100 - base accuracy) * (Attacker's Dex / 100)) - (
 */
 
 pub(crate) type CombatParties = HashMap<Defender, Attacker>;
-pub(crate) type Attacker = String;
-pub(crate) type Defender = String;
-pub(crate) type CombatAttackerStats = HashMap<String, Stats>;
+pub(crate) type Attacker = Uuid;
+pub(crate) type Defender = Uuid;
+pub(crate) type CombatAttackerStats = HashMap<Uuid, Stats>;
 
 pub(crate) fn resolve_combat(attacker_stats: &Stats, defender_stats: &Stats) -> i32 {
     info!("Resolving combat...");
     if check_attack_success(attacker_stats.dex, defender_stats.dex) {
         info!("Attack hit...");
-        //todo weapon damage currently static constant
+        //todo weapon damage currently static constant, make actual equipment with range
         let actual_damage_received = calculate_actual_damage_received(
             calculate_damage_dealt(BASE_WEAPON_DAMAGE, attacker_stats.str),
             defender_stats.armour,
@@ -47,6 +48,7 @@ pub(crate) fn resolve_combat(attacker_stats: &Stats, defender_stats: &Stats) -> 
 }
 
 fn calculate_damage_dealt(attacker_weapon_damage: i32, attacker_str: i32) -> i32 {
+    //todo make str modify weapon damage range with range of increase
     attacker_weapon_damage * ((attacker_str / 100) + 1)
 }
 

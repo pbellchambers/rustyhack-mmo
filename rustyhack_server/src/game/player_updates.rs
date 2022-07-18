@@ -9,6 +9,7 @@ use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::{EntityUpdates, PlayerRequest, ServerMessage};
 use std::collections::HashMap;
 use std::process;
+use uuid::Uuid;
 
 pub(crate) type PlayerPositionUpdates = HashMap<String, Position>;
 
@@ -141,6 +142,7 @@ fn join_player(world: &mut World, name: &str, client_addr: String, sender: &Send
 fn create_player(world: &mut World, name: &str, client_addr: String, sender: &Sender<Packet>) {
     let player = Player {
         player_details: PlayerDetails {
+            id: Uuid::new_v4(),
             player_name: name
                 .parse()
                 .expect("Something went wrong parsing player name."),

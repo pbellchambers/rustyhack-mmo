@@ -13,6 +13,7 @@ use rustyhack_lib::ecs::monster::Monster;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::math_utils::{i32_from, u32_from};
 use std::collections::HashMap;
+use uuid::Uuid;
 
 pub(crate) fn build_map_state_update_schedule() -> Schedule {
     let schedule = Schedule::builder()
@@ -126,47 +127,35 @@ fn check_for_combat(
         let potential_pos_x = u32_from(i32_from(position.pos_x) + position.velocity_x);
         let potential_pos_y = u32_from(i32_from(position.pos_y) + position.velocity_y);
 
-        let player_collision_status = map_state::is_colliding_with_other_player(
+        let entity_collision_status = map_state::is_colliding_with_entity(
             potential_pos_x,
             potential_pos_y,
             current_map_states,
         );
 
-        let monster_collision_status = map_state::is_colliding_with_monster(
-            potential_pos_x,
-            potential_pos_y,
-            current_map_states,
-        );
+        let attacker_id = get_attacker_id(player_details_option, monster_details_option);
+        debug!("Combat detected, attacker is: {}", attacker_id);
 
-        let attacker_name_or_id =
-            get_attacker_name_or_id(player_details_option, monster_details_option);
-        debug!("Combat detected, attacker is: {}", attacker_name_or_id);
-
-        if player_collision_status.0 {
-            combat_parties.insert(player_collision_status.1, attacker_name_or_id.clone());
-            combat_attacker_stats.insert(attacker_name_or_id.clone(), *stats);
-            position.velocity_x = 0;
-            position.velocity_y = 0;
-        } else if monster_collision_status.0 {
-            combat_parties.insert(monster_collision_status.1, attacker_name_or_id.clone());
-            combat_attacker_stats.insert(attacker_name_or_id.clone(), *stats);
+        if entity_collision_status.0 {
+            combat_parties.insert(entity_collision_status.1, attacker_id);
+            combat_attacker_stats.insert(attacker_id, *stats);
             position.velocity_x = 0;
             position.velocity_y = 0;
         }
     }
 }
 
-fn get_attacker_name_or_id(
+fn get_attacker_id(
     player_details_option: Option<&PlayerDetails>,
     monster_details_option: Option<&MonsterDetails>,
-) -> String {
+) -> Uuid {
     if let Some(player_details) = player_details_option {
-        player_details.player_name.clone()
+        player_details.id
     } else if let Some(monster_details) = monster_details_option {
-        monster_details.id.to_string()
+        monster_details.id
     } else {
-        error!("Attacker was somehow not a player or monster, returning empty string.");
-        "".to_string()
+        error!("Attacker was somehow not a player or monster, returning new Uuid.");
+        Uuid::new_v4()
     }
 }
 
@@ -180,23 +169,18 @@ fn resolve_combat(
     for (stats, monster_details_option, player_details_option) in query.iter_mut(world) {
         debug!("Resolving combat.");
         if let Some(player_details) = player_details_option {
-            if combat_parties.contains_key(&player_details.player_name) {
-                let attacker_name_or_id = combat_parties.get(&player_details.player_name).unwrap();
-                let damage = combat::resolve_combat(
-                    combat_attacker_stats.get(attacker_name_or_id).unwrap(),
-                    stats,
-                );
+            if combat_parties.contains_key(&player_details.id) {
+                let attacker_id = combat_parties.get(&player_details.id).unwrap();
+                let damage =
+                    combat::resolve_combat(combat_attacker_stats.get(attacker_id).unwrap(), stats);
                 stats.current_hp -= damage;
                 stats.update_available = true;
             }
         } else if let Some(monster_details) = monster_details_option {
-            if combat_parties.contains_key(&monster_details.id.to_string()) {
-                let attacker_name_or_id =
-                    combat_parties.get(&monster_details.id.to_string()).unwrap();
-                let damage = combat::resolve_combat(
-                    combat_attacker_stats.get(attacker_name_or_id).unwrap(),
-                    stats,
-                );
+            if combat_parties.contains_key(&monster_details.id) {
+                let attacker_id = combat_parties.get(&monster_details.id).unwrap();
+                let damage =
+                    combat::resolve_combat(combat_attacker_stats.get(attacker_id).unwrap(), stats);
                 stats.current_hp -= damage;
             }
         }

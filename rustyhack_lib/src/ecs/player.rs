@@ -1,6 +1,7 @@
 use crate::consts::{DEFAULT_MAP, DEFAULT_PLAYER_POSITION_X, DEFAULT_PLAYER_POSITION_Y};
 use crate::ecs::components::{DisplayDetails, PlayerDetails, Position, Stats};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Player {
@@ -14,6 +15,7 @@ impl Default for Player {
     fn default() -> Self {
         Player {
             player_details: PlayerDetails {
+                id: Uuid::new_v4(),
                 player_name: "".to_string(),
                 client_addr: "".to_string(),
                 currently_online: false,
