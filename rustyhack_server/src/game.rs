@@ -8,6 +8,7 @@ use legion::{Resources, World};
 
 use crate::consts;
 use crate::game::combat::{CombatAttackerStats, CombatParties};
+use crate::game::players::PlayersPositions;
 use crate::networking::message_handler;
 
 mod background_map;
@@ -26,6 +27,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let all_map_states = map_state::initialise_all_map_states(&all_maps);
     let combat_parties: CombatParties = HashMap::new();
     let combat_attacker_stats: CombatAttackerStats = HashMap::new();
+    let players_positions: PlayersPositions = HashMap::new();
     let all_monster_definitions = monsters::initialise_all_monster_definitions();
     let all_spawns = spawns::initialise_all_spawn_definitions();
     let mut world = World::default();
@@ -46,6 +48,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     resources.insert(all_map_states);
     resources.insert(combat_parties);
     resources.insert(combat_attacker_stats);
+    resources.insert(players_positions);
     info!("Finished loading resources into world.");
 
     //spawn initial monsters
@@ -69,13 +72,11 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
         }
 
         if monster_tick_time.elapsed() > consts::MONSTER_UPDATE_TICK {
-            monsters::update_velocities(&mut world);
-            monster_tick_time = Instant::now();
-
             debug!("Executing monster update schedule...");
             map_state_update_schedule.execute(&mut world, &mut resources);
             monster_update_schedule.execute(&mut world, &mut resources);
             debug!("Monster update schedule executed successfully.");
+            monster_tick_time = Instant::now();
         }
 
         if entity_tick_time.elapsed() > consts::ENTITY_UPDATE_TICK {

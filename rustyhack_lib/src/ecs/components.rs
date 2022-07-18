@@ -78,7 +78,7 @@ pub struct MonsterDetails {
     pub monster_type: String,
     pub spawn_position: Position,
     pub is_active: bool,
-    pub current_target: Option<String>,
+    pub current_target: Option<Uuid>,
     pub exp: u32,
     pub gold: u32,
 }
