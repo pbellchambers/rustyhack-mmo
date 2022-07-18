@@ -8,7 +8,6 @@ use legion::{Resources, World};
 
 use crate::consts;
 use crate::game::combat::{CombatAttackerStats, CombatParties};
-use crate::game::player_updates::PlayerPositionUpdates;
 use crate::networking::message_handler;
 
 mod background_map;
@@ -29,7 +28,6 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let combat_attacker_stats: CombatAttackerStats = HashMap::new();
     let all_monster_definitions = monsters::initialise_all_monster_definitions();
     let all_spawns = spawns::initialise_all_spawn_definitions();
-    let mut player_position_updates: PlayerPositionUpdates = HashMap::new();
     let mut world = World::default();
     info!("Initialised ECS World");
     let mut player_update_schedule = systems::build_player_update_schedule();
@@ -60,28 +58,13 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let mut loop_tick_time = Instant::now();
     info!("Starting game loop");
     loop {
-        player_position_updates = player_updates::process_player_messages(
-            &mut world,
-            &channel_receiver,
-            &local_sender,
-            player_position_updates,
-        );
-
-        if !player_position_updates.is_empty() {
-            debug!("Player velocity updates available, proceeding with world update.");
-            resources.insert(player_position_updates.clone());
-            debug!("Added player position updates to world resources.");
-
+        if player_updates::process_player_messages(&mut world, &channel_receiver, &local_sender) {
             debug!("Executing player update schedule...");
             map_state_update_schedule.execute(&mut world, &mut resources);
             player_update_schedule.execute(&mut world, &mut resources);
             debug!("Player update schedule executed successfully.");
 
-            player_position_updates = player_updates::send_player_position_updates(
-                &mut world,
-                &local_sender,
-                player_position_updates,
-            );
+            player_updates::send_player_position_updates(&mut world, &local_sender);
             player_updates::send_player_stats_updates(&mut world, &local_sender);
         }
 

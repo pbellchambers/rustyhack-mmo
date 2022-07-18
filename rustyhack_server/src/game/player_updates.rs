@@ -6,42 +6,54 @@ use rustyhack_lib::ecs::components::{
     DisplayDetails, MonsterDetails, PlayerDetails, Position, Stats,
 };
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::messages::{EntityUpdates, PlayerRequest, ServerMessage};
+use rustyhack_lib::message_handler::messages::{
+    EntityUpdates, PlayerRequest, PositionMessage, ServerMessage,
+};
 use std::collections::HashMap;
 use std::process;
 use uuid::Uuid;
-
-pub(crate) type PlayerPositionUpdates = HashMap<String, Position>;
 
 pub(crate) fn process_player_messages(
     world: &mut World,
     channel_receiver: &Receiver<PlayerRequest>,
     sender: &Sender<Packet>,
-    mut player_position_updates: HashMap<String, Position>,
-) -> HashMap<String, Position> {
+) -> bool {
+    let mut has_player_updates = false;
     while !channel_receiver.is_empty() {
         debug!("Player messages are present.");
         let received = channel_receiver.try_recv();
         if let Ok(received_message) = received {
             match received_message {
-                PlayerRequest::PlayerJoin(message) => {
+                PlayerRequest::PlayerJoin(client_details) => {
                     info!(
                         "Player joined request received for {} from: {}",
-                        &message.player_name, &message.client_addr
+                        &client_details.player_name, &client_details.client_addr
                     );
-                    join_player(world, &message.player_name, message.client_addr, sender);
+                    join_player(
+                        world,
+                        &client_details.player_name,
+                        client_details.client_addr,
+                        sender,
+                    );
                 }
-                PlayerRequest::UpdateVelocity(message) => {
-                    debug!("Velocity update received for {}", &message.player_name);
-                    player_position_updates.insert(message.player_name, message.position);
-                    debug!("Processed velocity update: {:?}", &player_position_updates);
+                PlayerRequest::UpdateVelocity(position_message) => {
+                    debug!(
+                        "Velocity update received for {}",
+                        &position_message.player_name
+                    );
+                    set_player_velocity(world, &position_message);
+                    debug!("Processed velocity update.");
                 }
-                PlayerRequest::PlayerLogout(message) => {
+                PlayerRequest::PlayerLogout(client_details) => {
                     info!(
                         "Player logout notification received for {} from: {}",
-                        &message.player_name, &message.client_addr
+                        &client_details.player_name, &client_details.client_addr
                     );
-                    set_player_logged_out(world, &message.client_addr, &message.player_name);
+                    set_player_logged_out(
+                        world,
+                        &client_details.client_addr,
+                        &client_details.player_name,
+                    );
                 }
                 PlayerRequest::Timeout(address) => {
                     set_player_disconnected(world, &address);
@@ -50,11 +62,22 @@ pub(crate) fn process_player_messages(
                     warn!("Didn't match any known message to process.");
                 }
             }
+            has_player_updates = true;
         } else {
             debug!("Player messages channel receiver is now empty.");
         }
     }
-    player_position_updates
+    has_player_updates
+}
+
+fn set_player_velocity(world: &mut World, position_message: &PositionMessage) {
+    let mut query = <(&mut PlayerDetails, &mut Position)>::query();
+    for (player_details, position) in query.iter_mut(world) {
+        if player_details.player_name == position_message.player_name {
+            position.velocity_x = position_message.position.velocity_x;
+            position.velocity_y = position_message.position.velocity_y;
+        }
+    }
 }
 
 fn set_player_logged_out(world: &mut World, address: &str, originating_player_name: &str) {
@@ -183,17 +206,10 @@ fn send_player_joined_response(player: &Player, sender: &Sender<Packet>) {
     );
 }
 
-pub(crate) fn send_player_position_updates(
-    world: &mut World,
-    sender: &Sender<Packet>,
-    mut player_position_updates: PlayerPositionUpdates,
-) -> HashMap<String, Position> {
+pub(crate) fn send_player_position_updates(world: &mut World, sender: &Sender<Packet>) {
     let mut query = <(&PlayerDetails, &mut Position)>::query();
     for (player_details, position) in query.iter_mut(world) {
-        if (position.update_available
-            || player_position_updates.contains_key(&player_details.player_name))
-            && player_details.currently_online
-        {
+        if position.update_available && player_details.currently_online {
             debug!(
                 "Sending player position update for: {}",
                 &player_details.player_name
@@ -217,9 +233,7 @@ pub(crate) fn send_player_position_updates(
             position.update_available = false;
         }
     }
-    player_position_updates.clear();
     debug!("Finished sending player position updates.");
-    player_position_updates
 }
 
 pub(crate) fn send_player_stats_updates(world: &mut World, sender: &Sender<Packet>) {
@@ -280,6 +294,7 @@ pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>
     for player_details in query.iter(world) {
         if player_details.currently_online {
             debug!("Sending entity updates to: {}", &player_details.client_addr);
+            //todo question validity of display_details and monster_type_map needed together or if just one will suffice
             let response = serialize(&ServerMessage::UpdateOtherEntities(EntityUpdates {
                 position_updates: position_updates.clone(),
                 display_details: display_details.clone(),

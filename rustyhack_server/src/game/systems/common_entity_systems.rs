@@ -26,6 +26,7 @@ pub(crate) fn update_entities_position(
         {
             position.pos_x = potential_pos_x;
             position.pos_y = potential_pos_y;
+            position.update_available = true;
         }
         position.velocity_x = 0;
         position.velocity_y = 0;

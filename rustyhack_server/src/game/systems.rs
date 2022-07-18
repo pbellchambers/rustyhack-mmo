@@ -16,7 +16,6 @@ pub(crate) fn build_map_state_update_schedule() -> Schedule {
 
 pub(crate) fn build_player_update_schedule() -> Schedule {
     let schedule = Schedule::builder()
-        .add_system(player_systems::update_player_input_system())
         .add_system(combat_systems::check_for_combat_system())
         .add_system(combat_systems::resolve_combat_system())
         .add_system(common_entity_systems::update_entities_position_system())
