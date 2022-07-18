@@ -29,11 +29,11 @@
   },
   "stats": {
     "update_available": false,
-    "current_hp": 20,
-    "max_hp": 20,
-    "str": 10,
-    "dex": 15,
-    "con": 5,
-    "armour": 5
+    "current_hp": 20.0,
+    "max_hp": 20.0,
+    "str": 10.0,
+    "dex": 15.0,
+    "con": 5.0,
+    "armour": 5.0
   }
 }

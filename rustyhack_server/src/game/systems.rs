@@ -173,7 +173,7 @@ fn resolve_combat(
                 let attacker_id = combat_parties.get(&player_details.id).unwrap();
                 let damage =
                     combat::resolve_combat(combat_attacker_stats.get(attacker_id).unwrap(), stats);
-                stats.current_hp -= damage;
+                stats.current_hp -= damage.round();
                 stats.update_available = true;
             }
         } else if let Some(monster_details) = monster_details_option {
@@ -181,7 +181,7 @@ fn resolve_combat(
                 let attacker_id = combat_parties.get(&monster_details.id).unwrap();
                 let damage =
                     combat::resolve_combat(combat_attacker_stats.get(attacker_id).unwrap(), stats);
-                stats.current_hp -= damage;
+                stats.current_hp -= damage.round();
             }
         }
     }

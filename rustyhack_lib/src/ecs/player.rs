@@ -33,12 +33,12 @@ impl Default for Player {
             },
             stats: Stats {
                 update_available: false,
-                current_hp: 50,
-                max_hp: 50,
-                str: 10,
-                dex: 10,
-                con: 10,
-                armour: 5,
+                current_hp: 50.0,
+                max_hp: 50.0,
+                str: 70.0,
+                dex: 10.0,
+                con: 10.0,
+                armour: 5.0,
             },
         }
     }

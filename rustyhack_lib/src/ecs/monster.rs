@@ -49,12 +49,12 @@ impl Default for Monster {
             },
             stats: Stats {
                 update_available: false,
-                current_hp: 1,
-                max_hp: 1,
-                str: 1,
-                dex: 1,
-                con: 1,
-                armour: 1,
+                current_hp: 1.0,
+                max_hp: 1.0,
+                str: 1.0,
+                dex: 1.0,
+                con: 1.0,
+                armour: 1.0,
             },
         }
     }

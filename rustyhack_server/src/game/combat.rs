@@ -2,6 +2,7 @@ use crate::consts::{BASE_COMBAT_ACCURACY, BASE_WEAPON_DAMAGE};
 use rand::prelude::*;
 use rustyhack_lib::ecs::components::Stats;
 use std::collections::HashMap;
+use std::ops::Range;
 use uuid::Uuid;
 
 /*
@@ -30,7 +31,7 @@ pub(crate) type Attacker = Uuid;
 pub(crate) type Defender = Uuid;
 pub(crate) type CombatAttackerStats = HashMap<Uuid, Stats>;
 
-pub(crate) fn resolve_combat(attacker_stats: &Stats, defender_stats: &Stats) -> i32 {
+pub(crate) fn resolve_combat(attacker_stats: &Stats, defender_stats: &Stats) -> f32 {
     info!("Resolving combat...");
     if check_attack_success(attacker_stats.dex, defender_stats.dex) {
         info!("Attack hit...");
@@ -43,23 +44,28 @@ pub(crate) fn resolve_combat(attacker_stats: &Stats, defender_stats: &Stats) -> 
         actual_damage_received
     } else {
         info!("Attack missed...");
-        0
+        0.0
     }
 }
 
-fn calculate_damage_dealt(attacker_weapon_damage: i32, attacker_str: i32) -> i32 {
-    //todo make str modify weapon damage range with range of increase
-    attacker_weapon_damage * ((attacker_str / 100) + 1)
+fn calculate_damage_dealt(attacker_weapon_damage_range: Range<f32>, attacker_str: f32) -> f32 {
+    let mut rng = thread_rng();
+    let attacker_weapon_damage = rng.gen_range(attacker_weapon_damage_range);
+    info!(
+        "Weapon damage before strength modifier: {}",
+        attacker_weapon_damage
+    );
+    attacker_weapon_damage * ((attacker_str / 100.0) + 1.0)
 }
 
-fn calculate_actual_damage_received(damage_dealt: i32, defender_armour: i32) -> i32 {
-    damage_dealt * (1 - (defender_armour / 100))
+fn calculate_actual_damage_received(damage_dealt: f32, defender_armour: f32) -> f32 {
+    damage_dealt * (1.0 - (defender_armour / 100.0))
 }
 
-fn check_attack_success(attacker_dex: i32, defender_dex: i32) -> bool {
+fn check_attack_success(attacker_dex: f32, defender_dex: f32) -> bool {
     let mut rng = thread_rng();
     let combat_accuracy = BASE_COMBAT_ACCURACY
-        + ((100 - BASE_COMBAT_ACCURACY) * (attacker_dex / 100))
-        - ((100 - BASE_COMBAT_ACCURACY) * (defender_dex / 100));
-    combat_accuracy >= rng.gen_range(0..=100)
+        + ((100.0 - BASE_COMBAT_ACCURACY) * (attacker_dex / 100.0))
+        - ((100.0 - BASE_COMBAT_ACCURACY) * (defender_dex / 100.0));
+    combat_accuracy >= rng.gen_range(0.0..=100.0)
 }
