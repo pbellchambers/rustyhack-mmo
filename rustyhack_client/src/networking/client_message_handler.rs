@@ -47,28 +47,32 @@ pub(crate) fn run(
                     };
                     debug!("Received {:?} from {:?}", player_reply, address);
 
-                    let channel_send_status =
-                        match player_reply {
-                            ServerMessage::PlayerJoined(message) => {
-                                incoming_server_messages.send(ServerMessage::PlayerJoined(message))
-                            }
-                            ServerMessage::AllMaps(message) => {
-                                incoming_server_messages.send(ServerMessage::AllMaps(message))
-                            }
-                            ServerMessage::AllMapsChunk(message) => {
-                                incoming_server_messages.send(ServerMessage::AllMapsChunk(message))
-                            }
-                            ServerMessage::AllMapsChunksComplete => {
-                                incoming_server_messages.send(ServerMessage::AllMapsChunksComplete)
-                            }
-                            ServerMessage::UpdatePosition(message) => incoming_server_messages
-                                .send(ServerMessage::UpdatePosition(message)),
-                            ServerMessage::UpdateOtherEntities(message) => entity_update_messages
-                                .send(ServerMessage::UpdateOtherEntities(message)),
-                            ServerMessage::PlayerAlreadyOnline => {
-                                incoming_server_messages.send(ServerMessage::PlayerAlreadyOnline)
-                            }
-                        };
+                    let channel_send_status = match player_reply {
+                        ServerMessage::PlayerJoined(player) => {
+                            incoming_server_messages.send(ServerMessage::PlayerJoined(player))
+                        }
+                        ServerMessage::AllMaps(all_maps) => {
+                            incoming_server_messages.send(ServerMessage::AllMaps(all_maps))
+                        }
+                        ServerMessage::AllMapsChunk(all_maps_chunk) => incoming_server_messages
+                            .send(ServerMessage::AllMapsChunk(all_maps_chunk)),
+                        ServerMessage::AllMapsChunksComplete => {
+                            incoming_server_messages.send(ServerMessage::AllMapsChunksComplete)
+                        }
+                        ServerMessage::UpdatePosition(position) => {
+                            incoming_server_messages.send(ServerMessage::UpdatePosition(position))
+                        }
+                        ServerMessage::UpdateOtherEntities(entity_updates) => {
+                            entity_update_messages
+                                .send(ServerMessage::UpdateOtherEntities(entity_updates))
+                        }
+                        ServerMessage::PlayerAlreadyOnline => {
+                            incoming_server_messages.send(ServerMessage::PlayerAlreadyOnline)
+                        }
+                        ServerMessage::UpdateStats(stats) => {
+                            incoming_server_messages.send(ServerMessage::UpdateStats(stats))
+                        }
+                    };
 
                     match channel_send_status {
                         Ok(_) => {

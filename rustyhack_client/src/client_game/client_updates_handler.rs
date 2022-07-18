@@ -60,7 +60,10 @@ pub(crate) fn check_for_received_player_updates(
                     debug!("Player position update received: {:?}", &new_position);
                     player.position = new_position;
                 }
-                //todo receive updated hp from server
+                ServerMessage::UpdateStats(new_stats) => {
+                    debug!("Player stats update received: {:?}", &new_stats);
+                    player.stats = new_stats;
+                }
                 _ => {
                     warn!(
                         "Unexpected message on channel from message handler: {:?}",

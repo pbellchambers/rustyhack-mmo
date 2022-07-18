@@ -10,11 +10,13 @@ use rustyhack_lib::message_handler::messages::{EntityUpdates, PlayerRequest, Ser
 use std::collections::HashMap;
 use std::process;
 
+pub(crate) type PlayerPositionUpdates = HashMap<String, Position>;
+
 pub(crate) fn process_player_messages(
     world: &mut World,
     channel_receiver: &Receiver<PlayerRequest>,
     sender: &Sender<Packet>,
-    mut player_velocity_updates: HashMap<String, Position>,
+    mut player_position_updates: HashMap<String, Position>,
 ) -> HashMap<String, Position> {
     while !channel_receiver.is_empty() {
         debug!("Player messages are present.");
@@ -30,8 +32,8 @@ pub(crate) fn process_player_messages(
                 }
                 PlayerRequest::UpdateVelocity(message) => {
                     debug!("Velocity update received for {}", &message.player_name);
-                    player_velocity_updates.insert(message.player_name, message.position);
-                    debug!("Processed velocity update: {:?}", &player_velocity_updates);
+                    player_position_updates.insert(message.player_name, message.position);
+                    debug!("Processed velocity update: {:?}", &player_position_updates);
                 }
                 PlayerRequest::PlayerLogout(message) => {
                     info!(
@@ -51,7 +53,7 @@ pub(crate) fn process_player_messages(
             debug!("Player messages channel receiver is now empty.");
         }
     }
-    player_velocity_updates
+    player_position_updates
 }
 
 fn set_player_logged_out(world: &mut World, address: &str, originating_player_name: &str) {
@@ -179,18 +181,18 @@ fn send_player_joined_response(player: &Player, sender: &Sender<Packet>) {
     );
 }
 
-pub(crate) fn send_player_updates(
-    world: &mut World,
+pub(crate) fn send_player_position_updates(
+    world: &World,
     sender: &Sender<Packet>,
-    mut player_velocity_updates: HashMap<String, Position>,
+    mut player_position_updates: PlayerPositionUpdates,
 ) -> HashMap<String, Position> {
-    let mut query = <(&PlayerDetails, &mut Position)>::query();
-    for (player_details, position) in query.iter_mut(world) {
-        if player_velocity_updates.contains_key(&player_details.player_name)
+    let mut query = <(&PlayerDetails, &Position)>::query();
+    for (player_details, position) in query.iter(world) {
+        if player_position_updates.contains_key(&player_details.player_name)
             && player_details.currently_online
         {
             debug!(
-                "Sending player velocity update for: {}",
+                "Sending player position update for: {}",
                 &player_details.player_name
             );
             let response = serialize(&ServerMessage::UpdatePosition(position.clone()))
@@ -211,9 +213,38 @@ pub(crate) fn send_player_updates(
             );
         }
     }
-    player_velocity_updates.clear();
-    debug!("Finished sending player velocity updates.");
-    player_velocity_updates
+    player_position_updates.clear();
+    debug!("Finished sending player position updates.");
+    player_position_updates
+}
+
+pub(crate) fn send_player_stats_updates(world: &mut World, sender: &Sender<Packet>) {
+    let mut query = <(&PlayerDetails, &mut Stats)>::query();
+    for (player_details, stats) in query.iter_mut(world) {
+        if stats.update_available && player_details.currently_online {
+            debug!(
+                "Sending player stats update for: {}",
+                &player_details.player_name
+            );
+            let response = serialize(&ServerMessage::UpdateStats(*stats)).unwrap_or_else(|err| {
+                error!(
+                    "Failed to serialize player stats: {:?}, error: {}",
+                    &stats, err
+                );
+                process::exit(1);
+            });
+            rustyhack_lib::message_handler::send_packet(
+                Packet::unreliable_sequenced(
+                    player_details.client_addr.parse().unwrap(),
+                    response,
+                    Some(20),
+                ),
+                sender,
+            );
+            stats.update_available = false;
+        }
+    }
+    debug!("Finished sending player stats updates.");
 }
 
 pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>) {

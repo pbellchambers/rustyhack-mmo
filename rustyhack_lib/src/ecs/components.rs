@@ -67,6 +67,7 @@ pub struct MonsterDetails {
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Stats {
+    pub update_available: bool,
     pub current_hp: i32,
     pub max_hp: i32,
     pub str: i32,

@@ -28,6 +28,7 @@
     "velocity_y": 0
   },
   "stats": {
+    "update_available": false,
     "current_hp": 20,
     "max_hp": 20,
     "str": 10,

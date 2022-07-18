@@ -48,6 +48,7 @@ impl Default for Monster {
                 velocity_y: 0,
             },
             stats: Stats {
+                update_available: false,
                 current_hp: 1,
                 max_hp: 1,
                 str: 1,

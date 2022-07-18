@@ -187,6 +187,7 @@ fn resolve_combat(
                     stats,
                 );
                 stats.current_hp -= damage;
+                stats.update_available = true;
             }
         } else if let Some(monster_details) = monster_details_option {
             if combat_parties.contains_key(&monster_details.id.to_string()) {

@@ -30,6 +30,7 @@ impl Default for Player {
                 velocity_y: 0,
             },
             stats: Stats {
+                update_available: false,
                 current_hp: 50,
                 max_hp: 50,
                 str: 10,
