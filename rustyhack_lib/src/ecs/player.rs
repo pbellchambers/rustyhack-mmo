@@ -25,6 +25,7 @@ impl Default for Player {
             },
             display_details: DisplayDetails::default(),
             position: Position {
+                update_available: false,
                 pos_x: DEFAULT_PLAYER_POSITION_X,
                 pos_y: DEFAULT_PLAYER_POSITION_Y,
                 current_map: DEFAULT_MAP.to_string(),

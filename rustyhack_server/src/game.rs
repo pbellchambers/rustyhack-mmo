@@ -78,7 +78,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             debug!("Player update schedule executed successfully.");
 
             player_position_updates = player_updates::send_player_position_updates(
-                &world,
+                &mut world,
                 &local_sender,
                 player_position_updates,
             );

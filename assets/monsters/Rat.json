@@ -3,6 +3,7 @@
     "id": "00000000-0000-0000-0000-000000000000",
     "monster_type": "Rat",
     "spawn_position": {
+      "update_available": false,
       "pos_x": 0,
       "pos_y": 0,
       "current_map": "none",
@@ -21,6 +22,7 @@
     "collidable": true
   },
   "position": {
+    "update_available": false,
     "pos_x": 0,
     "pos_y": 0,
     "current_map": "none",

@@ -184,13 +184,14 @@ fn send_player_joined_response(player: &Player, sender: &Sender<Packet>) {
 }
 
 pub(crate) fn send_player_position_updates(
-    world: &World,
+    world: &mut World,
     sender: &Sender<Packet>,
     mut player_position_updates: PlayerPositionUpdates,
 ) -> HashMap<String, Position> {
-    let mut query = <(&PlayerDetails, &Position)>::query();
-    for (player_details, position) in query.iter(world) {
-        if player_position_updates.contains_key(&player_details.player_name)
+    let mut query = <(&PlayerDetails, &mut Position)>::query();
+    for (player_details, position) in query.iter_mut(world) {
+        if (position.update_available
+            || player_position_updates.contains_key(&player_details.player_name))
             && player_details.currently_online
         {
             debug!(
@@ -213,6 +214,7 @@ pub(crate) fn send_player_position_updates(
                 ),
                 sender,
             );
+            position.update_available = false;
         }
     }
     player_position_updates.clear();

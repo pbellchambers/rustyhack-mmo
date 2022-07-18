@@ -49,8 +49,8 @@ pub(crate) fn draw_viewport_contents(
 fn draw_player(screen: &mut Screen, viewport: &Viewport, player: &Player) {
     debug!("Drawing player.");
     screen.set_pxl(
-        i32::try_from(viewport.width / 2).expect("Error: Viewport width would overflow i32"),
-        i32::try_from(viewport.height / 2).expect("Error: Viewport height would overflow i32"),
+        i32_from(viewport.width / 2),
+        i32_from(viewport.height / 2),
         pixel::pxl_fg(player.display_details.icon, player.display_details.colour),
     );
 }

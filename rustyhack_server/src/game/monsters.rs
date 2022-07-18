@@ -81,6 +81,7 @@ pub(crate) fn spawn_initial_monsters(
                 .clone();
             for spawn_position in &monster.spawn_positions {
                 let position = Position {
+                    update_available: false,
                     pos_x: spawn_position.x,
                     pos_y: spawn_position.y,
                     current_map: map.clone(),

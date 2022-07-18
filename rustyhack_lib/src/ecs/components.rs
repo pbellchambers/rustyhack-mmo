@@ -1,4 +1,7 @@
-use crate::consts::{DEFAULT_PLAYER_COLOUR, DEFAULT_PLAYER_ICON};
+use crate::consts::{
+    DEFAULT_MAP, DEFAULT_PLAYER_COLOUR, DEFAULT_PLAYER_ICON, DEFAULT_PLAYER_POSITION_X,
+    DEFAULT_PLAYER_POSITION_Y,
+};
 use crate::ecs::monster::Monster;
 use crate::ecs::player::Player;
 use crossterm::style::Color;
@@ -13,11 +16,25 @@ pub enum EntityType {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Position {
+    pub update_available: bool,
     pub pos_x: u32,
     pub pos_y: u32,
     pub current_map: String,
     pub velocity_x: i32,
     pub velocity_y: i32,
+}
+
+impl Default for Position {
+    fn default() -> Self {
+        Position {
+            update_available: false,
+            pos_x: DEFAULT_PLAYER_POSITION_X,
+            pos_y: DEFAULT_PLAYER_POSITION_Y,
+            current_map: DEFAULT_MAP.to_string(),
+            velocity_x: 0,
+            velocity_y: 0,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]

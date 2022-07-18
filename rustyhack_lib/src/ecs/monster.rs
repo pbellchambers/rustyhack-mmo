@@ -24,6 +24,7 @@ impl Default for Monster {
                 id: Uuid::new_v4(),
                 monster_type: DEFAULT_MONSTER_TYPE.to_string(),
                 spawn_position: Position {
+                    update_available: false,
                     pos_x: DEFAULT_MONSTER_POSITION_X,
                     pos_y: DEFAULT_MONSTER_POSITION_Y,
                     current_map: DEFAULT_MAP.to_string(),
@@ -41,6 +42,7 @@ impl Default for Monster {
                 ..Default::default()
             },
             position: Position {
+                update_available: false,
                 pos_x: DEFAULT_MONSTER_POSITION_X,
                 pos_y: DEFAULT_MONSTER_POSITION_Y,
                 current_map: DEFAULT_MAP.to_string(),
