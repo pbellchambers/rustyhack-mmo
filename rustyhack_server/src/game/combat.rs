@@ -35,7 +35,6 @@ pub(crate) fn resolve_combat(attacker_stats: &Stats, defender_stats: &Stats) -> 
     info!("Resolving combat...");
     if check_attack_success(attacker_stats.dex, defender_stats.dex) {
         info!("Attack hit...");
-        //todo weapon damage currently static constant, make actual equipment with range
         let actual_damage_received = calculate_actual_damage_received(
             calculate_damage_dealt(BASE_WEAPON_DAMAGE, attacker_stats.str),
             defender_stats.armour,

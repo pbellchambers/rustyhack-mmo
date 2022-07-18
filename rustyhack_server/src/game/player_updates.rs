@@ -294,7 +294,6 @@ pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>
     for player_details in query.iter(world) {
         if player_details.currently_online {
             debug!("Sending entity updates to: {}", &player_details.client_addr);
-            //todo question validity of display_details and monster_type_map needed together or if just one will suffice
             let response = serialize(&ServerMessage::UpdateOtherEntities(EntityUpdates {
                 position_updates: position_updates.clone(),
                 display_details: display_details.clone(),
