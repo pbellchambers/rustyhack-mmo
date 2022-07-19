@@ -1,4 +1,5 @@
 use bincode::serialize;
+use chrono::{DateTime, Local};
 use console_engine::{ConsoleEngine, KeyCode};
 use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
@@ -47,11 +48,13 @@ fn send_velocity_packet(sender: &Sender<Packet>, server_addr: &str, player: &Pla
     debug!("Sent velocity packet to server.");
 }
 
-pub(crate) fn check_for_received_player_updates(
+pub(crate) fn check_for_received_server_messages(
     channel_receiver: &Receiver<ServerMessage>,
-    mut player: Player,
-) -> Player {
-    debug!("Checking for received player position from server.");
+    player: &mut Player,
+    mut entity_updates: EntityUpdates,
+    status_messages: &mut Vec<String>,
+) -> EntityUpdates {
+    debug!("Checking for received messages from server.");
     while !channel_receiver.is_empty() {
         let received = channel_receiver.recv();
         if let Ok(received_message) = received {
@@ -64,27 +67,12 @@ pub(crate) fn check_for_received_player_updates(
                     debug!("Player stats update received: {:?}", &new_stats);
                     player.stats = new_stats;
                 }
-                _ => {
-                    warn!(
-                        "Unexpected message on channel from message handler: {:?}",
-                        received_message
-                    );
+                ServerMessage::SystemMessage(message) => {
+                    debug!("System message received: {}", &message);
+                    let date_time: DateTime<Local> = Local::now();
+                    let time = date_time.format("[%H:%M:%S] ").to_string();
+                    status_messages.push(time + &message);
                 }
-            }
-        }
-    }
-    player
-}
-
-pub(crate) fn check_for_received_entity_updates(
-    channel_receiver: &Receiver<ServerMessage>,
-    mut entity_updates: EntityUpdates,
-) -> EntityUpdates {
-    debug!("Checking for received entity updates from server.");
-    while !channel_receiver.is_empty() {
-        let received = channel_receiver.recv();
-        if let Ok(received_message) = received {
-            match received_message {
                 ServerMessage::UpdateOtherEntities(new_updates) => {
                     debug!("Entity updates received: {:?}", &new_updates);
                     entity_updates = new_updates;

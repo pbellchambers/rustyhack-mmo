@@ -26,6 +26,7 @@ pub enum ServerMessage {
     UpdatePosition(Position),
     UpdateStats(Stats),
     UpdateOtherEntities(EntityUpdates),
+    SystemMessage(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

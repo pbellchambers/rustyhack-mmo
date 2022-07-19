@@ -255,7 +255,7 @@ pub(crate) fn send_player_stats_updates(world: &mut World, sender: &Sender<Packe
                 Packet::unreliable_sequenced(
                     player_details.client_addr.parse().unwrap(),
                     response,
-                    Some(20),
+                    Some(21),
                 ),
                 sender,
             );
@@ -310,11 +310,37 @@ pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>
                 Packet::unreliable_sequenced(
                     player_details.client_addr.parse().unwrap(),
                     response,
-                    Some(21),
+                    Some(22),
                 ),
                 sender,
             );
         }
     }
     debug!("Finished sending entity updates to all players.");
+}
+
+pub(crate) fn send_message_to_player(
+    player_details: &PlayerDetails,
+    message: &str,
+    sender: &Sender<Packet>,
+) {
+    if player_details.currently_online {
+        debug!("Sending system message to: {}", &player_details.client_addr);
+        let response = serialize(&ServerMessage::SystemMessage(message.to_string()))
+            .unwrap_or_else(|err| {
+                error!(
+                    "Failed to serialize system message: {}, error: {}",
+                    message, err
+                );
+                process::exit(1);
+            });
+        rustyhack_lib::message_handler::send_packet(
+            Packet::unreliable_sequenced(
+                player_details.client_addr.parse().unwrap(),
+                response,
+                Some(23),
+            ),
+            sender,
+        );
+    }
 }

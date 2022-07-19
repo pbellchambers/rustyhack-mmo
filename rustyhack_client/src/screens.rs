@@ -16,7 +16,7 @@ pub(crate) fn draw_screens(
     all_maps: &AllMaps,
     player: &Player,
     other_entities: &EntityUpdates,
-    status_messages: &[String],
+    system_messages: &[String],
 ) {
     //update the player viewport contents
     let viewport = viewport::draw_viewport_contents(
@@ -35,7 +35,7 @@ pub(crate) fn draw_screens(
 
     let top_status_bar = top_status_bar::draw(player);
     let side_status_bar = side_status_bar::draw(player);
-    let bottom_text_window = bottom_text_window::draw(status_messages);
+    let bottom_text_window = bottom_text_window::draw(system_messages);
 
     //final draw step
     console.print_screen(0, 0, &top_status_bar);

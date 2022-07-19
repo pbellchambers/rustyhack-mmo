@@ -27,13 +27,8 @@ pub(crate) fn run(
 ) {
     //setup message handling threads
     let (player_update_sender, player_update_receiver) = crossbeam_channel::unbounded();
-    let (entity_update_sender, entity_update_receiver) = crossbeam_channel::unbounded();
     debug!("Spawned thread channels.");
-    client_message_handler::spawn_message_handler_thread(
-        receiver,
-        player_update_sender,
-        entity_update_sender,
-    );
+    client_message_handler::spawn_message_handler_thread(receiver, player_update_sender);
 
     //get basic data from server needed to start client_game
     let all_maps =
@@ -53,13 +48,13 @@ pub(crate) fn run(
     console.set_title(GAME_TITLE);
     info!("Initialised console engine.");
 
-    let mut other_entities = EntityUpdates {
+    let mut entity_updates = EntityUpdates {
         position_updates: HashMap::new(),
         display_details: HashMap::new(),
         monster_type_map: HashMap::new(),
     };
 
-    let mut status_messages: Vec<String> = vec![];
+    let mut system_messages: Vec<String> = vec![];
 
     info!("Starting client_game loop");
     loop {
@@ -71,21 +66,19 @@ pub(crate) fn run(
         client_updates_handler::send_player_updates(sender, &console, &mut player, server_addr);
 
         debug!("About to wait for entity updates from server.");
-        player = client_updates_handler::check_for_received_player_updates(
+        entity_updates = client_updates_handler::check_for_received_server_messages(
             &player_update_receiver,
-            player,
-        );
-        other_entities = client_updates_handler::check_for_received_entity_updates(
-            &entity_update_receiver,
-            other_entities,
+            &mut player,
+            entity_updates,
+            &mut system_messages,
         );
 
         client_input_handler::handle_other_input(
             &mut console,
-            &mut status_messages,
+            &mut system_messages,
             &player,
             &all_maps,
-            &other_entities,
+            &entity_updates,
         );
 
         //update and redraw the screens
@@ -93,8 +86,8 @@ pub(crate) fn run(
             &mut console,
             &all_maps,
             &player,
-            &other_entities,
-            &status_messages,
+            &entity_updates,
+            &system_messages,
         );
 
         //check if we should quit

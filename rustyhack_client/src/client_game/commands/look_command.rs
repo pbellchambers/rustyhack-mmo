@@ -4,7 +4,7 @@ use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::EntityUpdates;
 
 pub(crate) fn get_what_player_sees(
-    status_messages: &mut Vec<String>,
+    system_messages: &mut Vec<String>,
     player: &Player,
     all_maps: &AllMaps,
     other_entities: &EntityUpdates,
@@ -58,12 +58,12 @@ pub(crate) fn get_what_player_sees(
         player.position.pos_y,
     );
 
-    status_messages.push(time.clone() + "You see...");
-    status_messages.push(time.clone() + "Underneath: " + &*underneath);
-    status_messages.push(time.clone() + "North: " + &*north);
-    status_messages.push(time.clone() + "South: " + &*south);
-    status_messages.push(time.clone() + "East: " + &*east);
-    status_messages.push(time + "West: " + &*west);
+    system_messages.push(time.clone() + "You see...");
+    system_messages.push(time.clone() + "Underneath: " + &*underneath);
+    system_messages.push(time.clone() + "North: " + &*north);
+    system_messages.push(time.clone() + "South: " + &*south);
+    system_messages.push(time.clone() + "East: " + &*east);
+    system_messages.push(time + "West: " + &*west);
 }
 
 fn return_visible_entity_at(

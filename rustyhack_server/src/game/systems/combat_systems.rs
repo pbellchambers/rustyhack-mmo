@@ -1,6 +1,9 @@
 use crate::game::combat::{CombatAttackerStats, CombatParties};
 use crate::game::map_state::{AllMapStates, MapState};
+use crate::game::player_updates::send_message_to_player;
 use crate::game::{combat, map_state};
+use crossbeam_channel::Sender;
+use laminar::Packet;
 use legion::world::SubWorld;
 use legion::{system, Query};
 use rustyhack_lib::consts::DEFAULT_MAP;
@@ -77,6 +80,7 @@ pub(crate) fn resolve_combat(
     query: &mut Query<(&mut Stats, Option<&MonsterDetails>, Option<&PlayerDetails>)>,
     #[resource] combat_parties: &mut CombatParties,
     #[resource] combat_attacker_stats: &mut CombatAttackerStats,
+    #[resource] sender: &Sender<Packet>,
 ) {
     for (stats, monster_details_option, player_details_option) in query.iter_mut(world) {
         debug!("Resolving combat.");
@@ -86,6 +90,15 @@ pub(crate) fn resolve_combat(
                 let damage =
                     combat::resolve_combat(combat_attacker_stats.get(attacker_id).unwrap(), stats);
                 stats.current_hp -= damage.round();
+                //todo this needs to go somewhere better and display attacker name, missed message, and your own attacks
+                send_message_to_player(
+                    player_details,
+                    &(attacker_id.to_string()
+                        + " hit you for "
+                        + &damage.round().to_string()
+                        + " damage."),
+                    sender,
+                );
                 stats.update_available = true;
             }
         } else if let Some(monster_details) = monster_details_option {

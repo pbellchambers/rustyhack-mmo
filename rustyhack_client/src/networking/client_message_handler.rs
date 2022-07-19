@@ -7,21 +7,15 @@ use std::{process, thread};
 pub(crate) fn spawn_message_handler_thread(
     receiver: Receiver<SocketEvent>,
     incoming_server_messages: Sender<ServerMessage>,
-    entity_update_messages: Sender<ServerMessage>,
 ) {
     thread::spawn(move || {
-        run(
-            &receiver,
-            &incoming_server_messages,
-            &entity_update_messages,
-        );
+        run(&receiver, &incoming_server_messages);
     });
 }
 
 pub(crate) fn run(
     receiver: &Receiver<SocketEvent>,
     incoming_server_messages: &Sender<ServerMessage>,
-    entity_update_messages: &Sender<ServerMessage>,
 ) {
     info!("Spawned message handler thread.");
     loop {
@@ -63,7 +57,7 @@ pub(crate) fn run(
                             incoming_server_messages.send(ServerMessage::UpdatePosition(position))
                         }
                         ServerMessage::UpdateOtherEntities(entity_updates) => {
-                            entity_update_messages
+                            incoming_server_messages
                                 .send(ServerMessage::UpdateOtherEntities(entity_updates))
                         }
                         ServerMessage::PlayerAlreadyOnline => {
@@ -71,6 +65,9 @@ pub(crate) fn run(
                         }
                         ServerMessage::UpdateStats(stats) => {
                             incoming_server_messages.send(ServerMessage::UpdateStats(stats))
+                        }
+                        ServerMessage::SystemMessage(message) => {
+                            incoming_server_messages.send(ServerMessage::SystemMessage(message))
                         }
                     };
 

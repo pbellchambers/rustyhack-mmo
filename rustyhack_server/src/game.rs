@@ -49,6 +49,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     resources.insert(combat_parties);
     resources.insert(combat_attacker_stats);
     resources.insert(players_positions);
+    resources.insert(local_sender.clone());
     info!("Finished loading resources into world.");
 
     //spawn initial monsters
