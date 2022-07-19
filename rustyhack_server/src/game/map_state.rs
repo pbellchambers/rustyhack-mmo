@@ -1,7 +1,7 @@
+use crate::game::combat::Defender;
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::components::EntityType;
 use std::collections::HashMap;
-use uuid::Uuid;
 
 pub(crate) type MapState = Vec<Vec<Vec<EntityType>>>;
 
@@ -42,23 +42,33 @@ pub(crate) fn clear_all_entities(map_states: &mut AllMapStates) -> &mut AllMapSt
     map_states
 }
 
-pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> (bool, Uuid) {
+pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> (bool, Defender) {
     let mut colliding = false;
-    let mut id = Uuid::new_v4();
+    let mut defending_entity = Defender::default();
     if y == 0 {
         //don't bother checking for collisions at y == 0 as map_state overflows
-        (colliding, id)
+        (colliding, defending_entity)
     } else {
         for entity_type in &map_state[y as usize][x as usize] {
             if let EntityType::Player(player) = entity_type {
                 colliding =
                     player.player_details.currently_online && player.display_details.collidable;
-                id = player.player_details.id;
+                defending_entity = Defender {
+                    id: player.player_details.id,
+                    name: player.player_details.player_name.clone(),
+                    client_addr: player.player_details.client_addr.clone(),
+                    currently_online: player.player_details.currently_online,
+                }
             } else if let EntityType::Monster(monster) = entity_type {
                 colliding = monster.display_details.collidable;
-                id = monster.monster_details.id;
+                defending_entity = Defender {
+                    id: monster.monster_details.id,
+                    name: monster.monster_details.monster_type.clone(),
+                    client_addr: "".to_string(),
+                    currently_online: true,
+                }
             }
         }
-        (colliding, id)
+        (colliding, defending_entity)
     }
 }

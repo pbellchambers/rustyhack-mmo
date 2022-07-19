@@ -19,8 +19,10 @@ pub(crate) fn resolve_player_deaths(
             *position = Position::default();
             position.update_available = true;
             send_message_to_player(
-                player_details,
-                "You died. Now respawning at respawn point...",
+                &player_details.player_name,
+                &player_details.client_addr,
+                player_details.currently_online,
+                "Now respawning at respawn point...",
                 sender,
             );
         }

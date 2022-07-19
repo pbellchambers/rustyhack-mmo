@@ -320,12 +320,17 @@ pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>
 }
 
 pub(crate) fn send_message_to_player(
-    player_details: &PlayerDetails,
+    player_name: &String,
+    client_addr: &String,
+    currently_online: bool,
     message: &str,
     sender: &Sender<Packet>,
 ) {
-    if player_details.currently_online {
-        debug!("Sending system message to: {}", &player_details.client_addr);
+    if currently_online && !client_addr.eq("") {
+        info!(
+            "Sending system message to player {} at: {}",
+            &player_name, &client_addr
+        );
         let response = serialize(&ServerMessage::SystemMessage(message.to_string()))
             .unwrap_or_else(|err| {
                 error!(
@@ -335,11 +340,7 @@ pub(crate) fn send_message_to_player(
                 process::exit(1);
             });
         rustyhack_lib::message_handler::send_packet(
-            Packet::unreliable_sequenced(
-                player_details.client_addr.parse().unwrap(),
-                response,
-                Some(23),
-            ),
+            Packet::reliable_ordered(client_addr.parse().unwrap(), response, Some(23)),
             sender,
         );
     }

@@ -1,6 +1,5 @@
-use crate::game::combat::{CombatAttackerStats, CombatParties};
+use crate::game::combat::{Attacker, CombatAttackerStats, CombatParties, Defender};
 use crate::game::map_state::{AllMapStates, MapState};
-use crate::game::player_updates::send_message_to_player;
 use crate::game::{combat, map_state};
 use crossbeam_channel::Sender;
 use laminar::Packet;
@@ -9,7 +8,6 @@ use legion::{system, Query};
 use rustyhack_lib::consts::DEFAULT_MAP;
 use rustyhack_lib::ecs::components::{MonsterDetails, PlayerDetails, Position, Stats};
 use rustyhack_lib::math_utils::{i32_from, u32_from};
-use uuid::Uuid;
 
 #[system]
 pub(crate) fn check_for_combat(
@@ -40,29 +38,41 @@ pub(crate) fn check_for_combat(
             current_map_states,
         );
 
-        let attacker_id = get_attacker_id(player_details_option, monster_details_option);
-        debug!("Combat detected, attacker is: {}", attacker_id);
+        let attacker = get_attacker(player_details_option, monster_details_option);
 
         if entity_collision_status.0 {
-            combat_parties.insert(entity_collision_status.1, attacker_id);
-            combat_attacker_stats.insert(attacker_id, *stats);
+            debug!(
+                "Combat detected, attacker is: {:?}, defender is: {:?}",
+                &attacker, &entity_collision_status.1
+            );
+            combat_parties.insert(entity_collision_status.1, attacker.clone());
+            combat_attacker_stats.insert(attacker.id, *stats);
             position.velocity_x = 0;
             position.velocity_y = 0;
         }
     }
 }
 
-fn get_attacker_id(
+fn get_attacker(
     player_details_option: Option<&PlayerDetails>,
     monster_details_option: Option<&MonsterDetails>,
-) -> Uuid {
+) -> Attacker {
     if let Some(player_details) = player_details_option {
-        player_details.id
+        Attacker {
+            id: player_details.id,
+            name: player_details.player_name.clone(),
+            client_addr: player_details.client_addr.clone(),
+            currently_online: player_details.currently_online,
+        }
     } else if let Some(monster_details) = monster_details_option {
-        monster_details.id
+        Attacker {
+            id: monster_details.id,
+            name: monster_details.monster_type.clone(),
+            client_addr: "".to_string(),
+            currently_online: true,
+        }
     } else {
-        error!("Attacker was somehow not a player or monster, returning new Uuid.");
-        Uuid::new_v4()
+        panic!("Error: attacker was somehow not a player or monster.");
     }
 }
 
@@ -83,30 +93,50 @@ pub(crate) fn resolve_combat(
     #[resource] sender: &Sender<Packet>,
 ) {
     for (stats, monster_details_option, player_details_option) in query.iter_mut(world) {
-        debug!("Resolving combat.");
         if let Some(player_details) = player_details_option {
-            if combat_parties.contains_key(&player_details.id) {
-                let attacker_id = combat_parties.get(&player_details.id).unwrap();
+            let defender = Defender {
+                id: player_details.id,
+                name: player_details.player_name.clone(),
+                client_addr: player_details.client_addr.clone(),
+                currently_online: player_details.currently_online,
+            };
+            if combat_parties.contains_key(&defender) {
+                debug!("Identified player defender in combat resolution loop.");
+                let attacker = combat_parties.get(&defender).unwrap();
                 let damage =
-                    combat::resolve_combat(combat_attacker_stats.get(attacker_id).unwrap(), stats);
-                stats.current_hp -= damage.round();
-                //todo this needs to go somewhere better and display attacker name, missed message, and your own attacks
-                send_message_to_player(
-                    player_details,
-                    &(attacker_id.to_string()
-                        + " hit you for "
-                        + &damage.round().to_string()
-                        + " damage."),
+                    combat::resolve_combat(combat_attacker_stats.get(&attacker.id).unwrap(), stats);
+                let rounded_damage = damage.round();
+                stats.current_hp -= rounded_damage;
+                combat::send_combat_system_messages_to_players(
+                    &defender,
+                    attacker,
+                    rounded_damage,
+                    stats.current_hp,
                     sender,
                 );
                 stats.update_available = true;
             }
         } else if let Some(monster_details) = monster_details_option {
-            if combat_parties.contains_key(&monster_details.id) {
-                let attacker_id = combat_parties.get(&monster_details.id).unwrap();
+            let defender = Defender {
+                id: monster_details.id,
+                name: monster_details.monster_type.clone(),
+                client_addr: "".to_string(),
+                currently_online: true,
+            };
+            if combat_parties.contains_key(&defender) {
+                debug!("Identified monster defender in combat resolution loop.");
+                let attacker = combat_parties.get(&defender).unwrap();
                 let damage =
-                    combat::resolve_combat(combat_attacker_stats.get(attacker_id).unwrap(), stats);
-                stats.current_hp -= damage.round();
+                    combat::resolve_combat(combat_attacker_stats.get(&attacker.id).unwrap(), stats);
+                let rounded_damage = damage.round();
+                stats.current_hp -= rounded_damage;
+                combat::send_combat_system_messages_to_players(
+                    &defender,
+                    attacker,
+                    rounded_damage,
+                    stats.current_hp,
+                    sender,
+                );
             }
         }
     }

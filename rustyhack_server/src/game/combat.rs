@@ -1,6 +1,10 @@
 use crate::consts::{BASE_COMBAT_ACCURACY, BASE_WEAPON_DAMAGE};
+use crate::game::player_updates::send_message_to_player;
+use crossbeam_channel::Sender;
+use laminar::Packet;
 use rand::prelude::*;
 use rustyhack_lib::ecs::components::Stats;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::ops::Range;
 use uuid::Uuid;
@@ -27,9 +31,34 @@ Accuracy% = Base accuracy + ((100 - base accuracy) * (Attacker's Dex / 100)) - (
 */
 
 pub(crate) type CombatParties = HashMap<Defender, Attacker>;
-pub(crate) type Attacker = Uuid;
-pub(crate) type Defender = Uuid;
 pub(crate) type CombatAttackerStats = HashMap<Uuid, Stats>;
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq, Hash)]
+pub(crate) struct Attacker {
+    pub id: Uuid,
+    pub name: String,
+    pub client_addr: String,
+    pub currently_online: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq, Hash)]
+pub(crate) struct Defender {
+    pub id: Uuid,
+    pub name: String,
+    pub client_addr: String,
+    pub currently_online: bool,
+}
+
+impl Default for Defender {
+    fn default() -> Self {
+        Defender {
+            id: Uuid::new_v4(),
+            name: "".to_string(),
+            client_addr: "".to_string(),
+            currently_online: false,
+        }
+    }
+}
 
 pub(crate) fn resolve_combat(attacker_stats: &Stats, defender_stats: &Stats) -> f32 {
     debug!("Resolving combat...");
@@ -67,4 +96,64 @@ fn check_attack_success(attacker_dex: f32, defender_dex: f32) -> bool {
         + ((100.0 - BASE_COMBAT_ACCURACY) * (attacker_dex / 100.0))
         - ((100.0 - BASE_COMBAT_ACCURACY) * (defender_dex / 100.0));
     combat_accuracy >= rng.gen_range(0.0..=100.0)
+}
+
+pub(crate) fn send_combat_system_messages_to_players(
+    defender: &Defender,
+    attacker: &Attacker,
+    damage: f32,
+    current_hp: f32,
+    sender: &Sender<Packet>,
+) {
+    debug!(
+        "Sending combat message to players: {:?}, {:?}, {}",
+        defender, attacker, damage
+    );
+    if damage > 0.0 {
+        send_message_to_player(
+            &defender.name,
+            &defender.client_addr,
+            defender.currently_online,
+            &(attacker.name.to_string() + " hit you for " + &damage.to_string() + " damage."),
+            sender,
+        );
+        send_message_to_player(
+            &attacker.name,
+            &attacker.client_addr,
+            attacker.currently_online,
+            &("You hit ".to_string() + &defender.name + " for " + &damage.to_string() + " damage."),
+            sender,
+        );
+    } else {
+        send_message_to_player(
+            &defender.name,
+            &defender.client_addr,
+            defender.currently_online,
+            &(attacker.name.to_string() + " missed their attack against you."),
+            sender,
+        );
+        send_message_to_player(
+            &attacker.name,
+            &attacker.client_addr,
+            attacker.currently_online,
+            &("You missed your attack against ".to_string() + &defender.name + "."),
+            sender,
+        );
+    }
+    if current_hp <= 0.0 {
+        send_message_to_player(
+            &defender.name,
+            &defender.client_addr,
+            defender.currently_online,
+            &(attacker.name.to_string() + " killed you."),
+            sender,
+        );
+        send_message_to_player(
+            &attacker.name,
+            &attacker.client_addr,
+            attacker.currently_online,
+            &("You killed ".to_string() + &defender.name + "."),
+            sender,
+        );
+    }
 }
