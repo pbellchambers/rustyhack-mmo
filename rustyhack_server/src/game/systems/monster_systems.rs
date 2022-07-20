@@ -87,14 +87,11 @@ fn move_towards_target(monster_position: &mut Position, target_position: &Positi
 }
 
 fn move_towards(diff: i32, position: i32) -> i32 {
-    if diff.unsigned_abs() > 1 {
-        return if diff.is_positive() {
-            position - 1
-        } else {
-            position + 1
-        };
+    if diff.is_positive() {
+        position - 1
+    } else {
+        position + 1
     }
-    position
 }
 
 fn is_any_player_nearby<'a>(

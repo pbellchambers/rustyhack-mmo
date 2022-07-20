@@ -76,6 +76,9 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             debug!("Executing monster update schedule...");
             map_state_update_schedule.execute(&mut world, &mut resources);
             monster_update_schedule.execute(&mut world, &mut resources);
+
+            player_updates::send_player_position_updates(&mut world, &local_sender);
+            player_updates::send_player_stats_updates(&mut world, &local_sender);
             debug!("Monster update schedule executed successfully.");
             monster_tick_time = Instant::now();
         }

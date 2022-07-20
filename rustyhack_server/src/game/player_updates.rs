@@ -327,7 +327,7 @@ pub(crate) fn send_message_to_player(
     sender: &Sender<Packet>,
 ) {
     if currently_online && !client_addr.eq("") {
-        info!(
+        debug!(
             "Sending system message to player {} at: {}",
             &player_name, &client_addr
         );
