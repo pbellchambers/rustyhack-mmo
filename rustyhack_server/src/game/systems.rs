@@ -35,6 +35,7 @@ pub(crate) fn build_monster_update_schedule() -> Schedule {
         .add_system(combat_systems::resolve_combat_system())
         .add_system(player_systems::resolve_player_deaths_system())
         .add_system(player_systems::update_player_positions_resource_system())
+        .add_system(monster_systems::spawn_monsters_system())
         .add_system(common_entity_systems::update_entities_position_system())
         .build();
     info!("Built monster update system schedule.");

@@ -29,7 +29,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let combat_attacker_stats: CombatAttackerStats = HashMap::new();
     let players_positions: PlayersPositions = HashMap::new();
     let all_monster_definitions = monsters::initialise_all_monster_definitions();
-    let all_spawns = spawns::initialise_all_spawn_definitions();
+    let (default_spawn_counts, all_spawns_map) = spawns::initialise_all_spawn_definitions();
     let mut world = World::default();
     info!("Initialised ECS World");
     let mut player_update_schedule = systems::build_player_update_schedule();
@@ -50,18 +50,22 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     resources.insert(combat_attacker_stats);
     resources.insert(players_positions);
     resources.insert(local_sender.clone());
+    resources.insert(all_spawns_map.clone());
+    resources.insert(default_spawn_counts);
+    resources.insert(all_monster_definitions.clone());
     info!("Finished loading resources into world.");
 
     //spawn initial monsters
-    monsters::spawn_initial_monsters(&mut world, &all_monster_definitions, &all_spawns);
+    monsters::spawn_initial_monsters(&mut world, &all_monster_definitions, &all_spawns_map);
     info!("Spawned all monsters in initial positions.");
 
     //start tick counts
-    let mut entity_tick_time = Instant::now();
-    let mut monster_tick_time = Instant::now();
+    let mut entity_update_broadcast_tick_time = Instant::now();
+    let mut server_game_tick_time = Instant::now();
     let mut loop_tick_time = Instant::now();
     info!("Starting game loop");
     loop {
+        //process player updates as soon as they are received
         if player_updates::process_player_messages(&mut world, &channel_receiver, &local_sender) {
             debug!("Executing player update schedule...");
             map_state_update_schedule.execute(&mut world, &mut resources);
@@ -72,20 +76,22 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             player_updates::send_player_stats_updates(&mut world, &local_sender);
         }
 
-        if monster_tick_time.elapsed() > consts::MONSTER_UPDATE_TICK {
+        //all other updates that depend on the server game tick
+        if server_game_tick_time.elapsed() > consts::SERVER_GAME_TICK {
             debug!("Executing monster update schedule...");
             map_state_update_schedule.execute(&mut world, &mut resources);
             monster_update_schedule.execute(&mut world, &mut resources);
+            debug!("Monster update schedule executed successfully.");
 
             player_updates::send_player_position_updates(&mut world, &local_sender);
             player_updates::send_player_stats_updates(&mut world, &local_sender);
-            debug!("Monster update schedule executed successfully.");
-            monster_tick_time = Instant::now();
+
+            server_game_tick_time = Instant::now();
         }
 
-        if entity_tick_time.elapsed() > consts::ENTITY_UPDATE_TICK {
+        if entity_update_broadcast_tick_time.elapsed() > consts::ENTITY_UPDATE_BROADCAST_TICK {
             player_updates::send_other_entities_updates(&world, &local_sender);
-            entity_tick_time = Instant::now();
+            entity_update_broadcast_tick_time = Instant::now();
         }
 
         if loop_tick_time.elapsed() > consts::LOOP_TICK {
@@ -99,6 +105,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
         }
         let duration_to_sleep = consts::LOOP_TICK - loop_tick_time.elapsed();
         if duration_to_sleep.as_nanos() > 0 {
+            //sleep here for LOOP_TICK so we don't hammer the CPU unnecessarily
             thread::sleep(duration_to_sleep);
         }
         loop_tick_time = Instant::now();

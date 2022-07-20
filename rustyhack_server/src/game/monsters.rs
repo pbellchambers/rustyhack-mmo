@@ -1,6 +1,8 @@
 use crate::consts;
-use crate::game::spawns::AllSpawnsMap;
+use crate::game::spawns::{AllSpawnsMap, PositionWithoutMap};
+use legion::systems::CommandBuffer;
 use legion::World;
+use rand::seq::SliceRandom;
 use rustyhack_lib::ecs::components::{DisplayDetails, MonsterDetails, Position, Stats};
 use rustyhack_lib::ecs::monster::{AllMonsterDefinitions, Monster};
 use rustyhack_lib::file_utils;
@@ -58,11 +60,11 @@ fn get_monster_definition_from_path(path: &Path) -> Monster {
 pub(crate) fn spawn_initial_monsters(
     world: &mut World,
     all_monster_definitions: &AllMonsterDefinitions,
-    all_spawns: &AllSpawnsMap,
+    all_spawns_map: &AllSpawnsMap,
 ) {
     info!("Spawning initial monsters.");
     let mut monsters_vec: Vec<(MonsterDetails, DisplayDetails, Position, Stats)> = vec![];
-    for (map, spawns) in all_spawns {
+    for (map, spawns) in all_spawns_map {
         for monster in &spawns.monsters {
             let mut current_monster = all_monster_definitions
                 .get(&monster.monster_type)
@@ -100,4 +102,56 @@ pub(crate) fn spawn_initial_monsters(
         }
     }
     world.extend(monsters_vec);
+}
+
+pub(crate) fn spawn_single_monster(
+    all_monster_definitions: &AllMonsterDefinitions,
+    all_spawns_map: &AllSpawnsMap,
+    map: &String,
+    monster_type: &String,
+    commands: &mut CommandBuffer,
+) {
+    info!("Spawning single monster.");
+    let mut current_monster = all_monster_definitions
+        .get(monster_type)
+        .unwrap_or_else(|| {
+            error!(
+                "Monster {} missing from all_monster_definitions.",
+                monster_type,
+            );
+            process::exit(1);
+        })
+        .clone();
+    let all_spawn_positions = all_spawns_map.get(map).unwrap();
+    let mut random_spawn_position: PositionWithoutMap;
+    for monster_spawn_positions in &all_spawn_positions.monsters {
+        if monster_spawn_positions.monster_type.eq(monster_type) {
+            random_spawn_position = *monster_spawn_positions
+                .spawn_positions
+                .choose(&mut rand::thread_rng())
+                .unwrap();
+
+            let position = Position {
+                update_available: false,
+                pos_x: random_spawn_position.x,
+                pos_y: random_spawn_position.y,
+                current_map: map.clone(),
+                velocity_x: 0,
+                velocity_y: 0,
+            };
+            current_monster.monster_details.id = Uuid::new_v4();
+            current_monster.monster_details.spawn_position = position.clone();
+            current_monster.position = position.clone();
+            commands.push((
+                current_monster.monster_details.clone(),
+                current_monster.display_details,
+                current_monster.position,
+                current_monster.stats,
+            ));
+            info!(
+                "Spawned {} at position: ({} {})",
+                current_monster.monster_details.monster_type, position.pos_x, position.pos_y
+            );
+        }
+    }
 }

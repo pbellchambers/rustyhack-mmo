@@ -8,6 +8,7 @@ use std::path::Path;
 use std::process;
 
 pub type AllSpawnsMap = HashMap<String, Spawns>;
+pub type AllSpawnCounts = HashMap<String, HashMap<String, u32>>;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Spawns {
@@ -26,8 +27,13 @@ pub struct PositionWithoutMap {
     pub y: u32,
 }
 
-pub(crate) fn initialise_all_spawn_definitions() -> AllSpawnsMap {
-    info!("About to initialise all spawn definitions");
+pub(crate) fn initialise_all_spawn_definitions() -> (AllSpawnCounts, AllSpawnsMap) {
+    let all_spawns_map = get_all_spawns_positions();
+    (get_default_spawn_counts(&all_spawns_map), all_spawns_map)
+}
+
+fn get_all_spawns_positions() -> AllSpawnsMap {
+    info!("About to initialise all spawn positions");
     let mut all_spawns: HashMap<String, Spawns> = HashMap::new();
     let mut file_location = file_utils::current_exe_location();
     file_location.pop();
@@ -36,7 +42,7 @@ pub(crate) fn initialise_all_spawn_definitions() -> AllSpawnsMap {
     let paths = file_utils::get_all_files_in_location(&file_location);
     for path in paths {
         let unwrapped_path = path.unwrap();
-        let name = String::from(
+        let map = String::from(
             unwrapped_path
                 .file_name()
                 .to_str()
@@ -46,10 +52,28 @@ pub(crate) fn initialise_all_spawn_definitions() -> AllSpawnsMap {
                 .unwrap(),
         );
         let spawns: Spawns = get_spawns_definition_from_path(&unwrapped_path.path());
-        info!("Initialised spawn definitions for map: {:?}", &name);
-        all_spawns.insert(name, spawns);
+        info!("Initialised spawn definitions for map: {:?}", &map);
+        all_spawns.insert(map, spawns);
     }
     all_spawns
+}
+
+fn get_default_spawn_counts(all_spawns_map: &AllSpawnsMap) -> AllSpawnCounts {
+    info!("About to initialise all spawn counts");
+    let mut default_spawn_counts: HashMap<String, HashMap<String, u32>> = HashMap::new();
+    for (map, spawns) in all_spawns_map {
+        let mut map_spawn_counts: HashMap<String, u32> = HashMap::new();
+        for monster in &spawns.monsters {
+            let mut monster_spawn_count: u32 = 0;
+            for _spawn_position in &monster.spawn_positions {
+                monster_spawn_count += 1;
+            }
+            map_spawn_counts.insert(monster.monster_type.clone(), monster_spawn_count);
+        }
+        default_spawn_counts.insert(map.clone(), map_spawn_counts);
+    }
+    info!("All spawn counts are: {:?}", default_spawn_counts);
+    default_spawn_counts
 }
 
 fn get_spawns_definition_from_path(path: &Path) -> Spawns {

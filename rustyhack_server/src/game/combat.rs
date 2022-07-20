@@ -95,7 +95,7 @@ fn check_attack_success(attacker_dex: f32, defender_dex: f32) -> bool {
     let combat_accuracy = BASE_COMBAT_ACCURACY
         + ((100.0 - BASE_COMBAT_ACCURACY) * (attacker_dex / 100.0))
         - ((100.0 - BASE_COMBAT_ACCURACY) * (defender_dex / 100.0));
-    combat_accuracy >= rng.gen_range(0.0..=100.0)
+    combat_accuracy >= rng.gen_range(0.0..=101.0)
 }
 
 pub(crate) fn send_combat_system_messages_to_players(

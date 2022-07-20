@@ -1,12 +1,17 @@
+use crate::consts;
 use crate::consts::MONSTER_DISTANCE_ACTIVATION;
+use crate::game::monsters;
 use crate::game::players::PlayersPositions;
+use crate::game::spawns::{AllSpawnCounts, AllSpawnsMap};
 use legion::systems::CommandBuffer;
 use legion::world::SubWorld;
 use legion::{system, Entity, Query};
-use rand::Rng;
+use rand::{thread_rng, Rng};
 use rustyhack_lib::ecs::components::{DisplayDetails, MonsterDetails, Position, Stats};
+use rustyhack_lib::ecs::monster::AllMonsterDefinitions;
 use rustyhack_lib::math_utils::i32_from;
 use std::cmp::Ordering;
+use std::collections::HashMap;
 use uuid::Uuid;
 
 #[system]
@@ -134,4 +139,110 @@ fn is_specific_player_nearby(
         return true;
     }
     false
+}
+
+#[system]
+pub(crate) fn spawn_monsters(
+    world: &mut SubWorld,
+    query: &mut Query<(&mut MonsterDetails, &mut Position)>,
+    commands: &mut CommandBuffer,
+    #[resource] all_spawns_map: &AllSpawnsMap,
+    #[resource] default_spawn_counts: &AllSpawnCounts,
+    #[resource] all_monster_definitions: &AllMonsterDefinitions,
+) {
+    debug!("Checking whether replacement monsters need to spawn.");
+    let mut current_monsters_count: AllSpawnCounts = HashMap::new();
+    for (monster, position) in query.iter_mut(world) {
+        current_monsters_count = count_alive_monsters(current_monsters_count, monster, position);
+    }
+    let monsters_needing_respawn: AllSpawnCounts =
+        count_monsters_needing_respawn(&current_monsters_count, default_spawn_counts);
+    respawn_monsters(
+        &monsters_needing_respawn,
+        all_monster_definitions,
+        all_spawns_map,
+        commands,
+    );
+}
+
+fn respawn_monsters(
+    monsters_needing_respawn: &AllSpawnCounts,
+    all_monster_definitions: &AllMonsterDefinitions,
+    all_spawns_map: &AllSpawnsMap,
+    commands: &mut CommandBuffer,
+) {
+    for (map, spawns) in monsters_needing_respawn {
+        for (monster_type, count) in spawns {
+            //only spawn at most 1 of each monster_type per map per tick
+            if should_respawn_this_tick() && count > &0 {
+                monsters::spawn_single_monster(
+                    all_monster_definitions,
+                    all_spawns_map,
+                    map,
+                    monster_type,
+                    commands,
+                );
+            }
+        }
+    }
+}
+
+fn should_respawn_this_tick() -> bool {
+    //random chance for respawning each chick
+    let mut rng = thread_rng();
+    consts::TICK_SPAWN_CHANCE_PERCENTAGE >= rng.gen_range(0..=101)
+}
+
+fn count_monsters_needing_respawn(
+    current_monsters_count: &AllSpawnCounts,
+    default_spawn_counts: &AllSpawnCounts,
+) -> AllSpawnCounts {
+    //get diff between default spawns and current alive monsters
+    let mut monsters_needing_respawn: AllSpawnCounts = HashMap::new();
+    for (map, spawns) in default_spawn_counts {
+        let mut map_monsters_needing_respawn: HashMap<String, u32> = HashMap::new();
+        for (monster, count) in spawns {
+            let needing_respawn_count = count
+                - current_monsters_count
+                    .get(map)
+                    .unwrap_or(&HashMap::new())
+                    .get(monster)
+                    .unwrap_or(&0);
+            map_monsters_needing_respawn.insert(monster.clone(), needing_respawn_count);
+        }
+        monsters_needing_respawn.insert(map.clone(), map_monsters_needing_respawn);
+    }
+    debug!(
+        "Monsters needing respawn are: {:?}",
+        monsters_needing_respawn
+    );
+    monsters_needing_respawn
+}
+
+fn count_alive_monsters(
+    mut current_monsters_count: AllSpawnCounts,
+    monster: &MonsterDetails,
+    position: &Position,
+) -> HashMap<String, HashMap<String, u32>> {
+    if current_monsters_count.contains_key(&position.current_map) {
+        let mut map_monster_count: HashMap<String, u32> = current_monsters_count
+            .get(&position.current_map)
+            .unwrap()
+            .clone();
+        if map_monster_count.contains_key(&monster.monster_type) {
+            let mut count: u32 = *map_monster_count.get(&monster.monster_type).unwrap();
+            count += 1;
+            map_monster_count.insert(monster.monster_type.clone(), count);
+            current_monsters_count.insert(position.current_map.clone(), map_monster_count.clone());
+        } else {
+            map_monster_count.insert(monster.monster_type.clone(), 1);
+            current_monsters_count.insert(position.current_map.clone(), map_monster_count.clone());
+        }
+    } else {
+        let mut monster_count: HashMap<String, u32> = HashMap::new();
+        monster_count.insert(monster.monster_type.clone(), 1);
+        current_monsters_count.insert(position.current_map.clone(), monster_count);
+    }
+    debug!("Current monsters alive are: {:?}", current_monsters_count);
+    current_monsters_count
 }
