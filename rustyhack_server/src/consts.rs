@@ -12,4 +12,4 @@ pub(crate) const MONSTERS_DIRECTORY: &str = "monsters";
 pub(crate) const SPAWNS_DIRECTORY: &str = "spawns";
 pub(crate) const BASE_COMBAT_ACCURACY: f32 = 75.0;
 pub(crate) const BASE_WEAPON_DAMAGE: Range<f32> = 5.0..10.0;
-pub(crate) const TICK_SPAWN_CHANCE_PERCENTAGE: u32 = 10;
+pub(crate) const TICK_SPAWN_CHANCE_PERCENTAGE: u32 = 5;

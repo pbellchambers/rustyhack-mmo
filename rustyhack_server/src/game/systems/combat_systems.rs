@@ -93,6 +93,12 @@ pub(crate) fn resolve_combat(
     #[resource] sender: &Sender<Packet>,
 ) {
     for (stats, monster_details_option, player_details_option) in query.iter_mut(world) {
+        if stats.current_hp <= 0.0 {
+            // Skip combat if defender is already dead.
+            // This is possible if multiple player updates are processed
+            // before the server tick for monsters.
+            continue;
+        }
         if let Some(player_details) = player_details_option {
             let defender = Defender {
                 id: player_details.id,
@@ -103,8 +109,14 @@ pub(crate) fn resolve_combat(
             if combat_parties.contains_key(&defender) {
                 debug!("Identified player defender in combat resolution loop.");
                 let attacker = combat_parties.get(&defender).unwrap();
-                let damage =
-                    combat::resolve_combat(combat_attacker_stats.get(&attacker.id).unwrap(), stats);
+                let attacker_stats = combat_attacker_stats.get(&attacker.id).unwrap();
+                if attacker_stats.current_hp <= 0.0 {
+                    // Skip combat if attacker is already dead.
+                    // This is possible if multiple player updates are processed
+                    // before the server tick for monsters.
+                    continue;
+                }
+                let damage = combat::resolve_combat(attacker_stats, stats);
                 let rounded_damage = damage.round();
                 stats.current_hp -= rounded_damage;
                 combat::send_combat_system_messages_to_players(
@@ -126,8 +138,14 @@ pub(crate) fn resolve_combat(
             if combat_parties.contains_key(&defender) {
                 debug!("Identified monster defender in combat resolution loop.");
                 let attacker = combat_parties.get(&defender).unwrap();
-                let damage =
-                    combat::resolve_combat(combat_attacker_stats.get(&attacker.id).unwrap(), stats);
+                let attacker_stats = combat_attacker_stats.get(&attacker.id).unwrap();
+                if attacker_stats.current_hp <= 0.0 {
+                    // Skip combat if attacker is already dead.
+                    // This is possible if multiple player updates are processed
+                    // before the server tick for monsters.
+                    continue;
+                }
+                let damage = combat::resolve_combat(attacker_stats, stats);
                 let rounded_damage = damage.round();
                 stats.current_hp -= rounded_damage;
                 combat::send_combat_system_messages_to_players(
