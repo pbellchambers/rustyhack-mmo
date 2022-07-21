@@ -91,4 +91,5 @@ pub struct Stats {
     pub armour: f32,
     pub level: u32,
     pub exp: u32,
+    pub exp_next: u32,
 }

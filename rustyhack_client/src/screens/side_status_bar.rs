@@ -10,6 +10,7 @@ pub(crate) fn draw(player: &Player) -> Screen {
 
     let lvl_string = "Lvl: ".to_owned() + &player.stats.level.to_string();
     let exp_string = "Exp: ".to_owned() + &player.stats.exp.to_string();
+    let exp_next_string = "Next: ".to_owned() + &player.stats.exp_next.to_string();
     let hp_string = "HP: ".to_owned()
         + &player.stats.current_hp.to_string()
         + "/"
@@ -23,11 +24,12 @@ pub(crate) fn draw(player: &Player) -> Screen {
     screen.print(1, 0, &player.player_details.player_name);
     screen.print(1, 1, &lvl_string);
     screen.print(1, 2, &exp_string);
-    screen.print(1, 4, &hp_string);
-    screen.print(1, 5, &armour_string);
-    screen.print(1, 6, &str_string);
-    screen.print(1, 7, &dex_string);
-    screen.print(1, 8, &con_string);
-    screen.print(1, 10, &gold_string);
+    screen.print(1, 3, &exp_next_string);
+    screen.print(1, 5, &hp_string);
+    screen.print(1, 6, &armour_string);
+    screen.print(1, 7, &str_string);
+    screen.print(1, 8, &dex_string);
+    screen.print(1, 9, &con_string);
+    screen.print(1, 11, &gold_string);
     screen
 }

@@ -40,6 +40,7 @@ impl Default for Player {
                 armour: 5.0,
                 level: 1,
                 exp: 0,
+                exp_next: 1000,
             },
         }
     }
