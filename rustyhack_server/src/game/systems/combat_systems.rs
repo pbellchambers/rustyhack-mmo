@@ -101,6 +101,7 @@ pub(crate) fn resolve_combat(
             // before the server tick for monsters.
             continue;
         }
+        let mut defender_is_monster = false;
         let mut defender: Defender = Defender::default();
         if let Some(player_details) = player_details_option {
             //player is the defender
@@ -118,6 +119,7 @@ pub(crate) fn resolve_combat(
                 client_addr: "".to_string(),
                 currently_online: true,
             };
+            defender_is_monster = true;
         }
         if combat_parties.contains_key(&defender) {
             let attacker = combat_parties.get(&defender).unwrap();
@@ -130,12 +132,15 @@ pub(crate) fn resolve_combat(
             }
             let damage = combat::resolve_combat(&attacker_stats, defender_stats).round();
             apply_damage(defender_stats, damage);
-            let exp_gain = check_and_apply_experience(
-                combat_attacker_stats,
-                &attacker.id,
-                &mut attacker_stats,
-                defender_stats,
-            );
+            let mut exp_gain = 0;
+            if defender_is_monster {
+                exp_gain = check_and_apply_experience(
+                    combat_attacker_stats,
+                    &attacker.id,
+                    &mut attacker_stats,
+                    defender_stats,
+                );
+            }
             combat::send_combat_updates_to_players(
                 &defender,
                 attacker,
