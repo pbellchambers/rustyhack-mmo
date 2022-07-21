@@ -11,7 +11,7 @@ pub(crate) fn handle_other_input(
     all_maps: &AllMaps,
     other_entities: &EntityUpdates,
 ) {
-    if console.is_key_pressed(KeyCode::Char(' ')) {
+    if console.is_key_pressed(KeyCode::Char('l')) {
         commands::look_command::get_what_player_sees(
             system_messages,
             player,
