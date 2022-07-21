@@ -35,6 +35,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let mut player_update_schedule = systems::build_player_update_schedule();
     let mut monster_update_schedule = systems::build_monster_update_schedule();
     let mut map_state_update_schedule = systems::build_map_state_update_schedule();
+    let mut health_regen_schedule = systems::build_health_regen_schedule();
 
     //initialise message handler thread
     let (channel_sender, channel_receiver) = crossbeam_channel::unbounded();
@@ -63,6 +64,8 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let mut entity_update_broadcast_tick_time = Instant::now();
     let mut server_game_tick_time = Instant::now();
     let mut loop_tick_time = Instant::now();
+    let mut server_game_tick_count = 0;
+
     info!("Starting game loop");
     loop {
         //process player updates as soon as they are received
@@ -78,11 +81,19 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
 
         //all other updates that depend on the server game tick
         if server_game_tick_time.elapsed() > consts::SERVER_GAME_TICK {
+            server_game_tick_count += 1;
             debug!("Executing monster update schedule...");
             map_state_update_schedule.execute(&mut world, &mut resources);
             monster_update_schedule.execute(&mut world, &mut resources);
             debug!("Monster update schedule executed successfully.");
 
+            //things that happen every 2 ticks rather than every tick
+            if server_game_tick_count == 2 {
+                health_regen_schedule.execute(&mut world, &mut resources);
+                server_game_tick_count = 0;
+            }
+
+            //send game tick updates to players
             player_updates::send_player_position_updates(&mut world, &local_sender);
             player_updates::send_player_stats_updates(&mut world, &local_sender);
 

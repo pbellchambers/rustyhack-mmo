@@ -41,3 +41,11 @@ pub(crate) fn build_monster_update_schedule() -> Schedule {
     info!("Built monster update system schedule.");
     schedule
 }
+
+pub(crate) fn build_health_regen_schedule() -> Schedule {
+    let schedule = Schedule::builder()
+        .add_system(common_entity_systems::apply_health_regen_system())
+        .build();
+    info!("Built health regen schedule.");
+    schedule
+}
