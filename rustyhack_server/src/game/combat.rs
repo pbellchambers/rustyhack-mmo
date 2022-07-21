@@ -129,7 +129,7 @@ pub(crate) fn send_combat_system_messages_to_players(
             &defender.name,
             &defender.client_addr,
             defender.currently_online,
-            &(attacker.name.to_string() + " missed their attack against you."),
+            &(attacker.name.to_string() + " attacks you, but missed."),
             sender,
         );
         send_message_to_player(
