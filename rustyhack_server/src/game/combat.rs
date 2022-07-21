@@ -103,9 +103,32 @@ pub(crate) fn send_combat_updates_to_players(
     attacker: &Attacker,
     damage: f32,
     current_hp: f32,
+    exp_gain: u32,
     sender: &Sender<Packet>,
 ) {
     send_combat_messages_to_players(defender, attacker, damage, current_hp, sender);
+    send_exp_messages_to_players(attacker, current_hp, exp_gain, sender);
+}
+
+fn send_exp_messages_to_players(
+    attacker: &Attacker,
+    current_hp: f32,
+    exp_gain: u32,
+    sender: &Sender<Packet>,
+) {
+    debug!(
+        "Sending exp gain message to players: {:?}, {}",
+        attacker, exp_gain
+    );
+    if current_hp <= 0.0 && exp_gain > 0 {
+        send_message_to_player(
+            &attacker.name,
+            &attacker.client_addr,
+            attacker.currently_online,
+            &("You gained ".to_string() + &exp_gain.to_string() + " exp!"),
+            sender,
+        );
+    }
 }
 
 fn send_combat_messages_to_players(

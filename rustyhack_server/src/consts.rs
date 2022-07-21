@@ -16,3 +16,4 @@ pub(crate) const BASE_WEAPON_DAMAGE: Range<f32> = 5.0..10.0;
 pub(crate) const BASE_HEALTH_REGEN_PERCENT: f32 = 0.75;
 pub(crate) const HEALTH_REGEN_CON_PERCENT: f32 = 2.0;
 pub(crate) const HEALTH_REGEN_CON_STATIC_FACTOR: f32 = 5.0;
+pub(crate) const MONSTER_EXP_MULTIPLICATION_FACTOR: u32 = 100;
