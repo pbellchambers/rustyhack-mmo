@@ -6,7 +6,7 @@ use crate::game::spawns::{AllSpawnCounts, AllSpawnsMap};
 use legion::systems::CommandBuffer;
 use legion::world::SubWorld;
 use legion::{system, Entity, Query};
-use rand::{thread_rng, Rng};
+use rand::Rng;
 use rustyhack_lib::ecs::components::{DisplayDetails, MonsterDetails, Position, Stats};
 use rustyhack_lib::ecs::monster::AllMonsterDefinitions;
 use rustyhack_lib::math_utils::i32_from;
@@ -99,6 +99,7 @@ fn move_towards(diff: i32, position: i32) -> i32 {
     }
 }
 
+#[allow(clippy::similar_names)]
 fn is_any_player_nearby<'a>(
     player_positions: &'a PlayersPositions,
     monster_position: &Position,
@@ -121,6 +122,7 @@ fn is_any_player_nearby<'a>(
     None
 }
 
+#[allow(clippy::similar_names)]
 fn is_specific_player_nearby(
     current_target_position: &Position,
     monster_position: &Position,
@@ -189,7 +191,7 @@ fn respawn_monsters(
 
 fn should_respawn_this_tick() -> bool {
     //random chance for respawning each chick
-    let mut rng = thread_rng();
+    let mut rng = rand::thread_rng();
     consts::TICK_SPAWN_CHANCE_PERCENTAGE >= rng.gen_range(0..=101)
 }
 

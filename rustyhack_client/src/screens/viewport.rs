@@ -103,6 +103,7 @@ fn calculate_viewable_map_coords(viewport: &mut Viewport, player: &Player) {
     }
 }
 
+#[allow(clippy::similar_names)]
 fn draw_viewable_map(screen: &mut Screen, world_map: &BackgroundMap, viewport: &Viewport) {
     debug!("Drawing viewable map.");
     let mut viewport_print_y_loc: i32 = 0;

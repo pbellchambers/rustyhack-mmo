@@ -5,7 +5,7 @@ use crossbeam_channel::Sender;
 use laminar::Packet;
 use legion::world::SubWorld;
 use legion::{system, Query};
-use rand::{thread_rng, Rng};
+use rand::Rng;
 use rustyhack_lib::ecs::components::{PlayerDetails, Position, Stats};
 
 #[system]
@@ -85,7 +85,7 @@ fn calculate_new_stats(stats: &mut Stats) -> &mut Stats {
     //todo make stat selection a player choice rather than randomly assigning 2 stat upgrades here
     let mut stat_upgrades = 2;
     while stat_upgrades > 0 {
-        let mut rng = thread_rng();
+        let mut rng = rand::thread_rng();
         let random_choice = rng.gen_range(1..=3);
         if random_choice == 1 {
             stats.str += 1.0;

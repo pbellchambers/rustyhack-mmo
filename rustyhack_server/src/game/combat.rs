@@ -2,7 +2,7 @@ use crate::consts::{BASE_COMBAT_ACCURACY, BASE_WEAPON_DAMAGE};
 use crate::game::player_updates::send_message_to_player;
 use crossbeam_channel::Sender;
 use laminar::Packet;
-use rand::prelude::*;
+use rand::Rng;
 use rustyhack_lib::ecs::components::Stats;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -77,7 +77,7 @@ pub(crate) fn resolve_combat(attacker_stats: &Stats, defender_stats: &Stats) -> 
 }
 
 fn calculate_damage_dealt(attacker_weapon_damage_range: Range<f32>, attacker_str: f32) -> f32 {
-    let mut rng = thread_rng();
+    let mut rng = rand::thread_rng();
     let attacker_weapon_damage = rng.gen_range(attacker_weapon_damage_range);
     debug!(
         "Weapon damage before strength modifier: {}",
@@ -91,7 +91,7 @@ fn calculate_actual_damage_received(damage_dealt: f32, defender_armour: f32) -> 
 }
 
 fn check_attack_success(attacker_dex: f32, defender_dex: f32) -> bool {
-    let mut rng = thread_rng();
+    let mut rng = rand::thread_rng();
     let combat_accuracy = BASE_COMBAT_ACCURACY
         + ((100.0 - BASE_COMBAT_ACCURACY) * (attacker_dex / 100.0))
         - ((100.0 - BASE_COMBAT_ACCURACY) * (defender_dex / 100.0));
