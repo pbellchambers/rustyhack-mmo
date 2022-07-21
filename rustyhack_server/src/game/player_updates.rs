@@ -240,7 +240,7 @@ pub(crate) fn send_player_stats_updates(world: &mut World, sender: &Sender<Packe
     let mut query = <(&PlayerDetails, &mut Stats)>::query();
     for (player_details, stats) in query.iter_mut(world) {
         if stats.update_available && player_details.currently_online {
-            info!(
+            debug!(
                 "Sending player stats update for: {}",
                 &player_details.player_name
             );

@@ -32,7 +32,8 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let (default_spawn_counts, all_spawns_map) = spawns::initialise_all_spawn_definitions();
     let mut world = World::default();
     info!("Initialised ECS World");
-    let mut player_update_schedule = systems::build_player_update_schedule();
+    let mut normal_player_update_schedule = systems::build_normal_player_update_schedule();
+    let mut player_combat_update_schedule = systems::build_player_combat_update_schedule();
     let mut monster_update_schedule = systems::build_monster_update_schedule();
     let mut map_state_update_schedule = systems::build_map_state_update_schedule();
     let mut health_regen_schedule = systems::build_health_regen_schedule();
@@ -72,7 +73,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
         if player_updates::process_player_messages(&mut world, &channel_receiver, &local_sender) {
             debug!("Executing player update schedule...");
             map_state_update_schedule.execute(&mut world, &mut resources);
-            player_update_schedule.execute(&mut world, &mut resources);
+            normal_player_update_schedule.execute(&mut world, &mut resources);
             debug!("Player update schedule executed successfully.");
 
             player_updates::send_player_position_updates(&mut world, &local_sender);
@@ -82,10 +83,11 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
         //all other updates that depend on the server game tick
         if server_game_tick_time.elapsed() > consts::SERVER_GAME_TICK {
             server_game_tick_count += 1;
-            debug!("Executing monster update schedule...");
+            debug!("Executing monster and player combat update schedule...");
             map_state_update_schedule.execute(&mut world, &mut resources);
+            player_combat_update_schedule.execute(&mut world, &mut resources);
             monster_update_schedule.execute(&mut world, &mut resources);
-            debug!("Monster update schedule executed successfully.");
+            debug!("Monster and player combat update schedule executed successfully.");
 
             //things that happen every 2 ticks rather than every tick
             if server_game_tick_count == 2 {

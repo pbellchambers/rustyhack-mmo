@@ -15,7 +15,18 @@ pub(crate) fn build_map_state_update_schedule() -> Schedule {
     schedule
 }
 
-pub(crate) fn build_player_update_schedule() -> Schedule {
+pub(crate) fn build_normal_player_update_schedule() -> Schedule {
+    let schedule = Schedule::builder()
+        .add_system(combat_systems::check_for_combat_system())
+        .add_system(common_entity_systems::update_entities_position_system())
+        .add_system(player_systems::resolve_player_deaths_system())
+        .add_system(player_systems::update_player_positions_resource_system())
+        .build();
+    info!("Built normal player update system schedule.");
+    schedule
+}
+
+pub(crate) fn build_player_combat_update_schedule() -> Schedule {
     let schedule = Schedule::builder()
         .add_system(combat_systems::check_for_combat_system())
         .add_system(combat_systems::resolve_combat_system())
@@ -23,7 +34,7 @@ pub(crate) fn build_player_update_schedule() -> Schedule {
         .add_system(player_systems::resolve_player_deaths_system())
         .add_system(player_systems::update_player_positions_resource_system())
         .build();
-    info!("Built player update system schedule.");
+    info!("Built player combat update system schedule.");
     schedule
 }
 
