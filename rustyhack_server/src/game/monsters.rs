@@ -3,7 +3,7 @@ use crate::game::spawns::{AllSpawnsMap, PositionWithoutMap};
 use legion::systems::CommandBuffer;
 use legion::World;
 use rand::seq::SliceRandom;
-use rustyhack_lib::ecs::components::{DisplayDetails, MonsterDetails, Position, Stats};
+use rustyhack_lib::ecs::components::{DisplayDetails, Inventory, MonsterDetails, Position, Stats};
 use rustyhack_lib::ecs::monster::{AllMonsterDefinitions, Monster};
 use rustyhack_lib::file_utils;
 use std::collections::HashMap;
@@ -63,7 +63,8 @@ pub(crate) fn spawn_initial_monsters(
     all_spawns_map: &AllSpawnsMap,
 ) {
     info!("Spawning initial monsters.");
-    let mut monsters_vec: Vec<(MonsterDetails, DisplayDetails, Position, Stats)> = vec![];
+    let mut monsters_vec: Vec<(MonsterDetails, DisplayDetails, Position, Stats, Inventory)> =
+        vec![];
     for (map, spawns) in all_spawns_map {
         for monster in &spawns.monsters {
             let mut current_monster = all_monster_definitions
@@ -97,6 +98,7 @@ pub(crate) fn spawn_initial_monsters(
                     current_monster.display_details,
                     current_monster.position,
                     current_monster.stats,
+                    current_monster.inventory.clone(),
                 ));
             }
         }
@@ -147,6 +149,7 @@ pub(crate) fn spawn_single_monster(
                 current_monster.display_details,
                 current_monster.position,
                 current_monster.stats,
+                current_monster.inventory.clone(),
             ));
             info!(
                 "Spawned {} at position: ({} {})",

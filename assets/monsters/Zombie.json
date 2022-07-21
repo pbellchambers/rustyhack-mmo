@@ -34,10 +34,28 @@
     "max_hp": 50.0,
     "str": 15.0,
     "dex": 5.0,
-    "con": 20.0,
+    "con": 10.0,
     "armour": 15.0,
     "level": 2,
     "exp": 0,
     "exp_next": 1000
+  },
+  "inventory": {
+    "gold": 3,
+    "equipped": {
+      "weapon": {
+        "name": "Zombie Arm",
+        "damage_range": {
+          "start": 5.0,
+          "end": 10.0
+        },
+        "accuracy": 75.0
+      },
+      "armour": {
+        "name": "Tatty Leather Armour",
+        "damage_reduction_percentage": 15.0
+      }
+    },
+    "carried": []
   }
 }

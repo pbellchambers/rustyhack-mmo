@@ -1,5 +1,5 @@
 use crate::consts::{DEFAULT_MAP, DEFAULT_PLAYER_POSITION_X, DEFAULT_PLAYER_POSITION_Y};
-use crate::ecs::components::{DisplayDetails, PlayerDetails, Position, Stats};
+use crate::ecs::components::{DisplayDetails, Inventory, PlayerDetails, Position, Stats};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -9,6 +9,7 @@ pub struct Player {
     pub display_details: DisplayDetails,
     pub position: Position,
     pub stats: Stats,
+    pub inventory: Inventory,
 }
 
 impl Default for Player {
@@ -42,6 +43,7 @@ impl Default for Player {
                 exp: 0,
                 exp_next: 1000,
             },
+            inventory: Inventory::default(),
         }
     }
 }

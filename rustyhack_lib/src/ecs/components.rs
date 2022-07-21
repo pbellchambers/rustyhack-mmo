@@ -2,6 +2,7 @@ use crate::consts::{
     DEFAULT_MAP, DEFAULT_PLAYER_COLOUR, DEFAULT_PLAYER_ICON, DEFAULT_PLAYER_POSITION_X,
     DEFAULT_PLAYER_POSITION_Y,
 };
+use crate::ecs::inventory::{Equipment, Items};
 use crate::ecs::monster::Monster;
 use crate::ecs::player::Player;
 use crossterm::style::Color;
@@ -92,4 +93,11 @@ pub struct Stats {
     pub level: u32,
     pub exp: u32,
     pub exp_next: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+pub struct Inventory {
+    pub gold: u32,
+    pub equipped: Equipment,
+    pub carried: Vec<Items>,
 }

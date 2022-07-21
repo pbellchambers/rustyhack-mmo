@@ -3,7 +3,7 @@ use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
 use legion::{IntoQuery, World};
 use rustyhack_lib::ecs::components::{
-    DisplayDetails, MonsterDetails, PlayerDetails, Position, Stats,
+    DisplayDetails, Inventory, MonsterDetails, PlayerDetails, Position, Stats,
 };
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::{
@@ -119,9 +119,15 @@ fn set_player_disconnected(world: &mut World, address: &str) {
 }
 
 fn join_player(world: &mut World, name: &str, client_addr: String, sender: &Sender<Packet>) {
-    let mut query = <(&mut PlayerDetails, &mut DisplayDetails, &Position, &Stats)>::query();
+    let mut query = <(
+        &mut PlayerDetails,
+        &mut DisplayDetails,
+        &Position,
+        &Stats,
+        &Inventory,
+    )>::query();
     let mut should_create_new_player = true;
-    for (player_details, display_details, position, stats) in query.iter_mut(world) {
+    for (player_details, display_details, position, stats, inventory) in query.iter_mut(world) {
         if player_details.player_name == name && !player_details.currently_online {
             player_details.currently_online = true;
             player_details.client_addr = client_addr.clone();
@@ -136,6 +142,7 @@ fn join_player(world: &mut World, name: &str, client_addr: String, sender: &Send
                 display_details: *display_details,
                 position: position.clone(),
                 stats: *stats,
+                inventory: inventory.clone(),
             };
             send_player_joined_response(&player, sender);
             should_create_new_player = false;
@@ -181,6 +188,7 @@ fn create_player(world: &mut World, name: &str, client_addr: String, sender: &Se
         player.display_details,
         player.position.clone(),
         player.stats,
+        player.inventory.clone(),
     ));
     info!("New player \"{}\" created: {:?}", name, &player_entity);
     send_player_joined_response(&player, sender);

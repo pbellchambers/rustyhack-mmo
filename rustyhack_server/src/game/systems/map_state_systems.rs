@@ -2,7 +2,7 @@ use crate::game::map_state;
 use crate::game::map_state::AllMapStates;
 use legion::system;
 use rustyhack_lib::ecs::components::{
-    DisplayDetails, EntityType, MonsterDetails, PlayerDetails, Position, Stats,
+    DisplayDetails, EntityType, Inventory, MonsterDetails, PlayerDetails, Position, Stats,
 };
 use rustyhack_lib::ecs::monster::Monster;
 use rustyhack_lib::ecs::player::Player;
@@ -19,7 +19,9 @@ pub(crate) fn add_entities_to_map_state(
     display_details: &DisplayDetails,
     monster_details_option: Option<&MonsterDetails>,
     player_details_option: Option<&PlayerDetails>,
-    stats_option: Option<&Stats>,
+    stats: &Stats,
+    inventory: &Inventory,
+
     #[resource] all_map_states: &mut AllMapStates,
 ) {
     debug!("Adding current entity positions to map state.");
@@ -28,7 +30,8 @@ pub(crate) fn add_entities_to_map_state(
             monster_details: monster_details.clone(),
             display_details: *display_details,
             position: position.clone(),
-            stats: *stats_option.unwrap(),
+            stats: *stats,
+            inventory: inventory.clone(),
         };
         map_state::insert_entity_at(
             all_map_states.get_mut(&position.current_map).unwrap(),
@@ -42,7 +45,8 @@ pub(crate) fn add_entities_to_map_state(
             player_details: player_details.clone(),
             display_details: *display_details,
             position: position.clone(),
-            stats: *stats_option.unwrap(),
+            stats: *stats,
+            inventory: inventory.clone(),
         };
         map_state::insert_entity_at(
             all_map_states.get_mut(&position.current_map).unwrap(),

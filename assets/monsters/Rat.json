@@ -39,5 +39,23 @@
     "level": 1,
     "exp": 0,
     "exp_next": 1000
+  },
+  "inventory": {
+    "gold": 1,
+    "equipped": {
+      "weapon": {
+        "name": "Rat Teeth",
+        "damage_range": {
+          "start": 1.0,
+          "end": 5.0
+        },
+        "accuracy": 75.0
+      },
+      "armour": {
+        "name": "Rat Fur",
+        "damage_reduction_percentage": 1.0
+      }
+    },
+    "carried": []
   }
 }
