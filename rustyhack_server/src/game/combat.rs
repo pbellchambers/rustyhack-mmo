@@ -98,7 +98,17 @@ fn check_attack_success(attacker_dex: f32, defender_dex: f32) -> bool {
     combat_accuracy >= rng.gen_range(0.0..=101.0)
 }
 
-pub(crate) fn send_combat_system_messages_to_players(
+pub(crate) fn send_combat_updates_to_players(
+    defender: &Defender,
+    attacker: &Attacker,
+    damage: f32,
+    current_hp: f32,
+    sender: &Sender<Packet>,
+) {
+    send_combat_messages_to_players(defender, attacker, damage, current_hp, sender);
+}
+
+fn send_combat_messages_to_players(
     defender: &Defender,
     attacker: &Attacker,
     damage: f32,

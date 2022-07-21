@@ -67,8 +67,6 @@ pub struct PlayerDetails {
     pub player_name: String,
     pub client_addr: String,
     pub currently_online: bool,
-    pub level: u32,
-    pub exp: u32,
     pub gold: u32,
 }
 
@@ -79,7 +77,6 @@ pub struct MonsterDetails {
     pub spawn_position: Position,
     pub is_active: bool,
     pub current_target: Option<Uuid>,
-    pub exp: u32,
     pub gold: u32,
 }
 
@@ -92,4 +89,6 @@ pub struct Stats {
     pub dex: f32,
     pub con: f32,
     pub armour: f32,
+    pub level: u32,
+    pub exp: u32,
 }

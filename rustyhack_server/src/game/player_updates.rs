@@ -171,8 +171,6 @@ fn create_player(world: &mut World, name: &str, client_addr: String, sender: &Se
                 .expect("Something went wrong parsing player name."),
             client_addr,
             currently_online: true,
-            level: 1,
-            exp: 0,
             gold: 0,
         },
         ..Default::default()

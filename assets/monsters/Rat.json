@@ -12,7 +12,6 @@
     },
     "is_active": false,
     "current_target": null,
-    "exp": 5,
     "gold": 1
   },
   "display_details": {
@@ -36,6 +35,8 @@
     "str": 2.0,
     "dex": 20.0,
     "con": 5.0,
-    "armour": 1.0
+    "armour": 1.0,
+    "level": 1,
+    "exp": 0
   }
 }

@@ -33,7 +33,6 @@ impl Default for Monster {
                 },
                 is_active: false,
                 current_target: None,
-                exp: 1,
                 gold: 1,
             },
             display_details: DisplayDetails {
@@ -57,6 +56,8 @@ impl Default for Monster {
                 dex: 1.0,
                 con: 1.0,
                 armour: 1.0,
+                level: 1,
+                exp: 0,
             },
         }
     }

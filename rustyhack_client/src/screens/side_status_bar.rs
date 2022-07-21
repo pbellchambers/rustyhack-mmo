@@ -8,8 +8,8 @@ pub(crate) fn draw(player: &Player) -> Screen {
         client_consts::VIEWPORT_HEIGHT,
     );
 
-    let lvl_string = "Lvl: ".to_owned() + &player.player_details.level.to_string();
-    let exp_string = "Exp: ".to_owned() + &player.player_details.exp.to_string();
+    let lvl_string = "Lvl: ".to_owned() + &player.stats.level.to_string();
+    let exp_string = "Exp: ".to_owned() + &player.stats.exp.to_string();
     let hp_string = "HP: ".to_owned()
         + &player.stats.current_hp.to_string()
         + "/"

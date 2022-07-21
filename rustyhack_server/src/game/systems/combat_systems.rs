@@ -99,62 +99,46 @@ pub(crate) fn resolve_combat(
             // before the server tick for monsters.
             continue;
         }
+        let mut defender: Defender = Defender::default();
         if let Some(player_details) = player_details_option {
-            let defender = Defender {
+            //player is the defender
+            defender = Defender {
                 id: player_details.id,
                 name: player_details.player_name.clone(),
                 client_addr: player_details.client_addr.clone(),
                 currently_online: player_details.currently_online,
             };
-            if combat_parties.contains_key(&defender) {
-                debug!("Identified player defender in combat resolution loop.");
-                let attacker = combat_parties.get(&defender).unwrap();
-                let attacker_stats = combat_attacker_stats.get(&attacker.id).unwrap();
-                if attacker_stats.current_hp <= 0.0 {
-                    // Skip combat if attacker is already dead.
-                    // This is possible if multiple player updates are processed
-                    // before the server tick for monsters.
-                    continue;
-                }
-                let damage = combat::resolve_combat(attacker_stats, stats);
-                let rounded_damage = damage.round();
-                stats.current_hp -= rounded_damage;
-                combat::send_combat_system_messages_to_players(
-                    &defender,
-                    attacker,
-                    rounded_damage,
-                    stats.current_hp,
-                    sender,
-                );
-                stats.update_available = true;
-            }
         } else if let Some(monster_details) = monster_details_option {
-            let defender = Defender {
+            //monster is the defender
+            defender = Defender {
                 id: monster_details.id,
                 name: monster_details.monster_type.clone(),
                 client_addr: "".to_string(),
                 currently_online: true,
             };
-            if combat_parties.contains_key(&defender) {
-                debug!("Identified monster defender in combat resolution loop.");
-                let attacker = combat_parties.get(&defender).unwrap();
-                let attacker_stats = combat_attacker_stats.get(&attacker.id).unwrap();
-                if attacker_stats.current_hp <= 0.0 {
-                    // Skip combat if attacker is already dead.
-                    // This is possible if multiple player updates are processed
-                    // before the server tick for monsters.
-                    continue;
-                }
-                let damage = combat::resolve_combat(attacker_stats, stats);
-                let rounded_damage = damage.round();
-                stats.current_hp -= rounded_damage;
-                combat::send_combat_system_messages_to_players(
-                    &defender,
-                    attacker,
-                    rounded_damage,
-                    stats.current_hp,
-                    sender,
-                );
+        }
+        if combat_parties.contains_key(&defender) {
+            let attacker = combat_parties.get(&defender).unwrap();
+            let attacker_stats = combat_attacker_stats.get(&attacker.id).unwrap();
+            if attacker_stats.current_hp <= 0.0 {
+                // Skip combat if attacker is already dead.
+                // This is possible if multiple player updates are processed
+                // before the server tick for monsters.
+                continue;
+            }
+            let damage = combat::resolve_combat(attacker_stats, stats);
+            let rounded_damage = damage.round();
+            stats.current_hp -= rounded_damage;
+            combat::send_combat_updates_to_players(
+                &defender,
+                attacker,
+                rounded_damage,
+                stats.current_hp,
+                sender,
+            );
+            if let Some(_player_details) = player_details_option {
+                //only set flag for players
+                stats.update_available = true;
             }
         }
     }
