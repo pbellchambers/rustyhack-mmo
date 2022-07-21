@@ -96,6 +96,7 @@ fn calculate_new_stats(stats: &mut Stats) -> &mut Stats {
         }
         stat_upgrades -= 1;
     }
-    stats.max_hp = BASE_HP_TABLE[(stats.level - 1) as usize] * (1.0 + (stats.con / 100.0));
+    stats.max_hp =
+        (BASE_HP_TABLE[(stats.level - 1) as usize] * (1.0 + (stats.con / 100.0))).round();
     stats
 }
