@@ -15,7 +15,11 @@ Partly a sandbox for me learning rust, partly an ASCII "roguelike" MMORPG. Lacki
 4. Run `rustyhack_client` from the command line
 5. Connect client to server
 
-Use arrow keys to move around, spacebar to look, ctrl-q to quit.
+## Controls
+- Movement: Arrow keys
+- Combat: Walk into enemy
+- Look command: L
+- Quit: Ctrl-q
 
 ## Components
 - **rustyhack_client** - contains all the client code
