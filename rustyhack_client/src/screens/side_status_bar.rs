@@ -18,7 +18,15 @@ pub(crate) fn draw(
         + &player.stats.current_hp.to_string()
         + "/"
         + &player.stats.max_hp.to_string();
-    let weapon_damage_string = "Damage: ".to_owned()
+    let str_string = "Str: ".to_owned() + &player.stats.str.to_string();
+    let dex_string = "Dex: ".to_owned() + &player.stats.dex.to_string();
+    let con_string = "Con: ".to_owned() + &player.stats.con.to_string();
+
+    let gold_string = "Gold: ".to_owned() + &player.inventory.gold.to_string();
+
+    let equipped_title_string = "Equipped:".to_owned();
+    let weapon_string = player.inventory.equipped.weapon.name.to_string()
+        + " "
         + &player
             .inventory
             .equipped
@@ -26,31 +34,24 @@ pub(crate) fn draw(
             .damage_range
             .start
             .to_string()
-        + " - "
+        + "-"
         + &player
             .inventory
             .equipped
             .weapon
             .damage_range
             .end
-            .to_string();
-    let armour_value_string = "Armour: ".to_owned()
+            .to_string()
+        + " dmg";
+    let armour_string = player.inventory.equipped.armour.name.to_string()
+        + " "
         + &player
             .inventory
             .equipped
             .armour
             .damage_reduction_percentage
             .to_string()
-        + "%";
-    let str_string = "Str: ".to_owned() + &player.stats.str.to_string();
-    let dex_string = "Dex: ".to_owned() + &player.stats.dex.to_string();
-    let con_string = "Con: ".to_owned() + &player.stats.con.to_string();
-
-    let gold_string = "Gold: ".to_owned() + &player.inventory.gold.to_string();
-
-    let equipment_title_string = "Equipped:".to_owned();
-    let weapon_string = player.inventory.equipped.weapon.name.to_string();
-    let armour_string = player.inventory.equipped.armour.name.to_string();
+        + "% armour";
 
     let inventory_title_string = "Inventory:".to_owned();
 
@@ -62,16 +63,14 @@ pub(crate) fn draw(
     screen.print(1, 2, &exp_string);
     screen.print(1, 3, &exp_next_string);
     screen.print(1, 5, &hp_string);
-    screen.print(1, 6, &weapon_damage_string);
-    screen.print(1, 7, &armour_value_string);
-    screen.print(1, 8, &str_string);
-    screen.print(1, 9, &dex_string);
-    screen.print(1, 10, &con_string);
-    screen.print(1, 12, &gold_string);
-    screen.print(1, 14, &equipment_title_string);
-    screen.print(1, 16, &weapon_string);
-    screen.print(1, 17, &armour_string);
-    screen.print(1, 19, &inventory_title_string);
-    screen.print(1, 20, &inventory_string);
+    screen.print(1, 6, &str_string);
+    screen.print(1, 7, &dex_string);
+    screen.print(1, 8, &con_string);
+    screen.print(1, 10, &gold_string);
+    screen.print(1, 12, &equipped_title_string);
+    screen.print(1, 13, &weapon_string);
+    screen.print(1, 14, &armour_string);
+    screen.print(1, 16, &inventory_title_string);
+    screen.print(1, 17, &inventory_string);
     screen
 }
