@@ -94,7 +94,7 @@ pub(crate) fn run(
         if should_quit(&console) {
             info!("Ctrl-q detected - quitting app.");
             client_logout::send_logout_notification(sender, player, server_addr);
-            //sleep for a second just to make sure the logout notification is sent
+            //sleep for a reasonable delay to make sure the logout notification is sent
             thread::sleep(Duration::from_millis(250));
             break;
         }
