@@ -94,6 +94,7 @@ pub struct Stats {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 pub struct Inventory {
+    pub update_available: bool,
     pub gold: u32,
     pub equipped: Equipment,
     pub carried: Vec<Items>,

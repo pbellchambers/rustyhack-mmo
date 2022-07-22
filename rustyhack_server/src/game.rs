@@ -76,8 +76,10 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             normal_player_update_schedule.execute(&mut world, &mut resources);
             debug!("Player update schedule executed successfully.");
 
+            //todo refactor these into a system for sending player updates
             player_updates::send_player_position_updates(&mut world, &local_sender);
             player_updates::send_player_stats_updates(&mut world, &local_sender);
+            player_updates::send_player_inventory_updates(&mut world, &local_sender);
         }
 
         //all other updates that depend on the server game tick
@@ -98,6 +100,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             //send game tick updates to players
             player_updates::send_player_position_updates(&mut world, &local_sender);
             player_updates::send_player_stats_updates(&mut world, &local_sender);
+            player_updates::send_player_inventory_updates(&mut world, &local_sender);
 
             server_game_tick_time = Instant::now();
         }

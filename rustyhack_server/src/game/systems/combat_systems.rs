@@ -97,7 +97,7 @@ pub(crate) fn resolve_combat(
         &mut Stats,
         Option<&MonsterDetails>,
         Option<&PlayerDetails>,
-        &Inventory,
+        &mut Inventory,
     )>,
     #[resource] combat_parties: &mut CombatParties,
     #[resource] combat_attacker_stats: &mut CombatAttackerStats,
@@ -134,7 +134,7 @@ pub(crate) fn resolve_combat(
         }
         if combat_parties.contains_key(&defender) {
             let attacker = combat_parties.get(&defender).unwrap();
-            let (mut attacker_stats, attacker_inventory) =
+            let (mut attacker_stats, mut attacker_inventory) =
                 combat_attacker_stats.get(&attacker.id).unwrap().clone();
             if attacker_stats.current_hp <= 0.0 {
                 // Skip combat if attacker is already dead.
@@ -151,13 +151,15 @@ pub(crate) fn resolve_combat(
             .round();
             apply_damage(defender_stats, damage);
             let mut exp_gain = 0;
+            let mut gold_gain = 0;
             if defender_is_monster {
-                exp_gain = check_and_apply_experience(
+                (exp_gain, gold_gain) = check_and_apply_gains(
                     combat_attacker_stats,
                     &attacker.id,
                     &mut attacker_stats,
-                    &attacker_inventory,
+                    &mut attacker_inventory,
                     defender_stats,
+                    defender_inventory,
                 );
             }
             combat::send_combat_updates_to_players(
@@ -166,6 +168,7 @@ pub(crate) fn resolve_combat(
                 damage,
                 defender_stats.current_hp,
                 exp_gain,
+                gold_gain,
                 sender,
             );
             if let Some(_player_details) = player_details_option {
@@ -177,31 +180,36 @@ pub(crate) fn resolve_combat(
     combat_parties.clear();
 }
 
-fn check_and_apply_experience(
+fn check_and_apply_gains(
     combat_attacker_stats: &mut CombatAttackerStats,
     attacker_id: &Uuid,
     attacker_stats: &mut Stats,
-    attacker_inventory: &Inventory,
+    attacker_inventory: &mut Inventory,
     defender_stats: &Stats,
-) -> u32 {
+    defender_inventory: &Inventory,
+) -> (u32, u32) {
     if defender_stats.current_hp <= 0.0 {
         //calculate xp to be gained
         let exp_gain = defender_stats.level * MONSTER_EXP_MULTIPLICATION_FACTOR;
         attacker_stats.exp += exp_gain;
         attacker_stats.update_available = true;
+
+        //calculate gold to be gained
+        let gold_gain = defender_inventory.gold;
+        attacker_inventory.gold = gold_gain;
         combat_attacker_stats.insert(*attacker_id, (*attacker_stats, attacker_inventory.clone()));
-        return exp_gain;
+        return (exp_gain, gold_gain);
     }
-    0
+    (0, 0)
 }
 
 #[system]
-pub(crate) fn apply_experience(
+pub(crate) fn apply_combat_gains(
     world: &mut SubWorld,
-    query: &mut Query<(&mut Stats, Option<&PlayerDetails>)>,
+    query: &mut Query<(&mut Stats, &mut Inventory, Option<&PlayerDetails>)>,
     #[resource] combat_attacker_stats: &mut CombatAttackerStats,
 ) {
-    for (stats, player_details_option) in query.iter_mut(world) {
+    for (stats, inventory, player_details_option) in query.iter_mut(world) {
         if let Some(player_details) = player_details_option {
             if combat_attacker_stats.contains_key(&player_details.id)
                 && combat_attacker_stats
@@ -211,7 +219,13 @@ pub(crate) fn apply_experience(
                     .update_available
             {
                 stats.exp = combat_attacker_stats.get(&player_details.id).unwrap().0.exp;
+                inventory.gold = combat_attacker_stats
+                    .get(&player_details.id)
+                    .unwrap()
+                    .1
+                    .gold;
                 stats.update_available = true;
+                inventory.update_available = true;
             }
         }
     }

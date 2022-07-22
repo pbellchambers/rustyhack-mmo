@@ -67,6 +67,10 @@ pub(crate) fn check_for_received_server_messages(
                     debug!("Player stats update received: {:?}", &new_stats);
                     player.stats = new_stats;
                 }
+                ServerMessage::UpdateInventory(new_inventory) => {
+                    debug!("Player stats update received: {:?}", &new_inventory);
+                    player.inventory = new_inventory.clone();
+                }
                 ServerMessage::SystemMessage(message) => {
                     debug!("System message received: {}", &message);
                     let date_time: DateTime<Local> = Local::now();

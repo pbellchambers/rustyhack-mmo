@@ -122,10 +122,33 @@ pub(crate) fn send_combat_updates_to_players(
     damage: f32,
     current_hp: f32,
     exp_gain: u32,
+    gold_gain: u32,
     sender: &Sender<Packet>,
 ) {
     send_combat_messages_to_players(defender, attacker, damage, current_hp, sender);
     send_exp_messages_to_players(attacker, current_hp, exp_gain, sender);
+    send_gold_messages_to_players(attacker, current_hp, gold_gain, sender);
+}
+
+fn send_gold_messages_to_players(
+    attacker: &Attacker,
+    current_hp: f32,
+    gold_gain: u32,
+    sender: &Sender<Packet>,
+) {
+    debug!(
+        "Sending exp gain message to players: {:?}, {}",
+        attacker, gold_gain
+    );
+    if current_hp <= 0.0 && gold_gain > 0 {
+        send_message_to_player(
+            &attacker.name,
+            &attacker.client_addr,
+            attacker.currently_online,
+            &("You gained ".to_string() + &gold_gain.to_string() + " gold!"),
+            sender,
+        );
+    }
 }
 
 fn send_exp_messages_to_players(

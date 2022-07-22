@@ -30,8 +30,8 @@
   },
   "stats": {
     "update_available": false,
-    "current_hp": 50.0,
-    "max_hp": 50.0,
+    "current_hp": 35.0,
+    "max_hp": 35.0,
     "str": 15.0,
     "dex": 5.0,
     "con": 10.0,
@@ -41,6 +41,7 @@
     "exp_next": 1000
   },
   "inventory": {
+    "update_available": false,
     "gold": 3,
     "equipped": {
       "weapon": {

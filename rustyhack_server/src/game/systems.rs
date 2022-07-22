@@ -30,7 +30,7 @@ pub(crate) fn build_player_combat_update_schedule() -> Schedule {
     let schedule = Schedule::builder()
         .add_system(combat_systems::check_for_combat_system())
         .add_system(combat_systems::resolve_combat_system())
-        .add_system(combat_systems::apply_experience_system())
+        .add_system(combat_systems::apply_combat_gains_system())
         .add_system(player_systems::level_up_system())
         .add_system(common_entity_systems::update_entities_position_system())
         .add_system(player_systems::resolve_player_deaths_system())

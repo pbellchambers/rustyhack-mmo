@@ -41,6 +41,7 @@
     "exp_next": 1000
   },
   "inventory": {
+    "update_available": false,
     "gold": 1,
     "equipped": {
       "weapon": {

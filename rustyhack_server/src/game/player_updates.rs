@@ -270,6 +270,36 @@ pub(crate) fn send_player_stats_updates(world: &mut World, sender: &Sender<Packe
     debug!("Finished sending player stats updates.");
 }
 
+pub(crate) fn send_player_inventory_updates(world: &mut World, sender: &Sender<Packet>) {
+    let mut query = <(&PlayerDetails, &mut Inventory)>::query();
+    for (player_details, inventory) in query.iter_mut(world) {
+        if inventory.update_available && player_details.currently_online {
+            debug!(
+                "Sending player inventory update for: {}",
+                &player_details.player_name
+            );
+            let response = serialize(&ServerMessage::UpdateInventory(inventory.clone()))
+                .unwrap_or_else(|err| {
+                    error!(
+                        "Failed to serialize player inventory: {:?}, error: {}",
+                        &inventory, err
+                    );
+                    process::exit(1);
+                });
+            rustyhack_lib::message_handler::send_packet(
+                Packet::unreliable_sequenced(
+                    player_details.client_addr.parse().unwrap(),
+                    response,
+                    Some(24),
+                ),
+                sender,
+            );
+            inventory.update_available = false;
+        }
+    }
+    debug!("Finished sending player stats updates.");
+}
+
 pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>) {
     let mut position_updates: HashMap<String, Position> = HashMap::new();
     let mut display_details: HashMap<String, DisplayDetails> = HashMap::new();

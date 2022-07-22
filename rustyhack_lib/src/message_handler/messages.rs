@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::background_map::{AllMaps, AllMapsChunk};
-use crate::ecs::components::{DisplayDetails, Position, Stats};
+use crate::ecs::components::{DisplayDetails, Inventory, Position, Stats};
 use crate::ecs::player::Player;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -25,6 +25,7 @@ pub enum ServerMessage {
     AllMapsChunksComplete,
     UpdatePosition(Position),
     UpdateStats(Stats),
+    UpdateInventory(Inventory),
     UpdateOtherEntities(EntityUpdates),
     SystemMessage(String),
 }
