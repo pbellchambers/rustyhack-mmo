@@ -2,6 +2,7 @@ mod combat_systems;
 mod common_entity_systems;
 mod map_state_systems;
 mod monster_systems;
+mod network_messages_systems;
 mod player_systems;
 
 use legion::Schedule;
@@ -58,6 +59,16 @@ pub(crate) fn build_monster_update_schedule() -> Schedule {
 pub(crate) fn build_health_regen_schedule() -> Schedule {
     let schedule = Schedule::builder()
         .add_system(common_entity_systems::apply_health_regen_system())
+        .build();
+    info!("Built health regen schedule.");
+    schedule
+}
+
+pub(crate) fn send_network_messages_schedule() -> Schedule {
+    let schedule = Schedule::builder()
+        .add_system(network_messages_systems::send_player_position_updates_system())
+        .add_system(network_messages_systems::send_player_stats_updates_system())
+        .add_system(network_messages_systems::send_player_inventory_updates_system())
         .build();
     info!("Built health regen schedule.");
     schedule
