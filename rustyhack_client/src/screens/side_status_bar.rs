@@ -26,7 +26,7 @@ pub(crate) fn draw(
 
     let equipped_title_string = "Equipped:".to_owned();
     let weapon_string = player.inventory.equipped.weapon.name.to_string()
-        + " "
+        + " ("
         + &player
             .inventory
             .equipped
@@ -42,16 +42,16 @@ pub(crate) fn draw(
             .damage_range
             .end
             .to_string()
-        + " dmg";
+        + " dmg)";
     let armour_string = player.inventory.equipped.armour.name.to_string()
-        + " "
+        + " ("
         + &player
             .inventory
             .equipped
             .armour
             .damage_reduction_percentage
             .to_string()
-        + "% armour";
+        + "% armour)";
 
     let inventory_title_string = "Inventory:".to_owned();
 
