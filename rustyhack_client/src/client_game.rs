@@ -45,7 +45,7 @@ pub(crate) fn run(
 
     //initialise console engine
     let mut console = ConsoleEngine::init(CONSOLE_WIDTH, CONSOLE_HEIGHT, TARGET_FPS).unwrap();
-    console.set_title(GAME_TITLE);
+    console.set_title(&(GAME_TITLE.to_string() + env!("CARGO_PKG_VERSION")));
     info!("Initialised console engine.");
 
     let mut entity_updates = EntityUpdates {

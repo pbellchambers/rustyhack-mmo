@@ -7,11 +7,12 @@ use laminar::Packet;
 use legion::world::SubWorld;
 use legion::{system, Query};
 use rustyhack_lib::consts::DEFAULT_MAP;
-use rustyhack_lib::ecs::components::{MonsterDetails, PlayerDetails, Position, Stats};
+use rustyhack_lib::ecs::components::{Inventory, MonsterDetails, PlayerDetails, Position, Stats};
 use rustyhack_lib::math_utils::{i32_from, u32_from};
 use uuid::Uuid;
 
 #[system]
+#[allow(clippy::type_complexity)]
 pub(crate) fn check_for_combat(
     world: &mut SubWorld,
     query: &mut Query<(
@@ -19,12 +20,15 @@ pub(crate) fn check_for_combat(
         Option<&MonsterDetails>,
         Option<&PlayerDetails>,
         &Stats,
+        &Inventory,
     )>,
     #[resource] all_map_states: &AllMapStates,
     #[resource] combat_parties: &mut CombatParties,
     #[resource] combat_attacker_stats: &mut CombatAttackerStats,
 ) {
-    for (position, monster_details_option, player_details_option, stats) in query.iter_mut(world) {
+    for (position, monster_details_option, player_details_option, stats, inventory) in
+        query.iter_mut(world)
+    {
         debug!("Checking for possible combat after velocity updates.");
         if position.velocity_x == 0 && position.velocity_y == 0 {
             //no velocity, no updates
@@ -48,7 +52,7 @@ pub(crate) fn check_for_combat(
                 &attacker, &entity_collision_status.1
             );
             combat_parties.insert(entity_collision_status.1, attacker.clone());
-            combat_attacker_stats.insert(attacker.id, *stats);
+            combat_attacker_stats.insert(attacker.id, (*stats, inventory.clone()));
             position.velocity_x = 0;
             position.velocity_y = 0;
         }
@@ -89,12 +93,19 @@ fn get_current_map_states<'a>(all_map_states: &'a AllMapStates, map: &String) ->
 #[system]
 pub(crate) fn resolve_combat(
     world: &mut SubWorld,
-    query: &mut Query<(&mut Stats, Option<&MonsterDetails>, Option<&PlayerDetails>)>,
+    query: &mut Query<(
+        &mut Stats,
+        Option<&MonsterDetails>,
+        Option<&PlayerDetails>,
+        &Inventory,
+    )>,
     #[resource] combat_parties: &mut CombatParties,
     #[resource] combat_attacker_stats: &mut CombatAttackerStats,
     #[resource] sender: &Sender<Packet>,
 ) {
-    for (defender_stats, monster_details_option, player_details_option) in query.iter_mut(world) {
+    for (defender_stats, monster_details_option, player_details_option, defender_inventory) in
+        query.iter_mut(world)
+    {
         if defender_stats.current_hp <= 0.0 {
             // Skip combat if defender is already dead.
             // This is possible if multiple player updates are processed
@@ -123,14 +134,21 @@ pub(crate) fn resolve_combat(
         }
         if combat_parties.contains_key(&defender) {
             let attacker = combat_parties.get(&defender).unwrap();
-            let mut attacker_stats = *combat_attacker_stats.get(&attacker.id).unwrap();
+            let (mut attacker_stats, attacker_inventory) =
+                combat_attacker_stats.get(&attacker.id).unwrap().clone();
             if attacker_stats.current_hp <= 0.0 {
                 // Skip combat if attacker is already dead.
                 // This is possible if multiple player updates are processed
                 // before the server tick for monsters.
                 continue;
             }
-            let damage = combat::resolve_combat(&attacker_stats, defender_stats).round();
+            let damage = combat::resolve_combat(
+                &attacker_stats,
+                &attacker_inventory,
+                defender_stats,
+                defender_inventory,
+            )
+            .round();
             apply_damage(defender_stats, damage);
             let mut exp_gain = 0;
             if defender_is_monster {
@@ -138,6 +156,7 @@ pub(crate) fn resolve_combat(
                     combat_attacker_stats,
                     &attacker.id,
                     &mut attacker_stats,
+                    &attacker_inventory,
                     defender_stats,
                 );
             }
@@ -162,6 +181,7 @@ fn check_and_apply_experience(
     combat_attacker_stats: &mut CombatAttackerStats,
     attacker_id: &Uuid,
     attacker_stats: &mut Stats,
+    attacker_inventory: &Inventory,
     defender_stats: &Stats,
 ) -> u32 {
     if defender_stats.current_hp <= 0.0 {
@@ -169,7 +189,7 @@ fn check_and_apply_experience(
         let exp_gain = defender_stats.level * MONSTER_EXP_MULTIPLICATION_FACTOR;
         attacker_stats.exp += exp_gain;
         attacker_stats.update_available = true;
-        combat_attacker_stats.insert(*attacker_id, *attacker_stats);
+        combat_attacker_stats.insert(*attacker_id, (*attacker_stats, attacker_inventory.clone()));
         return exp_gain;
     }
     0
@@ -187,9 +207,10 @@ pub(crate) fn apply_experience(
                 && combat_attacker_stats
                     .get(&player_details.id)
                     .unwrap()
+                    .0
                     .update_available
             {
-                stats.exp = combat_attacker_stats.get(&player_details.id).unwrap().exp;
+                stats.exp = combat_attacker_stats.get(&player_details.id).unwrap().0.exp;
                 stats.update_available = true;
             }
         }

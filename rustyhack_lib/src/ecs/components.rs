@@ -68,7 +68,6 @@ pub struct PlayerDetails {
     pub player_name: String,
     pub client_addr: String,
     pub currently_online: bool,
-    pub gold: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -78,7 +77,6 @@ pub struct MonsterDetails {
     pub spawn_position: Position,
     pub is_active: bool,
     pub current_target: Option<Uuid>,
-    pub gold: u32,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -89,7 +87,6 @@ pub struct Stats {
     pub str: f32,
     pub dex: f32,
     pub con: f32,
-    pub armour: f32,
     pub level: u32,
     pub exp: u32,
     pub exp_next: u32,

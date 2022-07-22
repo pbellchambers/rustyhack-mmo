@@ -1,9 +1,8 @@
-use crate::consts::{BASE_COMBAT_ACCURACY, BASE_WEAPON_DAMAGE};
 use crate::game::player_updates::send_message_to_player;
 use crossbeam_channel::Sender;
 use laminar::Packet;
 use rand::Rng;
-use rustyhack_lib::ecs::components::Stats;
+use rustyhack_lib::ecs::components::{Inventory, Stats};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::ops::Range;
@@ -31,7 +30,7 @@ Accuracy% = Base accuracy + ((100 - base accuracy) * (Attacker's Dex / 100)) - (
 */
 
 pub(crate) type CombatParties = HashMap<Defender, Attacker>;
-pub(crate) type CombatAttackerStats = HashMap<Uuid, Stats>;
+pub(crate) type CombatAttackerStats = HashMap<Uuid, (Stats, Inventory)>;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq, Hash)]
 pub(crate) struct Attacker {
@@ -60,13 +59,28 @@ impl Default for Defender {
     }
 }
 
-pub(crate) fn resolve_combat(attacker_stats: &Stats, defender_stats: &Stats) -> f32 {
+pub(crate) fn resolve_combat(
+    attacker_stats: &Stats,
+    attacker_inventory: &Inventory,
+    defender_stats: &Stats,
+    defender_inventory: &Inventory,
+) -> f32 {
     debug!("Resolving combat...");
-    if check_attack_success(attacker_stats.dex, defender_stats.dex) {
+    if check_attack_success(
+        attacker_stats.dex,
+        attacker_inventory.equipped.weapon.accuracy,
+        defender_stats.dex,
+    ) {
         debug!("Attack hit...");
         let actual_damage_received = calculate_actual_damage_received(
-            calculate_damage_dealt(BASE_WEAPON_DAMAGE, attacker_stats.str),
-            defender_stats.armour,
+            calculate_damage_dealt(
+                &attacker_inventory.equipped.weapon.damage_range,
+                attacker_stats.str,
+            ),
+            defender_inventory
+                .equipped
+                .armour
+                .damage_reduction_percentage,
         );
         debug!("Damage taken: {}", actual_damage_received);
         actual_damage_received
@@ -76,9 +90,9 @@ pub(crate) fn resolve_combat(attacker_stats: &Stats, defender_stats: &Stats) -> 
     }
 }
 
-fn calculate_damage_dealt(attacker_weapon_damage_range: Range<f32>, attacker_str: f32) -> f32 {
+fn calculate_damage_dealt(attacker_weapon_damage_range: &Range<f32>, attacker_str: f32) -> f32 {
     let mut rng = rand::thread_rng();
-    let attacker_weapon_damage = rng.gen_range(attacker_weapon_damage_range);
+    let attacker_weapon_damage = rng.gen_range(attacker_weapon_damage_range.clone());
     debug!(
         "Weapon damage before strength modifier: {}",
         attacker_weapon_damage
@@ -90,11 +104,15 @@ fn calculate_actual_damage_received(damage_dealt: f32, defender_armour: f32) -> 
     damage_dealt * (1.0 - (defender_armour / 100.0))
 }
 
-fn check_attack_success(attacker_dex: f32, defender_dex: f32) -> bool {
+fn check_attack_success(
+    attacker_dex: f32,
+    attacker_weapon_accuracy: f32,
+    defender_dex: f32,
+) -> bool {
     let mut rng = rand::thread_rng();
-    let combat_accuracy = BASE_COMBAT_ACCURACY
-        + ((100.0 - BASE_COMBAT_ACCURACY) * (attacker_dex / 100.0))
-        - ((100.0 - BASE_COMBAT_ACCURACY) * (defender_dex / 100.0));
+    let combat_accuracy = attacker_weapon_accuracy
+        + ((100.0 - attacker_weapon_accuracy) * (attacker_dex / 100.0))
+        - ((100.0 - attacker_weapon_accuracy) * (defender_dex / 100.0));
     combat_accuracy >= rng.gen_range(0.0..=100.0)
 }
 

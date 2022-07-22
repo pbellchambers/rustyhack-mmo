@@ -20,7 +20,6 @@ impl Default for Player {
                 player_name: "".to_string(),
                 client_addr: "".to_string(),
                 currently_online: false,
-                gold: 0,
             },
             display_details: DisplayDetails::default(),
             position: Position {
@@ -38,7 +37,6 @@ impl Default for Player {
                 str: 10.0,
                 dex: 10.0,
                 con: 10.0,
-                armour: 5.0,
                 level: 1,
                 exp: 0,
                 exp_next: 1000,
