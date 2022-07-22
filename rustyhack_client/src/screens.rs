@@ -18,6 +18,12 @@ pub(crate) fn draw_screens(
     other_entities: &EntityUpdates,
     system_messages: &[String],
 ) {
+    //check and update if resized
+    console.check_resize();
+
+    //clear screen
+    console.clear_screen();
+
     //update the player viewport contents
     let viewport = viewport::draw_viewport_contents(
         player,
@@ -33,9 +39,9 @@ pub(crate) fn draw_screens(
         other_entities,
     );
 
-    let top_status_bar = top_status_bar::draw(player);
-    let side_status_bar = side_status_bar::draw(player);
-    let bottom_text_window = bottom_text_window::draw(system_messages);
+    let top_status_bar = top_status_bar::draw(player, console);
+    let side_status_bar = side_status_bar::draw(player, console);
+    let bottom_text_window = bottom_text_window::draw(system_messages, console);
 
     //final draw step
     console.print_screen(0, 0, &top_status_bar);

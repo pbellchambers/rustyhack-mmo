@@ -1,10 +1,11 @@
 use crate::client_consts;
 use console_engine::screen::Screen;
+use console_engine::ConsoleEngine;
 use rustyhack_lib::ecs::player::Player;
 
-pub(crate) fn draw(player: &Player) -> Screen {
+pub(crate) fn draw(player: &Player, console: &ConsoleEngine) -> Screen {
     let mut screen = Screen::new(
-        client_consts::CONSOLE_WIDTH - client_consts::VIEWPORT_WIDTH,
+        console.get_width() - client_consts::VIEWPORT_WIDTH,
         client_consts::VIEWPORT_HEIGHT,
     );
 

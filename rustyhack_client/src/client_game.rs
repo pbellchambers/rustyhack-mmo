@@ -5,9 +5,9 @@ use std::collections::HashMap;
 use std::thread;
 use std::time::Duration;
 
+use crate::client_consts;
 use rustyhack_lib::message_handler::messages::EntityUpdates;
 
-use crate::client_consts::{CONSOLE_HEIGHT, CONSOLE_WIDTH, GAME_TITLE, TARGET_FPS};
 use crate::networking::client_message_handler;
 use crate::screens::draw_screens;
 
@@ -44,8 +44,14 @@ pub(crate) fn run(
     );
 
     //initialise console engine
-    let mut console = ConsoleEngine::init(CONSOLE_WIDTH, CONSOLE_HEIGHT, TARGET_FPS).unwrap();
-    console.set_title(&(GAME_TITLE.to_string() + env!("CARGO_PKG_VERSION")));
+    let mut console = ConsoleEngine::init(
+        client_consts::INITIAL_CONSOLE_WIDTH,
+        client_consts::INITIAL_CONSOLE_HEIGHT,
+        client_consts::TARGET_FPS,
+    )
+    .unwrap();
+    console
+        .set_title(&(client_consts::GAME_TITLE.to_string() + " - v" + env!("CARGO_PKG_VERSION")));
     info!("Initialised console engine.");
 
     let mut entity_updates = EntityUpdates {
@@ -58,9 +64,8 @@ pub(crate) fn run(
 
     info!("Starting client_game loop");
     loop {
-        //wait for target fps, and clear screen between frames
+        //wait for target fps tick time to continue
         console.wait_frame();
-        console.clear_screen();
 
         debug!("About to send player velocity update.");
         client_updates_handler::send_player_updates(sender, &console, &mut player, server_addr);
@@ -81,7 +86,7 @@ pub(crate) fn run(
             &entity_updates,
         );
 
-        //update and redraw the screens
+        //clear, update and redraw the screens
         draw_screens(
             &mut console,
             &all_maps,
