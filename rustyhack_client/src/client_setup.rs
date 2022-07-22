@@ -1,4 +1,4 @@
-use crate::client_consts;
+use crate::client_consts::{LOG_NAME, VALID_NAME_REGEX};
 use regex::Regex;
 use rustyhack_lib::file_utils;
 use simplelog::{ColorChoice, CombinedLogger, LevelFilter, TermLogger, TerminalMode, WriteLogger};
@@ -15,7 +15,7 @@ pub(crate) fn initialise_log(args: &[String]) {
 
     let mut file_location = file_utils::current_exe_location();
     file_location.pop();
-    file_location.push(client_consts::LOG_NAME);
+    file_location.push(LOG_NAME);
     CombinedLogger::init(vec![
         TermLogger::new(
             LevelFilter::Warn,
@@ -114,8 +114,7 @@ fn get_player_name() -> String {
         }
 
         //must only contain letters
-        let regex =
-            Regex::new(client_consts::VALID_NAME_REGEX).expect("Player name regex is invalid.");
+        let regex = Regex::new(VALID_NAME_REGEX).expect("Player name regex is invalid.");
         if !regex.is_match(&parsed_player_name) {
             println!("Character name must only contain letters.");
             println!();

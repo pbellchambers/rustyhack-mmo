@@ -1,4 +1,3 @@
-use crate::client_consts;
 use console_engine::pixel;
 use console_engine::screen::Screen;
 use rustyhack_lib::background_map::tiles::Tile;
@@ -21,22 +20,18 @@ pub struct RelativePosition {
     pub y: i32,
 }
 
-impl Default for Viewport {
-    fn default() -> Self {
-        Viewport {
-            width: client_consts::VIEWPORT_WIDTH,
-            height: client_consts::VIEWPORT_HEIGHT,
-            viewable_map_top_left_position: RelativePosition { x: 0, y: 0 },
-        }
-    }
-}
-
 pub(crate) fn draw_viewport_contents(
     player: &Player,
     background_map: &BackgroundMap,
     entity_updates: &EntityUpdates,
+    viewport_width: u32,
+    viewport_height: u32,
 ) -> Screen {
-    let mut viewport = Viewport::default();
+    let mut viewport = Viewport {
+        width: viewport_width,
+        height: viewport_height,
+        viewable_map_top_left_position: RelativePosition { x: 0, y: 0 },
+    };
     let mut screen = Screen::new(viewport.width, viewport.height);
     calculate_viewable_map_coords(&mut viewport, player);
     draw_viewable_map(&mut screen, background_map, &viewport);

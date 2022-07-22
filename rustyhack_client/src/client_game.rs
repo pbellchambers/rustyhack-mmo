@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::thread;
 use std::time::Duration;
 
-use crate::client_consts;
+use crate::client_consts::{GAME_TITLE, INITIAL_CONSOLE_HEIGHT, INITIAL_CONSOLE_WIDTH, TARGET_FPS};
 use rustyhack_lib::message_handler::messages::EntityUpdates;
 
 use crate::networking::client_message_handler;
@@ -44,14 +44,9 @@ pub(crate) fn run(
     );
 
     //initialise console engine
-    let mut console = ConsoleEngine::init(
-        client_consts::INITIAL_CONSOLE_WIDTH,
-        client_consts::INITIAL_CONSOLE_HEIGHT,
-        client_consts::TARGET_FPS,
-    )
-    .unwrap();
-    console
-        .set_title(&(client_consts::GAME_TITLE.to_string() + " - v" + env!("CARGO_PKG_VERSION")));
+    let mut console =
+        ConsoleEngine::init(INITIAL_CONSOLE_WIDTH, INITIAL_CONSOLE_HEIGHT, TARGET_FPS).unwrap();
+    console.set_title(&(GAME_TITLE.to_string() + " - v" + env!("CARGO_PKG_VERSION")));
     info!("Initialised console engine.");
 
     let mut entity_updates = EntityUpdates {

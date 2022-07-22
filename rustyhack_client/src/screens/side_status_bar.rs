@@ -1,13 +1,14 @@
-use crate::client_consts;
 use console_engine::screen::Screen;
 use console_engine::ConsoleEngine;
 use rustyhack_lib::ecs::player::Player;
 
-pub(crate) fn draw(player: &Player, console: &ConsoleEngine) -> Screen {
-    let mut screen = Screen::new(
-        console.get_width() - client_consts::VIEWPORT_WIDTH,
-        client_consts::VIEWPORT_HEIGHT,
-    );
+pub(crate) fn draw(
+    player: &Player,
+    console: &ConsoleEngine,
+    viewport_width: u32,
+    viewport_height: u32,
+) -> Screen {
+    let mut screen = Screen::new(console.get_width() - viewport_width, viewport_height);
 
     let lvl_string = "Lvl: ".to_owned() + &player.stats.level.to_string();
     let exp_string = "Exp: ".to_owned() + &player.stats.exp.to_string();
