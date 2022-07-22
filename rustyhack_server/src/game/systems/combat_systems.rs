@@ -196,7 +196,7 @@ fn check_and_apply_gains(
 
         //calculate gold to be gained
         let gold_gain = defender_inventory.gold;
-        attacker_inventory.gold = gold_gain;
+        attacker_inventory.gold += gold_gain;
         combat_attacker_stats.insert(*attacker_id, (*attacker_stats, attacker_inventory.clone()));
         return (exp_gain, gold_gain);
     }
