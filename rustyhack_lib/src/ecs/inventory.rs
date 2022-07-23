@@ -6,6 +6,7 @@ pub enum Items {
     Weapon(Weapon),
     Armour(Armour),
     Gold(u32),
+    Trinket(Trinket),
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
@@ -44,4 +45,9 @@ impl Default for Armour {
             damage_reduction_percentage: 5.0,
         }
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Trinket {
+    pub name: String,
 }

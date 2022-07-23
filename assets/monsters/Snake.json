@@ -57,6 +57,12 @@
         "damage_reduction_percentage": 5.0
       }
     },
-    "carried": []
+    "carried": [
+      {
+        "Trinket": {
+          "name": "Snake tooth"
+        }
+      }
+    ]
   }
 }
