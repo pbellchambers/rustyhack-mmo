@@ -1,14 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::ops::Range;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub enum Items {
-    Weapon(Weapon),
-    Armour(Armour),
-    Gold(u32),
-    Trinket(Trinket),
-}
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 pub struct Equipment {
     pub weapon: Weapon,

@@ -7,7 +7,9 @@ use legion::systems::CommandBuffer;
 use legion::world::SubWorld;
 use legion::{system, Entity, Query};
 use rand::Rng;
-use rustyhack_lib::ecs::components::{DisplayDetails, MonsterDetails, Position, Stats};
+use rustyhack_lib::consts::{DEFAULT_ITEM_COLOUR, DEFAULT_ITEM_ICON};
+use rustyhack_lib::ecs::components::{DisplayDetails, Inventory, MonsterDetails, Position, Stats};
+use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::ecs::monster::AllMonsterDefinitions;
 use rustyhack_lib::math_utils::i32_from;
 use std::cmp::Ordering;
@@ -17,13 +19,37 @@ use uuid::Uuid;
 #[system]
 pub(crate) fn resolve_monster_deaths(
     world: &mut SubWorld,
-    query: &mut Query<(Entity, &MonsterDetails, &DisplayDetails, &Position, &Stats)>,
+    query: &mut Query<(Entity, &MonsterDetails, &Stats, &Position, &Inventory)>,
     commands: &mut CommandBuffer,
 ) {
     debug!("Removing dead monsters.");
-    for (entity, monster, _display_details, _position, stats) in query.iter(world) {
+    for (entity, monster, stats, position, inventory) in query.iter(world) {
         if stats.current_hp <= 0.0 {
             debug!("Monster {} {} died.", monster.id, monster.monster_type);
+            //drop inventory items
+            let mut items_vec: Vec<(DisplayDetails, Position, Item)> = vec![];
+            for item in &inventory.carried {
+                items_vec.push((
+                    DisplayDetails {
+                        icon: DEFAULT_ITEM_ICON,
+                        colour: DEFAULT_ITEM_COLOUR,
+                        visible: true,
+                        collidable: false,
+                    },
+                    Position {
+                        update_available: true,
+                        pos_x: position.pos_x,
+                        pos_y: position.pos_y,
+                        current_map: position.current_map.clone(),
+                        velocity_x: 0,
+                        velocity_y: 0,
+                    },
+                    item.clone(),
+                ));
+            }
+            //add dropped item entities to world
+            commands.extend(items_vec);
+            //remove monster from world
             commands.remove(*entity);
         }
     }

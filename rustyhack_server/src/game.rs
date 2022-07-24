@@ -5,6 +5,7 @@ use std::time::Instant;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
 use legion::{Resources, World};
+use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
 
 use crate::consts;
 use crate::game::combat::{CombatAttackerStats, CombatParties};
@@ -28,6 +29,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let combat_parties: CombatParties = HashMap::new();
     let combat_attacker_stats: CombatAttackerStats = HashMap::new();
     let players_positions: PlayersPositions = HashMap::new();
+    let entity_position_broadcast: EntityPositionBroadcast = HashMap::new();
     let all_monster_definitions = monsters::initialise_all_monster_definitions();
     let (default_spawn_counts, all_spawns_map) = spawns::initialise_all_spawn_definitions();
     let mut world = World::default();
@@ -38,6 +40,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let mut map_state_update_schedule = systems::build_map_state_update_schedule();
     let mut health_regen_schedule = systems::build_health_regen_schedule();
     let mut send_network_messages_schedule = systems::send_network_messages_schedule();
+    let mut network_broadcast_schedule = systems::network_broadcast_schedule();
 
     //initialise message handler thread
     let (channel_sender, channel_receiver) = crossbeam_channel::unbounded();
@@ -46,6 +49,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     message_handler::spawn_message_handler_thread(sender, receiver, all_maps, channel_sender);
 
     //load resources into world
+    //todo are all of these needed here, can they be handled dynamically
     let mut resources = Resources::default();
     resources.insert(all_maps_resource);
     resources.insert(all_map_states);
@@ -56,6 +60,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     resources.insert(all_spawns_map.clone());
     resources.insert(default_spawn_counts);
     resources.insert(all_monster_definitions.clone());
+    resources.insert(entity_position_broadcast);
     info!("Finished loading resources into world.");
 
     //spawn initial monsters
@@ -103,7 +108,9 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
         }
 
         if entity_update_broadcast_tick_time.elapsed() > consts::ENTITY_UPDATE_BROADCAST_TICK {
-            player_updates::send_other_entities_updates(&world, &local_sender);
+            debug!("Broadcasting entity updates");
+            network_broadcast_schedule.execute(&mut world, &mut resources);
+            debug!("Finished broadcasting entity updates");
             entity_update_broadcast_tick_time = Instant::now();
         }
 

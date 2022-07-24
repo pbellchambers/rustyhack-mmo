@@ -1,4 +1,5 @@
 pub mod components;
-mod inventory;
+pub mod inventory;
+pub mod item;
 pub mod monster;
 pub mod player;

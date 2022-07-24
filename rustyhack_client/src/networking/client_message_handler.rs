@@ -56,9 +56,10 @@ pub(crate) fn run(
                             }
                             ServerMessage::UpdatePosition(position) => incoming_server_messages
                                 .send(ServerMessage::UpdatePosition(position)),
-                            ServerMessage::UpdateOtherEntities(entity_updates) => {
-                                incoming_server_messages
-                                    .send(ServerMessage::UpdateOtherEntities(entity_updates))
+                            ServerMessage::UpdateOtherEntities(entity_position_broadcast) => {
+                                incoming_server_messages.send(ServerMessage::UpdateOtherEntities(
+                                    entity_position_broadcast,
+                                ))
                             }
                             ServerMessage::PlayerAlreadyOnline => {
                                 incoming_server_messages.send(ServerMessage::PlayerAlreadyOnline)

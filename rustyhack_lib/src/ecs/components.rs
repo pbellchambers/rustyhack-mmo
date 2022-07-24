@@ -2,7 +2,8 @@ use crate::consts::{
     DEFAULT_MAP, DEFAULT_PLAYER_COLOUR, DEFAULT_PLAYER_ICON, DEFAULT_PLAYER_POSITION_X,
     DEFAULT_PLAYER_POSITION_Y,
 };
-use crate::ecs::inventory::{Equipment, Items};
+use crate::ecs::inventory::Equipment;
+use crate::ecs::item::Item;
 use crate::ecs::monster::Monster;
 use crate::ecs::player::Player;
 use crossterm::style::Color;
@@ -13,6 +14,7 @@ use uuid::Uuid;
 pub enum EntityType {
     Monster(Monster),
     Player(Player),
+    Item(Item),
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -97,5 +99,5 @@ pub struct Inventory {
     pub update_available: bool,
     pub gold: u32,
     pub equipped: Equipment,
-    pub carried: Vec<Items>,
+    pub carried: Vec<Item>,
 }

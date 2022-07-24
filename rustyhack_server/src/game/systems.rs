@@ -48,6 +48,7 @@ pub(crate) fn build_monster_update_schedule() -> Schedule {
         .add_system(combat_systems::check_for_combat_system())
         .add_system(combat_systems::resolve_combat_system())
         .add_system(player_systems::resolve_player_deaths_system())
+        .add_system(monster_systems::resolve_monster_deaths_system())
         .add_system(player_systems::update_player_positions_resource_system())
         .add_system(monster_systems::spawn_monsters_system())
         .add_system(common_entity_systems::update_entities_position_system())
@@ -70,6 +71,25 @@ pub(crate) fn send_network_messages_schedule() -> Schedule {
         .add_system(network_messages_systems::send_player_stats_updates_system())
         .add_system(network_messages_systems::send_player_inventory_updates_system())
         .build();
-    info!("Built health regen schedule.");
+    info!("Built network messages schedule.");
+    schedule
+}
+
+//todo 1 fix displaying multiple items, not sure how broke
+//todo 2 filter maybe changed?
+//todo 3 add id to item when entity created and send correct item type name
+//todo 4 minimise data in position_updates, display_details, monster_type_map (make sure combat still works) -  x/y, char, colour, name and only for current map ??
+//todo 5 make system send data one by one
+//todo 6 only send data for player on current map within a certain range
+//todo 7 only send data that has not changed (if possible)
+//todo 9 fix bug with player walking over item and disappearing
+pub(crate) fn network_broadcast_schedule() -> Schedule {
+    let schedule = Schedule::builder()
+        .add_system(common_entity_systems::collate_all_player_positions_system())
+        .add_system(common_entity_systems::collate_all_monster_positions_system())
+        .add_system(common_entity_systems::collate_all_item_positions_system())
+        .add_system(network_messages_systems::broadcast_entity_updates_system())
+        .build();
+    info!("Built network broadcast schedule.");
     schedule
 }

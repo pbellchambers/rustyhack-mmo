@@ -5,7 +5,7 @@ use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::{
-    EntityUpdates, PlayerRequest, PositionMessage, ServerMessage,
+    EntityPositionBroadcast, PlayerRequest, PositionMessage, ServerMessage,
 };
 
 pub(crate) fn send_player_updates(
@@ -51,9 +51,9 @@ fn send_velocity_packet(sender: &Sender<Packet>, server_addr: &str, player: &Pla
 pub(crate) fn check_for_received_server_messages(
     channel_receiver: &Receiver<ServerMessage>,
     player: &mut Player,
-    mut entity_updates: EntityUpdates,
+    mut entity_position_broadcast: EntityPositionBroadcast,
     status_messages: &mut Vec<String>,
-) -> EntityUpdates {
+) -> EntityPositionBroadcast {
     debug!("Checking for received messages from server.");
     while !channel_receiver.is_empty() {
         let received = channel_receiver.recv();
@@ -78,8 +78,8 @@ pub(crate) fn check_for_received_server_messages(
                     status_messages.push(time + &message);
                 }
                 ServerMessage::UpdateOtherEntities(new_updates) => {
-                    debug!("Entity updates received: {:?}", &new_updates);
-                    entity_updates = new_updates;
+                    debug!("Entity position broadcast received: {:?}", &new_updates);
+                    entity_position_broadcast = new_updates;
                 }
                 _ => {
                     warn!(
@@ -90,5 +90,5 @@ pub(crate) fn check_for_received_server_messages(
             }
         }
     }
-    entity_updates
+    entity_position_broadcast
 }

@@ -2,10 +2,9 @@ use console_engine::pixel;
 use console_engine::screen::Screen;
 use rustyhack_lib::background_map::tiles::Tile;
 use rustyhack_lib::background_map::BackgroundMap;
-use rustyhack_lib::ecs::components::DisplayDetails;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::math_utils::{i32_from, usize_from_i32};
-use rustyhack_lib::message_handler::messages::EntityUpdates;
+use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
 
 struct Viewport {
     width: u32,
@@ -23,7 +22,7 @@ pub struct RelativePosition {
 pub(crate) fn draw_viewport_contents(
     player: &Player,
     background_map: &BackgroundMap,
-    entity_updates: &EntityUpdates,
+    entity_position_broadcast: &EntityPositionBroadcast,
     viewport_width: u32,
     viewport_height: u32,
 ) -> Screen {
@@ -37,7 +36,7 @@ pub(crate) fn draw_viewport_contents(
     draw_viewable_map(&mut screen, background_map, &viewport);
     draw_viewport_frame(&mut screen, &viewport);
     draw_player(&mut screen, &viewport, player);
-    draw_other_entities(&mut screen, player, entity_updates, &viewport);
+    draw_other_entities(&mut screen, player, entity_position_broadcast, &viewport);
     screen
 }
 
@@ -53,19 +52,19 @@ fn draw_player(screen: &mut Screen, viewport: &Viewport, player: &Player) {
 fn draw_other_entities(
     screen: &mut Screen,
     player: &Player,
-    entity_updates: &EntityUpdates,
+    entity_position_broadcast: &EntityPositionBroadcast,
     viewport: &Viewport,
 ) {
     debug!("Drawing other entities.");
-    let default_display_details = DisplayDetails::default();
-    let updates = entity_updates.position_updates.clone();
-    for (name, position) in updates {
-        if name != player.player_details.player_name
-            && position.current_map == player.position.current_map
+    for (_entity_id, (entity_position, entity_display_details, entity_name_or_type)) in
+        entity_position_broadcast
+    {
+        if *entity_name_or_type != player.player_details.player_name
+            && entity_position.current_map == player.position.current_map
         {
             let relative_entity_position = RelativePosition {
-                x: i32_from(position.pos_x) - viewport.viewable_map_top_left_position.x,
-                y: i32_from(position.pos_y) - viewport.viewable_map_top_left_position.y,
+                x: i32_from(entity_position.pos_x) - viewport.viewable_map_top_left_position.x,
+                y: i32_from(entity_position.pos_y) - viewport.viewable_map_top_left_position.y,
             };
 
             // don't draw anything outside of the viewable screen coordinates
@@ -74,14 +73,10 @@ fn draw_other_entities(
                 && relative_entity_position.x < i32_from(viewport.width - 1)
                 && relative_entity_position.y < i32_from(viewport.height - 1)
             {
-                let display_details = entity_updates.display_details.get(&name).unwrap_or_else(|| {
-                    warn!("Entity update for {} doesn't have a corresponding display detail, using default.", &name);
-                    &default_display_details});
-
                 screen.set_pxl(
                     relative_entity_position.x,
                     relative_entity_position.y,
-                    pixel::pxl_fg(display_details.icon, display_details.colour),
+                    pixel::pxl_fg(entity_display_details.icon, entity_display_details.colour),
                 );
             }
         }

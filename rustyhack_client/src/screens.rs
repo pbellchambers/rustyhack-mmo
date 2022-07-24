@@ -3,7 +3,7 @@ use console_engine::ConsoleEngine;
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::math_utils::i32_from;
-use rustyhack_lib::message_handler::messages::EntityUpdates;
+use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
 use std::process;
 
 mod bottom_text_window;
@@ -15,7 +15,7 @@ pub(crate) fn draw_screens(
     console: &mut ConsoleEngine,
     all_maps: &AllMaps,
     player: &Player,
-    other_entities: &EntityUpdates,
+    entity_position_broadcast: &EntityPositionBroadcast,
     system_messages: &[String],
 ) {
     //check and update if resized
@@ -24,7 +24,7 @@ pub(crate) fn draw_screens(
     //this feels hacky...
     let viewport_width = console.get_width() * 100 / (10000 / VIEWPORT_WIDTH_PERCENTAGE);
     let viewport_height = console.get_height() * 100 / (10000 / VIEWPORT_HEIGHT_PERCENTAGE);
-    info!(
+    debug!(
         "Viewport width and height is: {}, {}",
         viewport_width, viewport_height
     );
@@ -44,7 +44,7 @@ pub(crate) fn draw_screens(
                 );
                 process::exit(1);
             }),
-        other_entities,
+        entity_position_broadcast,
         viewport_width,
         viewport_height,
     );

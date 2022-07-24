@@ -1,12 +1,12 @@
 use console_engine::{ConsoleEngine, KeyCode, KeyModifiers};
 use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
+use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
 use std::collections::HashMap;
 use std::thread;
 use std::time::Duration;
 
 use crate::client_consts::{GAME_TITLE, INITIAL_CONSOLE_HEIGHT, INITIAL_CONSOLE_WIDTH, TARGET_FPS};
-use rustyhack_lib::message_handler::messages::EntityUpdates;
 
 use crate::networking::client_message_handler;
 use crate::screens::draw_screens;
@@ -49,11 +49,7 @@ pub(crate) fn run(
     console.set_title(&(GAME_TITLE.to_string() + " - v" + env!("CARGO_PKG_VERSION")));
     info!("Initialised console engine.");
 
-    let mut entity_updates = EntityUpdates {
-        position_updates: HashMap::new(),
-        display_details: HashMap::new(),
-        monster_type_map: HashMap::new(),
-    };
+    let mut entity_position_broadcast: EntityPositionBroadcast = HashMap::new();
 
     let mut system_messages: Vec<String> = vec![];
 
@@ -66,10 +62,10 @@ pub(crate) fn run(
         client_updates_handler::send_player_updates(sender, &console, &mut player, server_addr);
 
         debug!("About to wait for entity updates from server.");
-        entity_updates = client_updates_handler::check_for_received_server_messages(
+        entity_position_broadcast = client_updates_handler::check_for_received_server_messages(
             &player_update_receiver,
             &mut player,
-            entity_updates,
+            entity_position_broadcast,
             &mut system_messages,
         );
 
@@ -78,7 +74,7 @@ pub(crate) fn run(
             &mut system_messages,
             &player,
             &all_maps,
-            &entity_updates,
+            &entity_position_broadcast,
         );
 
         //clear, update and redraw the screens
@@ -86,7 +82,7 @@ pub(crate) fn run(
             &mut console,
             &all_maps,
             &player,
-            &entity_updates,
+            &entity_position_broadcast,
             &system_messages,
         );
 

@@ -4,3 +4,6 @@ members = [
     "rustyhack_lib",
     "rustyhack_server",
 ]
+
+[profile.release]
+lto = true

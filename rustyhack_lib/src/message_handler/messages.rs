@@ -1,10 +1,13 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::background_map::{AllMaps, AllMapsChunk};
 use crate::ecs::components::{DisplayDetails, Inventory, Position, Stats};
 use crate::ecs::player::Player;
+
+pub type EntityPositionBroadcast = HashMap<Uuid, (Position, DisplayDetails, String)>;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum PlayerRequest {
@@ -26,7 +29,7 @@ pub enum ServerMessage {
     UpdatePosition(Position),
     UpdateStats(Stats),
     UpdateInventory(Inventory),
-    UpdateOtherEntities(EntityUpdates),
+    UpdateOtherEntities(EntityPositionBroadcast),
     SystemMessage(String),
 }
 
@@ -40,11 +43,4 @@ pub struct ClientDetails {
 pub struct PositionMessage {
     pub player_name: String,
     pub position: Position,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EntityUpdates {
-    pub position_updates: HashMap<String, Position>,
-    pub display_details: HashMap<String, DisplayDetails>,
-    pub monster_type_map: HashMap<String, String>,
 }

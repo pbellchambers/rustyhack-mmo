@@ -2,14 +2,9 @@ use bincode::serialize;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
 use legion::{IntoQuery, World};
-use rustyhack_lib::ecs::components::{
-    DisplayDetails, Inventory, MonsterDetails, PlayerDetails, Position, Stats,
-};
+use rustyhack_lib::ecs::components::{DisplayDetails, Inventory, PlayerDetails, Position, Stats};
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::messages::{
-    EntityUpdates, PlayerRequest, PositionMessage, ServerMessage,
-};
-use std::collections::HashMap;
+use rustyhack_lib::message_handler::messages::{PlayerRequest, PositionMessage, ServerMessage};
 use std::process;
 use uuid::Uuid;
 
@@ -209,60 +204,6 @@ fn send_player_joined_response(player: &Player, sender: &Sender<Packet>) {
         ),
         sender,
     );
-}
-
-pub(crate) fn send_other_entities_updates(world: &World, sender: &Sender<Packet>) {
-    let mut position_updates: HashMap<String, Position> = HashMap::new();
-    let mut display_details: HashMap<String, DisplayDetails> = HashMap::new();
-    let mut monster_type_map: HashMap<String, String> = HashMap::new();
-    let mut query = <(&PlayerDetails, &Position, &DisplayDetails)>::query();
-    debug!("Getting all players positions");
-    for (player_details, position, display) in query.iter(world) {
-        if player_details.currently_online {
-            position_updates.insert(player_details.player_name.clone(), position.clone());
-            display_details.insert(player_details.player_name.clone(), *display);
-        }
-    }
-
-    let mut query = <(&MonsterDetails, &Position, &DisplayDetails)>::query();
-    debug!("Getting all monster positions");
-    for (monster_details, position, display) in query.iter(world) {
-        position_updates.insert(monster_details.id.to_string(), position.clone());
-        display_details.insert(monster_details.id.to_string(), *display);
-        monster_type_map.insert(
-            monster_details.id.to_string(),
-            monster_details.monster_type.to_string(),
-        );
-    }
-
-    let mut query = <&PlayerDetails>::query();
-    debug!("Sending entity updates to all players.");
-    for player_details in query.iter(world) {
-        if player_details.currently_online {
-            debug!("Sending entity updates to: {}", &player_details.client_addr);
-            let response = serialize(&ServerMessage::UpdateOtherEntities(EntityUpdates {
-                position_updates: position_updates.clone(),
-                display_details: display_details.clone(),
-                monster_type_map: monster_type_map.clone(),
-            }))
-            .unwrap_or_else(|err| {
-                error!(
-                    "Failed to serialize entity updates: {:?}, error: {}",
-                    &position_updates, err
-                );
-                process::exit(1);
-            });
-            rustyhack_lib::message_handler::send_packet(
-                Packet::unreliable_sequenced(
-                    player_details.client_addr.parse().unwrap(),
-                    response,
-                    Some(22),
-                ),
-                sender,
-            );
-        }
-    }
-    debug!("Finished sending entity updates to all players.");
 }
 
 pub(crate) fn send_message_to_player(
