@@ -13,7 +13,7 @@ pub(crate) fn get_what_player_sees(
     let time = date_time.format("[%H:%M:%S] ").to_string();
     let current_map = all_maps.get(&player.position.current_map).unwrap();
 
-    let underneath = current_map.data[player.position.pos_y as usize]
+    let mut underneath = current_map.data[player.position.pos_y as usize]
         [player.position.pos_x as usize]
         .to_string();
     let mut north = current_map.data[(player.position.pos_y - 1) as usize]
@@ -28,6 +28,14 @@ pub(crate) fn get_what_player_sees(
     let mut west = current_map.data[player.position.pos_y as usize]
         [(player.position.pos_x - 1) as usize]
         .to_string();
+
+    underneath = return_visible_entity_at(
+        underneath,
+        entity_position_map,
+        player,
+        player.position.pos_x,
+        player.position.pos_y,
+    );
 
     north = return_visible_entity_at(
         north,
