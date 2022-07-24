@@ -51,9 +51,9 @@ fn send_velocity_packet(sender: &Sender<Packet>, server_addr: &str, player: &Pla
 pub(crate) fn check_for_received_server_messages(
     channel_receiver: &Receiver<ServerMessage>,
     player: &mut Player,
-    mut entity_position_broadcast: EntityPositionBroadcast,
+    entity_position_broadcast: &mut EntityPositionBroadcast,
     status_messages: &mut Vec<String>,
-) -> EntityPositionBroadcast {
+) {
     debug!("Checking for received messages from server.");
     while !channel_receiver.is_empty() {
         let received = channel_receiver.recv();
@@ -79,7 +79,7 @@ pub(crate) fn check_for_received_server_messages(
                 }
                 ServerMessage::UpdateOtherEntities(new_updates) => {
                     debug!("Entity position broadcast received: {:?}", &new_updates);
-                    entity_position_broadcast = new_updates;
+                    entity_position_broadcast.extend(new_updates);
                 }
                 _ => {
                     warn!(
@@ -90,5 +90,4 @@ pub(crate) fn check_for_received_server_messages(
             }
         }
     }
-    entity_position_broadcast
 }

@@ -5,10 +5,10 @@ use std::time::Instant;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
 use legion::{Resources, World};
-use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
 
 use crate::consts;
 use crate::game::combat::{CombatAttackerStats, CombatParties};
+use crate::game::map_state::EntityPositionMap;
 use crate::game::players::PlayersPositions;
 use crate::networking::message_handler;
 
@@ -29,7 +29,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let combat_parties: CombatParties = HashMap::new();
     let combat_attacker_stats: CombatAttackerStats = HashMap::new();
     let players_positions: PlayersPositions = HashMap::new();
-    let entity_position_broadcast: EntityPositionBroadcast = HashMap::new();
+    let entity_position_map: EntityPositionMap = HashMap::new();
     let all_monster_definitions = monsters::initialise_all_monster_definitions();
     let (default_spawn_counts, all_spawns_map) = spawns::initialise_all_spawn_definitions();
     let mut world = World::default();
@@ -60,7 +60,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     resources.insert(all_spawns_map.clone());
     resources.insert(default_spawn_counts);
     resources.insert(all_monster_definitions.clone());
-    resources.insert(entity_position_broadcast);
+    resources.insert(entity_position_map);
     info!("Finished loading resources into world.");
 
     //spawn initial monsters

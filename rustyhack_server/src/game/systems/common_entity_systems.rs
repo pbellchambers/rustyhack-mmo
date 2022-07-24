@@ -1,8 +1,9 @@
 use crate::consts::{
     BASE_HEALTH_REGEN_PERCENT, HEALTH_REGEN_CON_PERCENT, HEALTH_REGEN_CON_STATIC_FACTOR,
 };
+use crate::game::map_state::EntityPositionMap;
 use legion::world::SubWorld;
-use legion::{system, Query};
+use legion::{maybe_changed, system, Query};
 use rustyhack_lib::background_map::tiles::{Collidable, Tile};
 use rustyhack_lib::background_map::{AllMaps, BackgroundMap};
 use rustyhack_lib::consts::DEFAULT_MAP;
@@ -11,7 +12,6 @@ use rustyhack_lib::ecs::components::{
 };
 use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::math_utils::{i32_from, u32_from};
-use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
 use uuid::Uuid;
 
 #[system]
@@ -92,58 +92,58 @@ fn calculate_regen_amount(max_hp: f32, con: f32) -> f32 {
         + (con / HEALTH_REGEN_CON_STATIC_FACTOR)
 }
 
-#[system]
+#[system(for_each)]
+#[filter(maybe_changed::<Position>())]
 pub(crate) fn collate_all_player_positions(
-    world: &mut SubWorld,
-    query: &mut Query<(&PlayerDetails, &Position, &DisplayDetails)>,
-    #[resource] entity_position_broadcast: &mut EntityPositionBroadcast,
+    player_details: &PlayerDetails,
+    position: &Position,
+    display_details: &DisplayDetails,
+    #[resource] entity_position_map: &mut EntityPositionMap,
 ) {
     debug!("Getting all players positions");
-    for (player_details, position, display_details) in query.iter(world) {
-        if player_details.currently_online {
-            entity_position_broadcast.insert(
-                player_details.id,
-                (
-                    position.clone(),
-                    *display_details,
-                    player_details.player_name.clone(),
-                ),
-            );
-        }
-    }
-}
-
-#[system]
-pub(crate) fn collate_all_monster_positions(
-    world: &mut SubWorld,
-    query: &mut Query<(&MonsterDetails, &Position, &DisplayDetails)>,
-    #[resource] entity_position_broadcast: &mut EntityPositionBroadcast,
-) {
-    debug!("Getting all monster positions");
-    for (monster_details, position, display_details) in query.iter(world) {
-        entity_position_broadcast.insert(
-            monster_details.id,
+    if player_details.currently_online {
+        entity_position_map.insert(
+            player_details.id,
             (
                 position.clone(),
                 *display_details,
-                monster_details.monster_type.clone(),
+                player_details.player_name.clone(),
             ),
         );
     }
 }
 
-#[system]
+#[system(for_each)]
+#[filter(maybe_changed::<Position>())]
+pub(crate) fn collate_all_monster_positions(
+    monster_details: &MonsterDetails,
+    position: &Position,
+    display_details: &DisplayDetails,
+    #[resource] entity_position_map: &mut EntityPositionMap,
+) {
+    debug!("Getting all monster positions");
+    entity_position_map.insert(
+        monster_details.id,
+        (
+            position.clone(),
+            *display_details,
+            monster_details.monster_type.clone(),
+        ),
+    );
+}
+
+#[system(for_each)]
+#[filter(maybe_changed::<Position>())]
 pub(crate) fn collate_all_item_positions(
-    world: &mut SubWorld,
-    query: &mut Query<(&Item, &Position, &DisplayDetails)>,
-    #[resource] entity_position_broadcast: &mut EntityPositionBroadcast,
+    _item: &Item,
+    position: &Position,
+    display_details: &DisplayDetails,
+    #[resource] entity_position_map: &mut EntityPositionMap,
 ) {
     debug!("Getting all item positions");
-    for (_item, position, display_details) in query.iter(world) {
-        let temp_item_id = Uuid::new_v4();
-        entity_position_broadcast.insert(
-            temp_item_id,
-            (position.clone(), *display_details, "some item".to_string()),
-        );
-    }
+    let temp_item_id = Uuid::new_v4();
+    entity_position_map.insert(
+        temp_item_id,
+        (position.clone(), *display_details, "some item".to_string()),
+    );
 }

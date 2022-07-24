@@ -22,7 +22,7 @@ pub struct RelativePosition {
 pub(crate) fn draw_viewport_contents(
     player: &Player,
     background_map: &BackgroundMap,
-    entity_position_broadcast: &EntityPositionBroadcast,
+    entity_position_map: &EntityPositionBroadcast,
     viewport_width: u32,
     viewport_height: u32,
 ) -> Screen {
@@ -35,7 +35,7 @@ pub(crate) fn draw_viewport_contents(
     calculate_viewable_map_coords(&mut viewport, player);
     draw_viewable_map(&mut screen, background_map, &viewport);
     draw_viewport_frame(&mut screen, &viewport);
-    draw_other_entities(&mut screen, player, entity_position_broadcast, &viewport);
+    draw_other_entities(&mut screen, player, entity_position_map, &viewport);
     draw_player(&mut screen, &viewport, player);
     screen
 }
@@ -52,19 +52,25 @@ fn draw_player(screen: &mut Screen, viewport: &Viewport, player: &Player) {
 fn draw_other_entities(
     screen: &mut Screen,
     player: &Player,
-    entity_position_broadcast: &EntityPositionBroadcast,
+    entity_position_map: &EntityPositionBroadcast,
     viewport: &Viewport,
 ) {
     debug!("Drawing other entities.");
-    for (_entity_id, (entity_position, entity_display_details, entity_name_or_type)) in
-        entity_position_broadcast
+    for (
+        entity_position_x,
+        entity_position_y,
+        entity_current_map,
+        entity_icon,
+        entity_icon_colour,
+        entity_name_or_type,
+    ) in entity_position_map.values()
     {
         if *entity_name_or_type != player.player_details.player_name
-            && entity_position.current_map == player.position.current_map
+            && *entity_current_map == player.position.current_map
         {
             let relative_entity_position = RelativePosition {
-                x: i32_from(entity_position.pos_x) - viewport.viewable_map_top_left_position.x,
-                y: i32_from(entity_position.pos_y) - viewport.viewable_map_top_left_position.y,
+                x: i32_from(*entity_position_x) - viewport.viewable_map_top_left_position.x,
+                y: i32_from(*entity_position_y) - viewport.viewable_map_top_left_position.y,
             };
 
             // don't draw anything outside of the viewable screen coordinates
@@ -76,7 +82,7 @@ fn draw_other_entities(
                 screen.set_pxl(
                     relative_entity_position.x,
                     relative_entity_position.y,
-                    pixel::pxl_fg(entity_display_details.icon, entity_display_details.colour),
+                    pixel::pxl_fg(*entity_icon, *entity_icon_colour),
                 );
             }
         }

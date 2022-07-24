@@ -9,14 +9,14 @@ pub(crate) fn handle_other_input(
     system_messages: &mut Vec<String>,
     player: &Player,
     all_maps: &AllMaps,
-    entity_position_broadcast: &EntityPositionBroadcast,
+    entity_position_map: &EntityPositionBroadcast,
 ) {
     if console.is_key_pressed(KeyCode::Char('l')) {
         commands::look_command::get_what_player_sees(
             system_messages,
             player,
             all_maps,
-            entity_position_broadcast,
+            entity_position_map,
         );
     }
 }

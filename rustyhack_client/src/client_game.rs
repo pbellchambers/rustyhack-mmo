@@ -49,7 +49,7 @@ pub(crate) fn run(
     console.set_title(&(GAME_TITLE.to_string() + " - v" + env!("CARGO_PKG_VERSION")));
     info!("Initialised console engine.");
 
-    let mut entity_position_broadcast: EntityPositionBroadcast = HashMap::new();
+    let mut entity_position_map: EntityPositionBroadcast = HashMap::new();
 
     let mut system_messages: Vec<String> = vec![];
 
@@ -62,10 +62,10 @@ pub(crate) fn run(
         client_updates_handler::send_player_updates(sender, &console, &mut player, server_addr);
 
         debug!("About to wait for entity updates from server.");
-        entity_position_broadcast = client_updates_handler::check_for_received_server_messages(
+        client_updates_handler::check_for_received_server_messages(
             &player_update_receiver,
             &mut player,
-            entity_position_broadcast,
+            &mut entity_position_map,
             &mut system_messages,
         );
 
@@ -74,7 +74,7 @@ pub(crate) fn run(
             &mut system_messages,
             &player,
             &all_maps,
-            &entity_position_broadcast,
+            &entity_position_map,
         );
 
         //clear, update and redraw the screens
@@ -82,7 +82,7 @@ pub(crate) fn run(
             &mut console,
             &all_maps,
             &player,
-            &entity_position_broadcast,
+            &entity_position_map,
             &system_messages,
         );
 

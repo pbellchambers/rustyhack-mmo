@@ -75,12 +75,9 @@ pub(crate) fn send_network_messages_schedule() -> Schedule {
     schedule
 }
 
-//todo 2 filter maybe changed?
 //todo 3 add id to item when entity created and send correct item type name
-//todo 4 minimise data in position_updates, display_details, monster_type_map -  x/y, char, colour, name and only for current map ??
 //todo 5 make system send data one by one
 //todo 6 only send data for player on current map within a certain range
-//todo 7 only send data that has not changed (if possible)
 pub(crate) fn network_broadcast_schedule() -> Schedule {
     let schedule = Schedule::builder()
         .add_system(common_entity_systems::collate_all_player_positions_system())

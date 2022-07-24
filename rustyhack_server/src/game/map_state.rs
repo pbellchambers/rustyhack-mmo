@@ -1,11 +1,12 @@
 use crate::game::combat::Defender;
 use rustyhack_lib::background_map::AllMaps;
-use rustyhack_lib::ecs::components::EntityType;
+use rustyhack_lib::ecs::components::{DisplayDetails, EntityType, Position};
 use std::collections::HashMap;
+use uuid::Uuid;
 
 pub(crate) type MapState = Vec<Vec<Vec<EntityType>>>;
-
 pub(crate) type AllMapStates = HashMap<String, MapState>;
+pub type EntityPositionMap = HashMap<Uuid, (Position, DisplayDetails, String)>;
 
 pub(crate) fn initialise_all_map_states(all_maps: &AllMaps) -> AllMapStates {
     info!("About to initialise empty map state for all maps");

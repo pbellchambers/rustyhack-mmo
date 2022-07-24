@@ -7,7 +7,7 @@ pub(crate) fn get_what_player_sees(
     system_messages: &mut Vec<String>,
     player: &Player,
     all_maps: &AllMaps,
-    entity_position_broadcast: &EntityPositionBroadcast,
+    entity_position_map: &EntityPositionBroadcast,
 ) {
     let date_time: DateTime<Local> = Local::now();
     let time = date_time.format("[%H:%M:%S] ").to_string();
@@ -31,28 +31,28 @@ pub(crate) fn get_what_player_sees(
 
     north = return_visible_entity_at(
         north,
-        entity_position_broadcast,
+        entity_position_map,
         player,
         player.position.pos_x,
         player.position.pos_y - 1,
     );
     south = return_visible_entity_at(
         south,
-        entity_position_broadcast,
+        entity_position_map,
         player,
         player.position.pos_x,
         player.position.pos_y + 1,
     );
     east = return_visible_entity_at(
         east,
-        entity_position_broadcast,
+        entity_position_map,
         player,
         player.position.pos_x + 1,
         player.position.pos_y,
     );
     west = return_visible_entity_at(
         west,
-        entity_position_broadcast,
+        entity_position_map,
         player,
         player.position.pos_x - 1,
         player.position.pos_y,
@@ -68,18 +68,24 @@ pub(crate) fn get_what_player_sees(
 
 fn return_visible_entity_at(
     mut entity_name: String,
-    entity_position_broadcast: &EntityPositionBroadcast,
+    entity_position_map: &EntityPositionBroadcast,
     player: &Player,
     x: u32,
     y: u32,
 ) -> String {
-    for (_entity_id, (entity_position, _entity_display_details, entity_name_or_type)) in
-        entity_position_broadcast
+    for (
+        entity_position_x,
+        entity_position_y,
+        entity_current_map,
+        _entity_icon,
+        _entity_icon_colour,
+        entity_name_or_type,
+    ) in entity_position_map.values()
     {
         if *entity_name_or_type != player.player_details.player_name
-            && entity_position.current_map == player.position.current_map
-            && entity_position.pos_x == x
-            && entity_position.pos_y == y
+            && *entity_current_map == player.position.current_map
+            && *entity_position_x == x
+            && *entity_position_y == y
         {
             entity_name = entity_name_or_type.clone();
         }
