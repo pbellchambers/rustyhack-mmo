@@ -10,7 +10,7 @@ use legion::{system, Entity, Query};
 use rand::Rng;
 use rustyhack_lib::consts::{DEAD_MAP, DEFAULT_ITEM_COLOUR, DEFAULT_ITEM_ICON};
 use rustyhack_lib::ecs::components::{
-    Dead, DisplayDetails, Inventory, MonsterDetails, Position, Stats,
+    Dead, DisplayDetails, Inventory, ItemDetails, MonsterDetails, Position, Stats,
 };
 use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::ecs::monster::AllMonsterDefinitions;
@@ -31,9 +31,10 @@ pub(crate) fn resolve_monster_deaths(
         if stats.current_hp <= 0.0 {
             debug!("Monster {} {} died.", monster.id, monster.monster_type);
             //drop inventory items
-            let mut items_vec: Vec<(DisplayDetails, Position, Item)> = vec![];
+            let mut items_vec: Vec<(ItemDetails, DisplayDetails, Position, Item)> = vec![];
             for item in &inventory.carried {
                 items_vec.push((
+                    ItemDetails { id: Uuid::new_v4() },
                     DisplayDetails {
                         icon: DEFAULT_ITEM_ICON,
                         colour: DEFAULT_ITEM_COLOUR,

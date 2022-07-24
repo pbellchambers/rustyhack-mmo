@@ -109,6 +109,11 @@ pub struct MonsterDetails {
     pub current_target: Option<Uuid>,
 }
 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ItemDetails {
+    pub id: Uuid,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Stats {
     pub update_available: bool,

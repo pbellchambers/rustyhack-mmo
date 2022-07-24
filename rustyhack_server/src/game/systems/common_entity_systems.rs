@@ -8,11 +8,10 @@ use rustyhack_lib::background_map::tiles::{Collidable, Tile};
 use rustyhack_lib::background_map::{AllMaps, BackgroundMap};
 use rustyhack_lib::consts::DEFAULT_MAP;
 use rustyhack_lib::ecs::components::{
-    DisplayDetails, MonsterDetails, PlayerDetails, Position, Stats,
+    DisplayDetails, ItemDetails, MonsterDetails, PlayerDetails, Position, Stats,
 };
 use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::math_utils::{i32_from, u32_from};
-use uuid::Uuid;
 
 #[system]
 pub(crate) fn update_entities_position(
@@ -135,15 +134,21 @@ pub(crate) fn collate_all_monster_positions(
 #[system(for_each)]
 #[filter(maybe_changed::<Position>())]
 pub(crate) fn collate_all_item_positions(
-    _item: &Item,
+    item_details: &ItemDetails,
+    item: &Item,
     position: &Position,
     display_details: &DisplayDetails,
     #[resource] entity_position_map: &mut EntityPositionMap,
 ) {
     debug!("Getting all item positions");
-    let temp_item_id = Uuid::new_v4();
+    let item_name: String = match item {
+        Item::Weapon(weapon) => weapon.name.clone(),
+        Item::Armour(armour) => armour.name.clone(),
+        Item::Gold(amount) => amount.to_string() + " Gold",
+        Item::Trinket(trinket) => trinket.name.clone(),
+    };
     entity_position_map.insert(
-        temp_item_id,
-        (position.clone(), *display_details, "some item".to_string()),
+        item_details.id,
+        (position.clone(), *display_details, item_name),
     );
 }

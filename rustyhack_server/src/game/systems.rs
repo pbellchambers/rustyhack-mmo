@@ -75,7 +75,6 @@ pub(crate) fn send_network_messages_schedule() -> Schedule {
     schedule
 }
 
-//todo 3 add id to item when entity created and send correct item type name
 pub(crate) fn network_broadcast_schedule() -> Schedule {
     let schedule = Schedule::builder()
         .add_system(common_entity_systems::collate_all_player_positions_system())
