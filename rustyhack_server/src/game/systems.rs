@@ -76,8 +76,6 @@ pub(crate) fn send_network_messages_schedule() -> Schedule {
 }
 
 //todo 3 add id to item when entity created and send correct item type name
-//todo 5 make system send data one by one
-//todo 6 only send data for player on current map within a certain range
 pub(crate) fn network_broadcast_schedule() -> Schedule {
     let schedule = Schedule::builder()
         .add_system(common_entity_systems::collate_all_player_positions_system())

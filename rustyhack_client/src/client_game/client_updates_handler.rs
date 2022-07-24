@@ -78,9 +78,9 @@ pub(crate) fn check_for_received_server_messages(
                     let time = date_time.format("[%H:%M:%S] ").to_string();
                     status_messages.push(time + &message);
                 }
-                ServerMessage::UpdateOtherEntities(new_updates) => {
-                    debug!("Entity position broadcast received: {:?}", &new_updates);
-                    entity_position_broadcast.extend(new_updates);
+                ServerMessage::UpdateOtherEntities(new_update) => {
+                    debug!("Entity position broadcast received: {:?}", &new_update);
+                    entity_position_broadcast.insert(new_update.0, new_update.1);
                 }
                 _ => {
                     warn!(

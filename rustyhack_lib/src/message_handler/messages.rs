@@ -30,7 +30,7 @@ pub enum ServerMessage {
     UpdatePosition(Position),
     UpdateStats(Stats),
     UpdateInventory(Inventory),
-    UpdateOtherEntities(EntityPositionBroadcast),
+    UpdateOtherEntities((Uuid, (u32, u32, String, char, Color, String))),
     SystemMessage(String),
 }
 
