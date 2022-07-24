@@ -1,6 +1,6 @@
 use crate::consts::{
-    DEFAULT_MAP, DEFAULT_PLAYER_COLOUR, DEFAULT_PLAYER_ICON, DEFAULT_PLAYER_POSITION_X,
-    DEFAULT_PLAYER_POSITION_Y,
+    DEAD_ICON, DEAD_MAP, DEFAULT_MAP, DEFAULT_PLAYER_COLOUR, DEFAULT_PLAYER_ICON,
+    DEFAULT_PLAYER_POSITION_X, DEFAULT_PLAYER_POSITION_Y,
 };
 use crate::ecs::inventory::Equipment;
 use crate::ecs::item::Item;
@@ -15,6 +15,10 @@ pub enum EntityType {
     Monster(Monster),
     Player(Player),
     Item(Item),
+}
+
+pub trait Dead: Sized {
+    fn dead() -> Self;
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -34,6 +38,19 @@ impl Default for Position {
             pos_x: DEFAULT_PLAYER_POSITION_X,
             pos_y: DEFAULT_PLAYER_POSITION_Y,
             current_map: DEFAULT_MAP.to_string(),
+            velocity_x: 0,
+            velocity_y: 0,
+        }
+    }
+}
+
+impl Dead for Position {
+    fn dead() -> Self {
+        Position {
+            update_available: false,
+            pos_x: 0,
+            pos_y: 0,
+            current_map: DEAD_MAP.to_string(),
             velocity_x: 0,
             velocity_y: 0,
         }
@@ -60,6 +77,17 @@ impl Default for DisplayDetails {
             colour: DEFAULT_PLAYER_COLOUR,
             visible: true,
             collidable: true,
+        }
+    }
+}
+
+impl Dead for DisplayDetails {
+    fn dead() -> Self {
+        DisplayDetails {
+            icon: DEAD_ICON,
+            colour: DEFAULT_PLAYER_COLOUR,
+            visible: false,
+            collidable: false,
         }
     }
 }

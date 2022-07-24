@@ -4,6 +4,7 @@ use crossbeam_channel::Sender;
 use laminar::Packet;
 use legion::world::SubWorld;
 use legion::{system, Query};
+use rustyhack_lib::consts::DEAD_MAP;
 use rustyhack_lib::ecs::components::{Inventory, PlayerDetails, Position, Stats};
 use rustyhack_lib::message_handler::messages::{EntityPositionBroadcast, ServerMessage};
 use std::collections::HashMap;
@@ -123,7 +124,10 @@ pub(crate) fn broadcast_entity_updates(
             for (entity_id, (entity_position, entity_display_details, entity_name_or_type)) in
                 entity_position_map.clone()
             {
-                if entity_position.current_map == player_position.current_map {
+                if entity_position.current_map == player_position.current_map
+                    || entity_position.current_map
+                        == (player_position.current_map.clone() + DEAD_MAP)
+                {
                     entity_position_broadcast.insert(
                         entity_id,
                         (

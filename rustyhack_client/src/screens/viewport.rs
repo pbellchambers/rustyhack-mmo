@@ -1,3 +1,4 @@
+use crate::client_consts::NON_COLLIDABLE_OBJECTS;
 use console_engine::pixel;
 use console_engine::screen::Screen;
 use rustyhack_lib::background_map::tiles::Tile;
@@ -79,11 +80,19 @@ fn draw_other_entities(
                 && relative_entity_position.x < i32_from(viewport.width - 1)
                 && relative_entity_position.y < i32_from(viewport.height - 1)
             {
-                screen.set_pxl(
-                    relative_entity_position.x,
-                    relative_entity_position.y,
-                    pixel::pxl_fg(*entity_icon, *entity_icon_colour),
-                );
+                //Only allow drawing entities on top of non-collidable objects
+                if NON_COLLIDABLE_OBJECTS.contains(
+                    &screen
+                        .get_pxl(relative_entity_position.x, relative_entity_position.y)
+                        .unwrap()
+                        .chr,
+                ) {
+                    screen.set_pxl(
+                        relative_entity_position.x,
+                        relative_entity_position.y,
+                        pixel::pxl_fg(*entity_icon, *entity_icon_colour),
+                    );
+                }
             }
         }
     }

@@ -4,9 +4,11 @@ use laminar::{Packet, SocketEvent};
 use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
 use std::collections::HashMap;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
-use crate::client_consts::{GAME_TITLE, INITIAL_CONSOLE_HEIGHT, INITIAL_CONSOLE_WIDTH, TARGET_FPS};
+use crate::client_consts::{
+    CLIENT_CLEANUP_TICK, GAME_TITLE, INITIAL_CONSOLE_HEIGHT, INITIAL_CONSOLE_WIDTH, TARGET_FPS,
+};
 
 use crate::networking::client_message_handler;
 use crate::screens::draw_screens;
@@ -54,6 +56,7 @@ pub(crate) fn run(
     let mut system_messages: Vec<String> = vec![];
 
     info!("Starting client_game loop");
+    let mut client_cleanup_tick_time = Instant::now();
     loop {
         //wait for target fps tick time to continue
         console.wait_frame();
@@ -68,6 +71,12 @@ pub(crate) fn run(
             &mut entity_position_map,
             &mut system_messages,
         );
+
+        if client_cleanup_tick_time.elapsed() > CLIENT_CLEANUP_TICK {
+            //no need to do this often, dead entities are already not displayed
+            client_updates_handler::cleanup_dead_entities(&player, &mut entity_position_map);
+            client_cleanup_tick_time = Instant::now();
+        }
 
         client_input_handler::handle_other_input(
             &mut console,

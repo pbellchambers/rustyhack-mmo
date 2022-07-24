@@ -3,6 +3,7 @@ use chrono::{DateTime, Local};
 use console_engine::{ConsoleEngine, KeyCode};
 use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
+use rustyhack_lib::consts::DEAD_MAP;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::{
     EntityPositionBroadcast, PlayerRequest, PositionMessage, ServerMessage,
@@ -88,6 +89,29 @@ pub(crate) fn check_for_received_server_messages(
                     );
                 }
             }
+        }
+    }
+}
+
+pub(crate) fn cleanup_dead_entities(
+    player: &Player,
+    entity_position_map: &mut EntityPositionBroadcast,
+) {
+    for (
+        uuid,
+        (
+            _position_x,
+            _position_y,
+            entity_current_map,
+            _entity_icon,
+            _entity_icon_colour,
+            _entity_name,
+        ),
+    ) in entity_position_map.clone()
+    {
+        if (player.position.current_map.clone() + DEAD_MAP) == entity_current_map {
+            entity_position_map.remove(&uuid);
+            debug!("Removed dead entity from entity map.");
         }
     }
 }

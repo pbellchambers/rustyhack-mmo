@@ -1,5 +1,6 @@
 use crate::consts;
 use crate::consts::MONSTER_DISTANCE_ACTIVATION;
+use crate::game::map_state::EntityPositionMap;
 use crate::game::monsters;
 use crate::game::players::PlayersPositions;
 use crate::game::spawns::{AllSpawnCounts, AllSpawnsMap};
@@ -7,8 +8,10 @@ use legion::systems::CommandBuffer;
 use legion::world::SubWorld;
 use legion::{system, Entity, Query};
 use rand::Rng;
-use rustyhack_lib::consts::{DEFAULT_ITEM_COLOUR, DEFAULT_ITEM_ICON};
-use rustyhack_lib::ecs::components::{DisplayDetails, Inventory, MonsterDetails, Position, Stats};
+use rustyhack_lib::consts::{DEAD_MAP, DEFAULT_ITEM_COLOUR, DEFAULT_ITEM_ICON};
+use rustyhack_lib::ecs::components::{
+    Dead, DisplayDetails, Inventory, MonsterDetails, Position, Stats,
+};
 use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::ecs::monster::AllMonsterDefinitions;
 use rustyhack_lib::math_utils::i32_from;
@@ -21,6 +24,7 @@ pub(crate) fn resolve_monster_deaths(
     world: &mut SubWorld,
     query: &mut Query<(Entity, &MonsterDetails, &Stats, &Position, &Inventory)>,
     commands: &mut CommandBuffer,
+    #[resource] entity_position_map: &mut EntityPositionMap,
 ) {
     debug!("Removing dead monsters.");
     for (entity, monster, stats, position, inventory) in query.iter(world) {
@@ -49,6 +53,18 @@ pub(crate) fn resolve_monster_deaths(
             }
             //add dropped item entities to world
             commands.extend(items_vec);
+            let dead_position = Position {
+                current_map: position.current_map.clone() + DEAD_MAP,
+                ..Dead::dead()
+            };
+            entity_position_map.insert(
+                monster.id,
+                (
+                    dead_position,
+                    DisplayDetails::dead(),
+                    "dead_monster".to_string(),
+                ),
+            );
             //remove monster from world
             commands.remove(*entity);
         }
