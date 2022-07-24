@@ -35,8 +35,8 @@ pub(crate) fn draw_viewport_contents(
     calculate_viewable_map_coords(&mut viewport, player);
     draw_viewable_map(&mut screen, background_map, &viewport);
     draw_viewport_frame(&mut screen, &viewport);
-    draw_player(&mut screen, &viewport, player);
     draw_other_entities(&mut screen, player, entity_position_broadcast, &viewport);
+    draw_player(&mut screen, &viewport, player);
     screen
 }
 
