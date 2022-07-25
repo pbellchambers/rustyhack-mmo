@@ -112,6 +112,7 @@ pub struct MonsterDetails {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ItemDetails {
     pub id: Uuid,
+    pub has_been_picked_up: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]

@@ -2,13 +2,14 @@ use crate::consts::{
     BASE_HEALTH_REGEN_PERCENT, HEALTH_REGEN_CON_PERCENT, HEALTH_REGEN_CON_STATIC_FACTOR,
 };
 use crate::game::map_state::EntityPositionMap;
+use legion::systems::CommandBuffer;
 use legion::world::SubWorld;
-use legion::{maybe_changed, system, Query};
+use legion::{maybe_changed, system, Entity, Query};
 use rustyhack_lib::background_map::tiles::{Collidable, Tile};
 use rustyhack_lib::background_map::{AllMaps, BackgroundMap};
-use rustyhack_lib::consts::DEFAULT_MAP;
+use rustyhack_lib::consts::{DEAD_MAP, DEFAULT_MAP};
 use rustyhack_lib::ecs::components::{
-    DisplayDetails, ItemDetails, MonsterDetails, PlayerDetails, Position, Stats,
+    Dead, DisplayDetails, ItemDetails, MonsterDetails, PlayerDetails, Position, Stats,
 };
 use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::math_utils::{i32_from, u32_from};
@@ -131,24 +132,49 @@ pub(crate) fn collate_all_monster_positions(
     );
 }
 
+#[allow(clippy::trivially_copy_pass_by_ref)]
 #[system(for_each)]
 #[filter(maybe_changed::<Position>())]
 pub(crate) fn collate_all_item_positions(
+    entity: &Entity,
     item_details: &ItemDetails,
     item: &Item,
     position: &Position,
     display_details: &DisplayDetails,
+    commands: &mut CommandBuffer,
     #[resource] entity_position_map: &mut EntityPositionMap,
 ) {
     debug!("Getting all item positions");
-    let item_name: String = match item {
-        Item::Weapon(weapon) => weapon.name.clone(),
-        Item::Armour(armour) => armour.name.clone(),
-        Item::Gold(amount) => amount.to_string() + " Gold",
-        Item::Trinket(trinket) => trinket.name.clone(),
-    };
-    entity_position_map.insert(
-        item_details.id,
-        (position.clone(), *display_details, item_name),
-    );
+    if item_details.has_been_picked_up {
+        let dead_map = position.current_map.clone() + DEAD_MAP;
+        let dead_position = Position {
+            current_map: dead_map,
+            ..Dead::dead()
+        };
+        info!(
+            "Removing item id {} to dead map: {:?}",
+            item_details.id, dead_position
+        );
+        entity_position_map.insert(
+            item_details.id,
+            (
+                dead_position,
+                DisplayDetails::dead(),
+                "picked_up_item".to_string(),
+            ),
+        );
+        info!("Removing item id {} from world.", item_details.id);
+        commands.remove(*entity);
+    } else {
+        let item_name: String = match item {
+            Item::Weapon(weapon) => weapon.name.clone(),
+            Item::Armour(armour) => armour.name.clone(),
+            Item::Gold(amount) => amount.to_string() + " Gold",
+            Item::Trinket(trinket) => trinket.name.clone(),
+        };
+        entity_position_map.insert(
+            item_details.id,
+            (position.clone(), *display_details, item_name),
+        );
+    }
 }

@@ -29,13 +29,19 @@ pub(crate) fn resolve_monster_deaths(
     debug!("Removing dead monsters.");
     for (entity, monster, stats, position, inventory) in query.iter(world) {
         if stats.current_hp <= 0.0 {
-            debug!("Monster {} {:?} {} died.", monster.id, entity, monster.monster_type);
+            debug!(
+                "Monster {} {:?} {} died.",
+                monster.id, entity, monster.monster_type
+            );
             //drop inventory items
             let mut items_vec: Vec<(ItemDetails, DisplayDetails, Position, Item)> = vec![];
             debug!("Monster inventory was: {:?}", inventory);
             for item in &inventory.carried {
                 items_vec.push((
-                    ItemDetails { id: Uuid::new_v4() },
+                    ItemDetails {
+                        id: Uuid::new_v4(),
+                        has_been_picked_up: false,
+                    },
                     DisplayDetails {
                         icon: DEFAULT_ITEM_ICON,
                         colour: DEFAULT_ITEM_COLOUR,

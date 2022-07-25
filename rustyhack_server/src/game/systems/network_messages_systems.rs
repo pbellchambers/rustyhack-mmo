@@ -5,9 +5,10 @@ use laminar::Packet;
 use legion::world::SubWorld;
 use legion::{system, Query};
 use rustyhack_lib::consts::DEAD_MAP;
-use rustyhack_lib::ecs::components::{Inventory, PlayerDetails, Position, Stats};
+use rustyhack_lib::ecs::components::{DisplayDetails, Inventory, PlayerDetails, Position, Stats};
 use rustyhack_lib::message_handler::messages::ServerMessage;
 use std::process;
+use uuid::Uuid;
 
 #[system]
 pub(crate) fn send_player_position_updates(
@@ -122,29 +123,16 @@ pub(crate) fn broadcast_entity_updates(
             for (entity_id, (entity_position, entity_display_details, entity_name_or_type)) in
                 entity_position_map.clone()
             {
-                if entity_position.current_map == player_position.current_map
-                    || entity_position.current_map
-                        == (player_position.current_map.clone() + DEAD_MAP)
-                {
-                    debug!("Sending entity updates to: {}", &player_details.client_addr);
-                    let response = serialize(&ServerMessage::UpdateOtherEntities((
+                if entity_position.current_map == player_position.current_map {
+                    debug!("Sending entity update to: {}", &player_details.client_addr);
+                    let response = serialize_entity_broadcast_packet(
                         entity_id,
-                        (
-                            entity_position.pos_x,
-                            entity_position.pos_y,
-                            entity_position.current_map,
-                            entity_display_details.icon,
-                            entity_display_details.colour,
-                            entity_name_or_type,
-                        ),
-                    )))
-                        .unwrap_or_else(|err| {
-                            error!(
-                            "Failed to serialize entity position broadcast to: {}, {}, @ map: {} error: {}",
-                            &player_details.player_name, &player_details.client_addr, &player_position.current_map, err
-                        );
-                            process::exit(1);
-                        });
+                        entity_position,
+                        entity_display_details,
+                        entity_name_or_type,
+                        player_details,
+                        player_position,
+                    );
 
                     rustyhack_lib::message_handler::send_packet(
                         Packet::unreliable_sequenced(
@@ -154,10 +142,65 @@ pub(crate) fn broadcast_entity_updates(
                         ),
                         sender,
                     );
+                } else if entity_position.current_map
+                    == (player_position.current_map.clone() + DEAD_MAP)
+                {
+                    debug!(
+                        "Sending dead entity update: {}",
+                        &player_details.client_addr
+                    );
+                    let response = serialize_entity_broadcast_packet(
+                        entity_id,
+                        entity_position,
+                        entity_display_details,
+                        entity_name_or_type,
+                        player_details,
+                        player_position,
+                    );
+
+                    rustyhack_lib::message_handler::send_packet(
+                        Packet::reliable_ordered(
+                            player_details.client_addr.parse().unwrap(),
+                            response,
+                            Some(25),
+                        ),
+                        sender,
+                    );
                 }
             }
         }
     }
     entity_position_map.clear();
     debug!("Finished broadcasting entity updates.");
+}
+
+fn serialize_entity_broadcast_packet(
+    entity_id: Uuid,
+    entity_position: Position,
+    entity_display_details: DisplayDetails,
+    entity_name_or_type: String,
+    player_details: &PlayerDetails,
+    player_position: &Position,
+) -> Vec<u8> {
+    serialize(&ServerMessage::UpdateOtherEntities((
+        entity_id,
+        (
+            entity_position.pos_x,
+            entity_position.pos_y,
+            entity_position.current_map,
+            entity_display_details.icon,
+            entity_display_details.colour,
+            entity_name_or_type,
+        ),
+    )))
+    .unwrap_or_else(|err| {
+        error!(
+            "Failed to serialize entity position broadcast to: {}, {}, @ map: {} error: {}",
+            &player_details.player_name,
+            &player_details.client_addr,
+            &player_position.current_map,
+            err
+        );
+        process::exit(1);
+    })
 }
