@@ -17,17 +17,18 @@ The combat, stats, levelling, and inventory update!
 - death and respawning for players and monsters
 - exp gain, levelling up, and stat gains
 - inventory system
+- picking up items
 - default weapons and armour (used in combat calculations)
 - system messages and combat notifications displayed in bottom of client window
 - look command changed to L key
+- client window can now be dynamically resized
 - a slightly larger default map with more variety
 
 ### 🐛 Bug Fixes
 - gracefully logout without causing server errors (only if you use ctrl-q)
-- monster name displays correctly on look command
+- look command now displays monster name correctly
+- look command now shows underneath items in all situations
 - no longer crashes when player enters top row of map
-- client window can now be dynamically resized
-- look underneath now works in all situations
 
 ### 🧰 Maintenance
 - clippy::cargo and clippy::pedantic warnings resolved
