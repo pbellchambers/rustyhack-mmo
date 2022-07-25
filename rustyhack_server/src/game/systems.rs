@@ -43,7 +43,6 @@ pub(crate) fn build_player_combat_update_schedule() -> Schedule {
 
 pub(crate) fn build_monster_update_schedule() -> Schedule {
     let schedule = Schedule::builder()
-        .add_system(monster_systems::resolve_monster_deaths_system())
         .add_system(monster_systems::update_monster_velocities_system())
         .add_system(combat_systems::check_for_combat_system())
         .add_system(combat_systems::resolve_combat_system())

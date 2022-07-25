@@ -29,9 +29,10 @@ pub(crate) fn resolve_monster_deaths(
     debug!("Removing dead monsters.");
     for (entity, monster, stats, position, inventory) in query.iter(world) {
         if stats.current_hp <= 0.0 {
-            debug!("Monster {} {} died.", monster.id, monster.monster_type);
+            debug!("Monster {} {:?} {} died.", monster.id, entity, monster.monster_type);
             //drop inventory items
             let mut items_vec: Vec<(ItemDetails, DisplayDetails, Position, Item)> = vec![];
+            debug!("Monster inventory was: {:?}", inventory);
             for item in &inventory.carried {
                 items_vec.push((
                     ItemDetails { id: Uuid::new_v4() },
@@ -53,6 +54,7 @@ pub(crate) fn resolve_monster_deaths(
                 ));
             }
             //add dropped item entities to world
+            debug!("Items being added to world are: {:?}", items_vec);
             commands.extend(items_vec);
             let dead_position = Position {
                 current_map: position.current_map.clone() + DEAD_MAP,

@@ -111,6 +111,7 @@ pub(crate) fn pickup_item(world: &mut World, position_message: &PositionMessage)
     let mut item_option: Option<Item> = None;
     let mut entity_option: Option<Entity> = None;
     let mut item_query = <(Entity, &ItemDetails, &DisplayDetails, &Position, &Item)>::query();
+
     //confirm item exists at that position and get details
     for (
         requested_item_entity,
@@ -136,7 +137,11 @@ pub(crate) fn pickup_item(world: &mut World, position_message: &PositionMessage)
             debug!("No matching item found.");
         }
         Some(entity) => {
-            debug!("Item found, removing from world: {:?}", entity);
+            debug!(
+                "Item found, id: {}, removing entity from world: {:?}",
+                item_id_option.unwrap(),
+                entity
+            );
             //remove item from world
             world.remove(entity);
         }
