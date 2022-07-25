@@ -1,7 +1,8 @@
 use std::fs::ReadDir;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::{env, fs, process};
 
+#[must_use]
 pub fn current_exe_location() -> PathBuf {
     env::current_exe().unwrap_or_else(|err| {
         error!("Problem getting current executable location: {}", err);
@@ -9,13 +10,10 @@ pub fn current_exe_location() -> PathBuf {
     })
 }
 
-pub fn get_all_files_in_location(path: PathBuf) -> ReadDir {
-    fs::read_dir(path.as_path()).unwrap_or_else(|err| {
-        error!(
-            "Problem reading directory {:?}, error: {}",
-            path.as_path(),
-            err
-        );
+#[must_use]
+pub fn get_all_files_in_location(path: &Path) -> ReadDir {
+    fs::read_dir(path).unwrap_or_else(|err| {
+        error!("Problem reading directory {:?}, error: {}", path, err);
         process::exit(1);
     })
 }

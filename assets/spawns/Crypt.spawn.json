@@ -1,0 +1,21 @@
+{
+  "monsters": [
+    {
+      "monster_type": "Zombie",
+      "spawn_positions": [
+        {
+          "x": 24,
+          "y": 4
+        },
+        {
+          "x": 24,
+          "y": 6
+        },
+        {
+          "x": 4,
+          "y": 8
+        }
+      ]
+    }
+  ]
+}

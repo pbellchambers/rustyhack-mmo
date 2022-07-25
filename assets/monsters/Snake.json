@@ -3,13 +3,15 @@
     "id": "00000000-0000-0000-0000-000000000000",
     "monster_type": "Snake",
     "spawn_position": {
-      "x": 0,
-      "y": 0,
-      "map": "none"
+      "update_available": false,
+      "pos_x": 0,
+      "pos_y": 0,
+      "current_map": "none",
+      "velocity_x": 0,
+      "velocity_y": 0
     },
     "is_active": false,
     "current_target": null,
-    "exp": 7,
     "gold": 2
   },
   "display_details": {
@@ -19,20 +21,48 @@
     "collidable": true
   },
   "position": {
-    "x": 0,
-    "y": 0,
-    "map": "none"
-  },
-  "velocity": {
-    "x": 0,
-    "y": 0
+    "update_available": false,
+    "pos_x": 0,
+    "pos_y": 0,
+    "current_map": "none",
+    "velocity_x": 0,
+    "velocity_y": 0
   },
   "stats": {
-    "current_hp": 20,
-    "max_hp": 20,
-    "str": 10,
-    "dex": 15,
-    "con": 5,
-    "armour": 5
+    "update_available": false,
+    "current_hp": 20.0,
+    "max_hp": 20.0,
+    "str": 10.0,
+    "dex": 15.0,
+    "con": 5.0,
+    "armour": 5.0,
+    "level": 1,
+    "exp": 0,
+    "exp_next": 1000
+  },
+  "inventory": {
+    "update_available": false,
+    "gold": 1,
+    "equipped": {
+      "weapon": {
+        "name": "Snake Fangs",
+        "damage_range": {
+          "start": 3.0,
+          "end": 8.0
+        },
+        "accuracy": 75.0
+      },
+      "armour": {
+        "name": "Snake Skin",
+        "damage_reduction_percentage": 5.0
+      }
+    },
+    "carried": [
+      {
+        "Trinket": {
+          "name": "Snake tooth"
+        }
+      }
+    ]
   }
 }

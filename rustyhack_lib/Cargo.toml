@@ -1,19 +1,27 @@
 [package]
 name = "rustyhack_lib"
-version = "0.2.2"
+version = "0.3.0"
 authors = ["pbellchambers <pbellchambers@users.noreply.github.com>"]
 edition = "2021"
+homepage = "https://github.com/pbellchambers/rustyhack-mmo"
 repository = "https://github.com/pbellchambers/rustyhack-mmo"
 license = "AGPL-3.0"
+readme = "../README.md"
+description = "Shared libraries for Rustyhack MMO - An ASCII \"roguelike\" MMORPG"
+keywords = ["game", "games", "roguelike", "mmorpg", "ascii-art", "ascii-game", "console-game", "terminal-game", "terminal-based", "library"]
+categories = ["games"]
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 log = "0.4.17"
 simplelog = "0.12.0"
-serde = { version = "1.0.139", features = ["derive"] }
+serde = { version = "1.0.140", features = ["derive"] }
 console_engine = "2.4.0"
-crossterm = { version = "0.23.0", features = ["serde"] }
+crossterm = { version = "0.23.2", features = ["serde"] }
+laminar = "0.5.0"
+crossbeam-channel = "0.5.6"
 uuid = { version = "1.1.2", features = ["serde", "v4"] }
 strum = "0.24.1"
 strum_macros = "0.24.2"

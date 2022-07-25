@@ -1,0 +1,68 @@
+{
+  "monster_details": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "monster_type": "Kobold",
+    "spawn_position": {
+      "update_available": false,
+      "pos_x": 0,
+      "pos_y": 0,
+      "current_map": "none",
+      "velocity_x": 0,
+      "velocity_y": 0
+    },
+    "is_active": false,
+    "current_target": null,
+    "gold": 2
+  },
+  "display_details": {
+    "icon": "k",
+    "colour": "yellow",
+    "visible": true,
+    "collidable": true
+  },
+  "position": {
+    "update_available": false,
+    "pos_x": 0,
+    "pos_y": 0,
+    "current_map": "none",
+    "velocity_x": 0,
+    "velocity_y": 0
+  },
+  "stats": {
+    "update_available": false,
+    "current_hp": 30.0,
+    "max_hp": 30.0,
+    "str": 10.0,
+    "dex": 10.0,
+    "con": 5.0,
+    "armour": 5.0,
+    "level": 1,
+    "exp": 0,
+    "exp_next": 1000
+  },
+  "inventory": {
+    "update_available": false,
+    "gold": 1,
+    "equipped": {
+      "weapon": {
+        "name": "Rusty Sword",
+        "damage_range": {
+          "start": 3.0,
+          "end": 8.0
+        },
+        "accuracy": 75.0
+      },
+      "armour": {
+        "name": "Tatty Cloth",
+        "damage_reduction_percentage": 5.0
+      }
+    },
+    "carried": [
+      {
+        "Trinket": {
+          "name": "Kobold Cheese"
+        }
+      }
+    ]
+  }
+}

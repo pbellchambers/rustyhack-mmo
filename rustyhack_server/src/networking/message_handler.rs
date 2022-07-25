@@ -12,14 +12,14 @@ pub(crate) fn spawn_message_handler_thread(
     all_maps: AllMaps,
     channel_sender: Sender<PlayerRequest>,
 ) {
-    thread::spawn(move || run(sender, receiver, all_maps, channel_sender));
+    thread::spawn(move || run(&sender, &receiver, &all_maps, &channel_sender));
 }
 
 pub(crate) fn run(
-    sender: Sender<Packet>,
-    receiver: Receiver<SocketEvent>,
-    all_maps: AllMaps,
-    channel_sender: Sender<PlayerRequest>,
+    sender: &Sender<Packet>,
+    receiver: &Receiver<SocketEvent>,
+    all_maps: &AllMaps,
+    channel_sender: &Sender<PlayerRequest>,
 ) {
     info!("Spawned message handler thread.");
     loop {
@@ -40,36 +40,69 @@ pub(crate) fn run(
                             create_player_request.client_addr = address.to_string();
                             send_channel_message(
                                 PlayerRequest::PlayerJoin(create_player_request),
-                                &channel_sender,
+                                channel_sender,
                             );
                         }
-                        PlayerRequest::UpdateVelocity(message) => {
+                        PlayerRequest::UpdateVelocity(position_message) => {
                             send_channel_message(
-                                PlayerRequest::UpdateVelocity(message),
-                                &channel_sender,
+                                PlayerRequest::UpdateVelocity(position_message),
+                                channel_sender,
+                            );
+                        }
+                        PlayerRequest::PickupItem(position_message) => {
+                            send_channel_message(
+                                PlayerRequest::PickupItem(position_message),
+                                channel_sender,
+                            );
+                        }
+                        PlayerRequest::DropItem(position_message) => {
+                            send_channel_message(
+                                PlayerRequest::DropItem(position_message),
+                                channel_sender,
                             );
                         }
                         PlayerRequest::GetChunkedAllMaps => {
                             send_all_maps_chunks(
-                                serialize_all_maps(all_maps.clone()),
+                                &serialize_all_maps(all_maps.clone()),
                                 address,
-                                &sender,
+                                sender,
                             );
                         }
-                        _ => {}
+                        PlayerRequest::PlayerLogout(client_details) => {
+                            send_channel_message(
+                                PlayerRequest::PlayerLogout(client_details),
+                                channel_sender,
+                            );
+                        }
+                        PlayerRequest::Timeout(_) => {
+                            info!("Client timed out from: {}", address);
+                            send_channel_message(
+                                PlayerRequest::Timeout(address.to_string()),
+                                channel_sender,
+                            );
+                        }
+                        PlayerRequest::Undefined => {
+                            warn!("Undefined message received from {}", address);
+                        }
                     }
                 }
                 SocketEvent::Connect(connect_event) => {
-                    info!("Client connected from: {}", connect_event)
+                    info!("Client connected from: {}", connect_event);
                 }
-                SocketEvent::Timeout(address) => {
-                    info!("Client timed out: {}", address);
+                SocketEvent::Disconnect(address) => {
+                    info!("Client disconnected from: {}", address);
                     send_channel_message(
                         PlayerRequest::Timeout(address.to_string()),
-                        &channel_sender,
+                        channel_sender,
                     );
                 }
-                _ => {}
+                SocketEvent::Timeout(address) => {
+                    info!("Client timed out from: {}", address);
+                    send_channel_message(
+                        PlayerRequest::Timeout(address.to_string()),
+                        channel_sender,
+                    );
+                }
             }
         }
     }
@@ -79,50 +112,60 @@ fn serialize_all_maps(all_maps: AllMaps) -> Vec<u8> {
     serialize(&ServerMessage::AllMaps(all_maps)).expect("Error serializing AllMaps data.")
 }
 
-fn send_all_maps_chunks(
-    all_maps_serialized: Vec<u8>,
-    address: SocketAddr,
-    sender: &Sender<Packet>,
-) {
+fn send_all_maps_chunks(all_maps_serialized: &[u8], address: SocketAddr, sender: &Sender<Packet>) {
     let all_maps_chunks = all_maps_serialized
         .chunks(1450)
-        .map(|s| s.into())
+        .map(std::convert::Into::into)
         .enumerate();
     let chunked_response_length = all_maps_chunks.size_hint();
 
-    for (i, chunk) in all_maps_chunks {
-        let chunk_packet = serialize(&ServerMessage::AllMapsChunk((i, chunk)))
+    let mut stream_id: u8 = 1;
+    for (chunk_count, chunk) in all_maps_chunks {
+        let chunk_packet = serialize(&ServerMessage::AllMapsChunk((chunk_count, chunk)))
             .expect("Error serializing AllMapsChunk.");
-        if i == 0 {
-            info!("Sending first AllMapsChunk packet {} to: {}", i, address);
-            send_packet(
-                Packet::reliable_ordered(address, chunk_packet, Some(i as u8)),
+        if chunk_count == 0 {
+            info!(
+                "Sending first AllMapsChunk packet {} to: {}",
+                chunk_count, address
+            );
+            rustyhack_lib::message_handler::send_packet(
+                Packet::reliable_ordered(address, chunk_packet, Some(stream_id)),
                 sender,
             );
-        } else if i
+        } else if chunk_count
             == chunked_response_length
                 .1
                 .expect("Error: chunked all maps length is zero")
                 - 1
         {
-            info!("Sending last AllMapsChunk packet {} to: {}", i, address);
-            send_packet(
-                Packet::reliable_ordered(address, chunk_packet, Some(i as u8)),
+            info!(
+                "Sending last AllMapsChunk packet {} to: {}",
+                chunk_count, address
+            );
+            rustyhack_lib::message_handler::send_packet(
+                Packet::reliable_ordered(address, chunk_packet, Some(stream_id)),
                 sender,
             );
 
             let complete_response = serialize(&ServerMessage::AllMapsChunksComplete)
                 .expect("Error serializing AllMapsChunksComplete response.");
-            send_packet(
-                Packet::reliable_ordered(address, complete_response, Some(i as u8 + 1)),
+            rustyhack_lib::message_handler::send_packet(
+                Packet::reliable_ordered(address, complete_response, Some(stream_id + 1)),
                 sender,
             );
         } else {
-            debug!("Sending AllMapsChunk packet {} to: {}", i, address);
-            send_packet(
-                Packet::reliable_ordered(address, chunk_packet, Some(i as u8)),
+            debug!(
+                "Sending AllMapsChunk packet {} to: {}",
+                chunk_count, address
+            );
+            rustyhack_lib::message_handler::send_packet(
+                Packet::reliable_ordered(address, chunk_packet, Some(stream_id)),
                 sender,
             );
+        }
+        stream_id += 1;
+        if stream_id > (u8::MAX - 1) {
+            stream_id = 1;
         }
     }
 }
@@ -141,21 +184,8 @@ fn deserialize_player_request(msg: &[u8], address: SocketAddr) -> PlayerRequest 
     }
 }
 
-pub(crate) fn send_packet(packet: Packet, sender: &Sender<Packet>) {
-    let send_result = sender.send(packet);
-    match send_result {
-        Ok(_) => {
-            //send successful
-        }
-        Err(message) => {
-            warn!("Error sending packet: {}", message);
-            warn!("Will try to continue, but things may be broken.");
-        }
-    }
-}
-
-fn send_channel_message(message: PlayerRequest, sender: &Sender<PlayerRequest>) {
-    let send_result = sender.send(message);
+fn send_channel_message(message: PlayerRequest, channel_sender: &Sender<PlayerRequest>) {
+    let send_result = channel_sender.send(message);
     match send_result {
         Ok(_) => {
             //send successful

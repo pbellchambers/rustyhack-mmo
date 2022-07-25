@@ -9,7 +9,8 @@ pub struct Wall {
 }
 
 impl Wall {
-    pub fn new(x: i32, y: i32, character_icon: char) -> Wall {
+    #[must_use]
+    pub fn new(x: u32, y: u32, character_icon: char) -> Wall {
         Wall {
             tile_position: TilePosition { x, y },
             character_icon,

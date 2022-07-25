@@ -1,15 +1,22 @@
+use crossterm::style::Color;
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::background_map::{AllMaps, AllMapsChunk};
-use crate::ecs::components::{DisplayDetails, Position, Velocity};
+use crate::ecs::components::{Inventory, Position, Stats};
 use crate::ecs::player::Player;
+
+pub type EntityPositionBroadcast = HashMap<Uuid, (u32, u32, String, char, Color, String)>;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum PlayerRequest {
-    PlayerJoin(CreatePlayerRequest),
-    UpdateVelocity(VelocityMessage),
+    PlayerJoin(ClientDetails),
+    PlayerLogout(ClientDetails),
+    UpdateVelocity(PositionMessage),
+    PickupItem(PositionMessage),
+    DropItem(PositionMessage),
     GetChunkedAllMaps,
     Timeout(String),
     Undefined,
@@ -23,23 +30,20 @@ pub enum ServerMessage {
     AllMapsChunk(AllMapsChunk),
     AllMapsChunksComplete,
     UpdatePosition(Position),
-    UpdateOtherEntities(EntityUpdates),
+    UpdateStats(Stats),
+    UpdateInventory(Inventory),
+    UpdateOtherEntities((Uuid, (u32, u32, String, char, Color, String))),
+    SystemMessage(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct CreatePlayerRequest {
+pub struct ClientDetails {
     pub client_addr: String,
     pub player_name: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct VelocityMessage {
+pub struct PositionMessage {
     pub player_name: String,
-    pub velocity: Velocity,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EntityUpdates {
-    pub position_updates: HashMap<String, Position>,
-    pub display_details: HashMap<String, DisplayDetails>,
+    pub position: Position,
 }

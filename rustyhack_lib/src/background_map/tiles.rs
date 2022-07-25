@@ -19,8 +19,8 @@ pub enum OpenState {
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct TilePosition {
-    pub x: i32,
-    pub y: i32,
+    pub x: u32,
+    pub y: u32,
 }
 
 #[derive(Display, Clone, Copy, Debug, Serialize, Deserialize)]
@@ -37,17 +37,15 @@ pub enum Tile {
 }
 
 impl Tile {
+    #[must_use]
     pub fn character(&self) -> char {
         match self {
             Tile::Wall(wall) => wall.character_icon,
             Tile::Door(door) => door.character_icon,
             Tile::UpLadder => '^',
             Tile::DownLadder => 'v',
-            Tile::EmptySpace => ' ',
             Tile::Boundary => '#',
-            Tile::NewLine => ' ',
-            Tile::CarriageReturn => ' ',
-            Tile::EndOfFile => ' ',
+            Tile::EmptySpace | Tile::NewLine | Tile::CarriageReturn | Tile::EndOfFile => ' ',
         }
     }
 }

@@ -1,4 +1,9 @@
-use crate::consts::{DEFAULT_PLAYER_COLOUR, DEFAULT_PLAYER_ICON};
+use crate::consts::{
+    DEAD_ICON, DEAD_MAP, DEFAULT_MAP, DEFAULT_PLAYER_COLOUR, DEFAULT_PLAYER_ICON,
+    DEFAULT_PLAYER_POSITION_X, DEFAULT_PLAYER_POSITION_Y,
+};
+use crate::ecs::inventory::Equipment;
+use crate::ecs::item::Item;
 use crate::ecs::monster::Monster;
 use crate::ecs::player::Player;
 use crossterm::style::Color;
@@ -9,19 +14,47 @@ use uuid::Uuid;
 pub enum EntityType {
     Monster(Monster),
     Player(Player),
+    Item(Item),
+}
+
+pub trait Dead: Sized {
+    fn dead() -> Self;
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Position {
-    pub x: i32,
-    pub y: i32,
-    pub map: String,
+    pub update_available: bool,
+    pub pos_x: u32,
+    pub pos_y: u32,
+    pub current_map: String,
+    pub velocity_x: i32,
+    pub velocity_y: i32,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Velocity {
-    pub x: i32,
-    pub y: i32,
+impl Default for Position {
+    fn default() -> Self {
+        Position {
+            update_available: false,
+            pos_x: DEFAULT_PLAYER_POSITION_X,
+            pos_y: DEFAULT_PLAYER_POSITION_Y,
+            current_map: DEFAULT_MAP.to_string(),
+            velocity_x: 0,
+            velocity_y: 0,
+        }
+    }
+}
+
+impl Dead for Position {
+    fn dead() -> Self {
+        Position {
+            update_available: false,
+            pos_x: 0,
+            pos_y: 0,
+            current_map: DEAD_MAP.to_string(),
+            velocity_x: 0,
+            velocity_y: 0,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -48,14 +81,23 @@ impl Default for DisplayDetails {
     }
 }
 
+impl Dead for DisplayDetails {
+    fn dead() -> Self {
+        DisplayDetails {
+            icon: DEAD_ICON,
+            colour: DEFAULT_PLAYER_COLOUR,
+            visible: false,
+            collidable: false,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PlayerDetails {
+    pub id: Uuid,
     pub player_name: String,
     pub client_addr: String,
     pub currently_online: bool,
-    pub level: u32,
-    pub exp: u32,
-    pub gold: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -64,17 +106,32 @@ pub struct MonsterDetails {
     pub monster_type: String,
     pub spawn_position: Position,
     pub is_active: bool,
-    pub current_target: Option<String>,
-    pub exp: u32,
-    pub gold: u32,
+    pub current_target: Option<Uuid>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ItemDetails {
+    pub id: Uuid,
+    pub has_been_picked_up: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Stats {
-    pub current_hp: u32,
-    pub max_hp: u32,
-    pub str: u32,
-    pub dex: u32,
-    pub con: u32,
-    pub armour: u32,
+    pub update_available: bool,
+    pub current_hp: f32,
+    pub max_hp: f32,
+    pub str: f32,
+    pub dex: f32,
+    pub con: f32,
+    pub level: u32,
+    pub exp: u32,
+    pub exp_next: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+pub struct Inventory {
+    pub update_available: bool,
+    pub gold: u32,
+    pub equipped: Equipment,
+    pub carried: Vec<Item>,
 }
