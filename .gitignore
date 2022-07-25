@@ -23,3 +23,6 @@ out/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Local startup script
+start.bat
