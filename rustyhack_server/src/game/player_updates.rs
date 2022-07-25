@@ -1,3 +1,4 @@
+use crate::game::systems;
 use bincode::serialize;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
@@ -38,6 +39,17 @@ pub(crate) fn process_player_messages(
                     );
                     set_player_velocity(world, &position_message);
                     debug!("Processed velocity update.");
+                }
+                PlayerRequest::PickupItem(position_message) => {
+                    debug!(
+                        "Pickup item request received from {} at ({},{}) on {} map.",
+                        &position_message.player_name,
+                        &position_message.position.pos_x,
+                        &position_message.position.pos_y,
+                        &position_message.position.current_map,
+                    );
+                    systems::player_systems::pickup_item(world, &position_message);
+                    debug!("Processed item pickup request.");
                 }
                 PlayerRequest::PlayerLogout(client_details) => {
                     info!(

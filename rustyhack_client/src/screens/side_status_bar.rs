@@ -1,14 +1,10 @@
 use console_engine::screen::Screen;
 use console_engine::ConsoleEngine;
+use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::ecs::player::Player;
 
-pub(crate) fn draw(
-    player: &Player,
-    console: &ConsoleEngine,
-    viewport_width: u32,
-    viewport_height: u32,
-) -> Screen {
-    let mut screen = Screen::new(console.get_width() - viewport_width, viewport_height);
+pub(crate) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32) -> Screen {
+    let mut screen = Screen::new(console.get_width() - viewport_width, console.get_height());
 
     let lvl_string = "Lvl: ".to_owned() + &player.stats.level.to_string();
     let exp_string = "Exp: ".to_owned() + &player.stats.exp.to_string();
@@ -55,9 +51,6 @@ pub(crate) fn draw(
 
     let inventory_title_string = "Inventory:".to_owned();
 
-    //todo remove this serde dependency once it's done properly
-    let inventory_string = serde_json::to_string(&player.inventory.carried).unwrap();
-
     screen.print(1, 0, &player.player_details.player_name);
     screen.print(1, 1, &lvl_string);
     screen.print(1, 2, &exp_string);
@@ -71,6 +64,18 @@ pub(crate) fn draw(
     screen.print(1, 13, &weapon_string);
     screen.print(1, 14, &armour_string);
     screen.print(1, 16, &inventory_title_string);
-    screen.print(1, 17, &inventory_string);
+
+    let mut line_count = 17;
+    for item in player.inventory.carried.clone() {
+        let item_text = match item {
+            Item::Weapon(weapon) => weapon.name,
+            Item::Armour(armour) => armour.name,
+            Item::Gold(amount) => amount.to_string() + " gold",
+            Item::Trinket(trinket) => trinket.name,
+        };
+        screen.print(1, line_count, &item_text);
+        line_count += 1;
+    }
+
     screen
 }

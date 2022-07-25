@@ -50,7 +50,7 @@ pub(crate) fn draw_screens(
     );
 
     let top_status_bar = top_status_bar::draw(player, console);
-    let side_status_bar = side_status_bar::draw(player, console, viewport_width, viewport_height);
+    let side_status_bar = side_status_bar::draw(player, console, viewport_width);
     let bottom_text_window =
         bottom_text_window::draw(system_messages, console, viewport_width, viewport_height);
 

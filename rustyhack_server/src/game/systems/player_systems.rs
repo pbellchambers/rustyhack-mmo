@@ -4,9 +4,14 @@ use crate::game::players::PlayersPositions;
 use crossbeam_channel::Sender;
 use laminar::Packet;
 use legion::world::SubWorld;
-use legion::{system, Query};
+use legion::{system, Entity, IntoQuery, Query, World};
 use rand::Rng;
-use rustyhack_lib::ecs::components::{PlayerDetails, Position, Stats};
+use rustyhack_lib::ecs::components::{
+    DisplayDetails, Inventory, ItemDetails, PlayerDetails, Position, Stats,
+};
+use rustyhack_lib::ecs::item::Item;
+use rustyhack_lib::message_handler::messages::PositionMessage;
+use uuid::Uuid;
 
 #[system]
 pub(crate) fn resolve_player_deaths(
@@ -99,4 +104,62 @@ fn calculate_new_stats(stats: &mut Stats) -> &mut Stats {
     stats.max_hp =
         (BASE_HP_TABLE[(stats.level - 1) as usize] * (1.0 + (stats.con / 100.0))).round();
     stats
+}
+
+pub(crate) fn pickup_item(world: &mut World, position_message: &PositionMessage) {
+    let mut item_id_option: Option<Uuid> = None;
+    let mut item_option: Option<Item> = None;
+    let mut entity_option: Option<Entity> = None;
+    let mut item_query = <(Entity, &ItemDetails, &DisplayDetails, &Position, &Item)>::query();
+    //confirm item exists at that position and get details
+    for (
+        requested_item_entity,
+        requested_item_details,
+        _requested_item_display_details,
+        requested_item_position,
+        requested_item,
+    ) in item_query.iter(world)
+    {
+        if position_message.position.pos_x == requested_item_position.pos_x
+            && position_message.position.pos_y == requested_item_position.pos_y
+            && position_message.position.current_map == requested_item_position.current_map
+        {
+            item_id_option = Some(requested_item_details.id);
+            item_option = Some(requested_item.clone());
+            entity_option = Some(*requested_item_entity);
+            break;
+        }
+    }
+    //if there was a matching item, then remove it from world
+    match entity_option {
+        None => {
+            debug!("No matching item found.");
+        }
+        Some(entity) => {
+            debug!("Item found, removing from world: {:?}", entity);
+            //remove item from world
+            world.remove(entity);
+        }
+    }
+
+    //add item to player carried inventory
+    let mut player_query = <(&PlayerDetails, &mut Inventory)>::query();
+    for (player_details, player_inventory) in player_query.iter_mut(world) {
+        if player_details.player_name == position_message.player_name {
+            match item_option {
+                None => {
+                    debug!("No matching item found.");
+                }
+                Some(item) => {
+                    debug!(
+                        "Item found, added to player {} inventory.",
+                        player_details.player_name
+                    );
+                    player_inventory.carried.push(item);
+                    player_inventory.update_available = true;
+                }
+            }
+            break;
+        }
+    }
 }

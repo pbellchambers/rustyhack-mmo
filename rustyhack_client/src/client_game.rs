@@ -9,6 +9,7 @@ use std::time::{Duration, Instant};
 use crate::client_consts::{
     CLIENT_CLEANUP_TICK, GAME_TITLE, INITIAL_CONSOLE_HEIGHT, INITIAL_CONSOLE_WIDTH, TARGET_FPS,
 };
+use crate::client_game::commands::movement;
 
 use crate::networking::client_message_handler;
 use crate::screens::draw_screens;
@@ -62,7 +63,7 @@ pub(crate) fn run(
         console.wait_frame();
 
         debug!("About to send player velocity update.");
-        client_updates_handler::send_player_updates(sender, &console, &mut player, server_addr);
+        movement::send_player_updates(sender, &console, &mut player, server_addr);
 
         debug!("About to wait for entity updates from server.");
         client_updates_handler::check_for_received_server_messages(
@@ -79,11 +80,13 @@ pub(crate) fn run(
         }
 
         client_input_handler::handle_other_input(
+            sender,
             &mut console,
             &mut system_messages,
             &player,
             &all_maps,
             &entity_position_map,
+            server_addr,
         );
 
         //clear, update and redraw the screens

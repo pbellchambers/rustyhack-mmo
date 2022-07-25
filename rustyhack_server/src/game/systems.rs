@@ -3,7 +3,7 @@ mod common_entity_systems;
 mod map_state_systems;
 mod monster_systems;
 mod network_messages_systems;
-mod player_systems;
+pub(crate) mod player_systems;
 
 use legion::Schedule;
 

@@ -43,9 +43,15 @@ pub(crate) fn run(
                                 channel_sender,
                             );
                         }
-                        PlayerRequest::UpdateVelocity(message) => {
+                        PlayerRequest::UpdateVelocity(position_message) => {
                             send_channel_message(
-                                PlayerRequest::UpdateVelocity(message),
+                                PlayerRequest::UpdateVelocity(position_message),
+                                channel_sender,
+                            );
+                        }
+                        PlayerRequest::PickupItem(position_message) => {
+                            send_channel_message(
+                                PlayerRequest::PickupItem(position_message),
                                 channel_sender,
                             );
                         }
@@ -56,13 +62,22 @@ pub(crate) fn run(
                                 sender,
                             );
                         }
-                        PlayerRequest::PlayerLogout(message) => {
+                        PlayerRequest::PlayerLogout(client_details) => {
                             send_channel_message(
-                                PlayerRequest::PlayerLogout(message),
+                                PlayerRequest::PlayerLogout(client_details),
                                 channel_sender,
                             );
                         }
-                        _ => {}
+                        PlayerRequest::Timeout(_) => {
+                            info!("Client timed out from: {}", address);
+                            send_channel_message(
+                                PlayerRequest::Timeout(address.to_string()),
+                                channel_sender,
+                            );
+                        }
+                        PlayerRequest::Undefined => {
+                            warn!("Undefined message received from {}", address);
+                        }
                     }
                 }
                 SocketEvent::Connect(connect_event) => {

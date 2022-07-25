@@ -15,6 +15,7 @@ pub enum PlayerRequest {
     PlayerJoin(ClientDetails),
     PlayerLogout(ClientDetails),
     UpdateVelocity(PositionMessage),
+    PickupItem(PositionMessage),
     GetChunkedAllMaps,
     Timeout(String),
     Undefined,

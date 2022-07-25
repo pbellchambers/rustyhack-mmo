@@ -585,7 +585,6 @@ dependencies = [
  "regex",
  "rustyhack_lib",
  "serde",
- "serde_json",
  "simplelog",
 ]
 
