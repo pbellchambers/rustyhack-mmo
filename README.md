@@ -21,6 +21,7 @@ A barebones cross between an ASCII "roguelike" and MMORPG/MUD. Lacking a lot of 
 - Commands:
   - L - Look around you
   - P - Pick up item underneath you
+  - D - Drop item
 - Quit: Ctrl-q
 
 ## Components

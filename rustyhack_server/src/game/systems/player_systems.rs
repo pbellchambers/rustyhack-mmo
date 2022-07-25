@@ -6,9 +6,13 @@ use laminar::Packet;
 use legion::world::SubWorld;
 use legion::{system, IntoQuery, Query, World};
 use rand::Rng;
-use rustyhack_lib::ecs::components::{Inventory, ItemDetails, PlayerDetails, Position, Stats};
+use rustyhack_lib::consts::{DEFAULT_ITEM_COLOUR, DEFAULT_ITEM_ICON};
+use rustyhack_lib::ecs::components::{
+    DisplayDetails, Inventory, ItemDetails, PlayerDetails, Position, Stats,
+};
 use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::message_handler::messages::PositionMessage;
+use uuid::Uuid;
 
 #[system]
 pub(crate) fn resolve_player_deaths(
@@ -137,6 +141,43 @@ pub(crate) fn pickup_item(world: &mut World, position_message: &PositionMessage)
                     player_inventory.carried.push(item);
                     player_inventory.update_available = true;
                 }
+            }
+            break;
+        }
+    }
+}
+
+pub(crate) fn drop_item(world: &mut World, position_message: &PositionMessage) {
+    //remove item from player inventory and add it to world
+    let mut player_query = <(&PlayerDetails, &Position, &mut Inventory)>::query();
+    for (player_details, position, player_inventory) in player_query.iter_mut(world) {
+        if player_details.player_name == position_message.player_name {
+            if !player_inventory.carried.is_empty() {
+                let dropped_item: (ItemDetails, DisplayDetails, Position, Item) = (
+                    ItemDetails {
+                        id: Uuid::new_v4(),
+                        has_been_picked_up: false,
+                    },
+                    DisplayDetails {
+                        icon: DEFAULT_ITEM_ICON,
+                        colour: DEFAULT_ITEM_COLOUR,
+                        visible: true,
+                        collidable: false,
+                    },
+                    Position {
+                        update_available: true,
+                        pos_x: position.pos_x,
+                        pos_y: position.pos_y,
+                        current_map: position.current_map.clone(),
+                        velocity_x: 0,
+                        velocity_y: 0,
+                    },
+                    //todo give players option of what they want to drop
+                    player_inventory.carried[0].clone(),
+                );
+                player_inventory.carried.remove(0);
+                player_inventory.update_available = true;
+                world.push(dropped_item);
             }
             break;
         }

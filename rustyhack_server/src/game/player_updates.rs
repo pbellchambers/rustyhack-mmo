@@ -51,6 +51,17 @@ pub(crate) fn process_player_messages(
                     systems::player_systems::pickup_item(world, &position_message);
                     debug!("Processed item pickup request.");
                 }
+                PlayerRequest::DropItem(position_message) => {
+                    debug!(
+                        "Drop item request received from {} at ({},{}) on {} map.",
+                        &position_message.player_name,
+                        &position_message.position.pos_x,
+                        &position_message.position.pos_y,
+                        &position_message.position.current_map,
+                    );
+                    systems::player_systems::drop_item(world, &position_message);
+                    debug!("Processed item pickup request.");
+                }
                 PlayerRequest::PlayerLogout(client_details) => {
                     info!(
                         "Player logout notification received for {} from: {}",

@@ -55,6 +55,12 @@ pub(crate) fn run(
                                 channel_sender,
                             );
                         }
+                        PlayerRequest::DropItem(position_message) => {
+                            send_channel_message(
+                                PlayerRequest::DropItem(position_message),
+                                channel_sender,
+                            );
+                        }
                         PlayerRequest::GetChunkedAllMaps => {
                             send_all_maps_chunks(
                                 &serialize_all_maps(all_maps.clone()),
