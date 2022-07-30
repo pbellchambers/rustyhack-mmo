@@ -6,10 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### 🚀 Features and Improvements
-- .
+- added messages for picking up and dropping items
 
 ### 🐛 Bug Fixes
 - don't send drop item request to server if player inventory empty
+- don't send pickup item request to server if nothing to pickup
 
 ### 🧰 Maintenance
 - .

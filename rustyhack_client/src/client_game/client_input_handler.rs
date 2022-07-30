@@ -24,9 +24,20 @@ pub(crate) fn handle_other_input(
         );
     } else if console.is_key_pressed(KeyCode::Char('p')) {
         info!("Pickup command pressed.");
-        commands::pickup_command::send_pickup_request(sender, player, server_addr);
+        commands::pickup_command::send_pickup_request(
+            entity_position_map,
+            system_messages,
+            sender,
+            player,
+            server_addr,
+        );
     } else if console.is_key_pressed(KeyCode::Char('d')) {
         info!("Drop item command pressed.");
-        commands::drop_command::send_drop_item_request(sender, player, server_addr);
+        commands::drop_command::send_drop_item_request(
+            system_messages,
+            sender,
+            player,
+            server_addr,
+        );
     }
 }
