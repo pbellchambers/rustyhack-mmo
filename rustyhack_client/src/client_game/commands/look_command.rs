@@ -74,7 +74,7 @@ pub(crate) fn get_what_player_sees(
     system_messages.push(time + "West: " + &*west);
 }
 
-fn return_visible_entity_at(
+pub(crate) fn return_visible_entity_at(
     mut entity_name: String,
     entity_position_map: &EntityPositionBroadcast,
     player: &Player,

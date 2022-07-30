@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### 🚀 Features and Improvements
+- added messages for picking up and dropping items
+
+### 🐛 Bug Fixes
+- don't send drop item request to server if player inventory empty
+- don't send pickup item request to server if nothing to pickup
+
+### 🧰 Maintenance
+- .
 
 ## [v0.3.0]
 The combat, stats, levelling, and inventory update!
