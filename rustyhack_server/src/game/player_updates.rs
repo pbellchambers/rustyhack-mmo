@@ -48,7 +48,7 @@ pub(crate) fn process_player_messages(
                         &position_message.position.pos_y,
                         &position_message.position.current_map,
                     );
-                    systems::player_systems::pickup_item(world, &position_message);
+                    systems::player_systems::pickup_item(world, &position_message, sender);
                     debug!("Processed item pickup request.");
                 }
                 PlayerRequest::DropItem(position_message) => {
@@ -59,7 +59,7 @@ pub(crate) fn process_player_messages(
                         &position_message.position.pos_y,
                         &position_message.position.current_map,
                     );
-                    systems::player_systems::drop_item(world, &position_message);
+                    systems::player_systems::drop_item(world, &position_message, sender);
                     debug!("Processed item pickup request.");
                 }
                 PlayerRequest::PlayerLogout(client_details) => {

@@ -1,6 +1,6 @@
 use console_engine::screen::Screen;
 use console_engine::ConsoleEngine;
-use rustyhack_lib::ecs::item::Item;
+use rustyhack_lib::ecs::item::get_item_name;
 use rustyhack_lib::ecs::player::Player;
 
 pub(crate) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32) -> Screen {
@@ -67,12 +67,7 @@ pub(crate) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32
 
     let mut line_count = 17;
     for item in player.inventory.carried.clone() {
-        let item_text = match item {
-            Item::Weapon(weapon) => weapon.name,
-            Item::Armour(armour) => armour.name,
-            Item::Gold(amount) => amount.to_string() + " gold",
-            Item::Trinket(trinket) => trinket.name,
-        };
+        let item_text = get_item_name(&item);
         screen.print(1, line_count, &item_text);
         line_count += 1;
     }

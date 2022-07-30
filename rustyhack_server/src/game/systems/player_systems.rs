@@ -10,7 +10,7 @@ use rustyhack_lib::consts::{DEFAULT_ITEM_COLOUR, DEFAULT_ITEM_ICON};
 use rustyhack_lib::ecs::components::{
     DisplayDetails, Inventory, ItemDetails, PlayerDetails, Position, Stats,
 };
-use rustyhack_lib::ecs::item::Item;
+use rustyhack_lib::ecs::item::{get_item_name, Item};
 use rustyhack_lib::message_handler::messages::PositionMessage;
 use uuid::Uuid;
 
@@ -107,7 +107,11 @@ fn calculate_new_stats(stats: &mut Stats) -> &mut Stats {
     stats
 }
 
-pub(crate) fn pickup_item(world: &mut World, position_message: &PositionMessage) {
+pub(crate) fn pickup_item(
+    world: &mut World,
+    position_message: &PositionMessage,
+    sender: &Sender<Packet>,
+) {
     let mut item_option: Option<Item> = None;
     let mut item_query = <(&mut ItemDetails, &Position, &Item)>::query();
 
@@ -132,14 +136,29 @@ pub(crate) fn pickup_item(world: &mut World, position_message: &PositionMessage)
             match item_option {
                 None => {
                     debug!("No matching item found.");
+                    send_message_to_player(
+                        &player_details.player_name,
+                        &player_details.client_addr,
+                        player_details.currently_online,
+                        "No item to pickup.",
+                        sender,
+                    );
                 }
                 Some(item) => {
                     debug!(
                         "Item found, added to player {} inventory.",
                         player_details.player_name
                     );
+                    let item_name = get_item_name(&item);
                     player_inventory.carried.push(item);
                     player_inventory.update_available = true;
+                    send_message_to_player(
+                        &player_details.player_name,
+                        &player_details.client_addr,
+                        player_details.currently_online,
+                        &("Picked up ".to_string() + &item_name + "."),
+                        sender,
+                    );
                 }
             }
             break;
@@ -147,7 +166,11 @@ pub(crate) fn pickup_item(world: &mut World, position_message: &PositionMessage)
     }
 }
 
-pub(crate) fn drop_item(world: &mut World, position_message: &PositionMessage) {
+pub(crate) fn drop_item(
+    world: &mut World,
+    position_message: &PositionMessage,
+    sender: &Sender<Packet>,
+) {
     //remove item from player inventory and add it to world
     let mut player_query = <(&PlayerDetails, &Position, &mut Inventory)>::query();
     for (player_details, position, player_inventory) in player_query.iter_mut(world) {
@@ -175,8 +198,16 @@ pub(crate) fn drop_item(world: &mut World, position_message: &PositionMessage) {
                     //todo give players option of what they want to drop
                     player_inventory.carried[0].clone(),
                 );
+                let item_name = get_item_name(&dropped_item.3);
                 player_inventory.carried.remove(0);
                 player_inventory.update_available = true;
+                send_message_to_player(
+                    &player_details.player_name,
+                    &player_details.client_addr,
+                    player_details.currently_online,
+                    &("Dropped ".to_string() + &item_name + "."),
+                    sender,
+                );
                 world.push(dropped_item);
             }
             break;

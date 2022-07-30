@@ -11,7 +11,7 @@ use rustyhack_lib::consts::{DEAD_MAP, DEFAULT_MAP};
 use rustyhack_lib::ecs::components::{
     Dead, DisplayDetails, ItemDetails, MonsterDetails, PlayerDetails, Position, Stats,
 };
-use rustyhack_lib::ecs::item::Item;
+use rustyhack_lib::ecs::item::{get_item_name, Item};
 use rustyhack_lib::math_utils::{i32_from, u32_from};
 
 #[system]
@@ -166,12 +166,7 @@ pub(crate) fn collate_all_item_positions(
         info!("Removing item id {} from world.", item_details.id);
         commands.remove(*entity);
     } else {
-        let item_name: String = match item {
-            Item::Weapon(weapon) => weapon.name.clone(),
-            Item::Armour(armour) => armour.name.clone(),
-            Item::Gold(amount) => amount.to_string() + " Gold",
-            Item::Trinket(trinket) => trinket.name.clone(),
-        };
+        let item_name: String = get_item_name(item);
         entity_position_map.insert(
             item_details.id,
             (position.clone(), *display_details, item_name),
