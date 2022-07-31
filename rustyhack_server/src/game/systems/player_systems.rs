@@ -45,7 +45,9 @@ pub(crate) fn update_player_positions_resource(
 ) {
     players_positions.clear();
     for (player_details, position) in query.iter(world) {
-        players_positions.insert(player_details.id, position.clone());
+        if player_details.currently_online {
+            players_positions.insert(player_details.id, position.clone());
+        }
     }
 }
 

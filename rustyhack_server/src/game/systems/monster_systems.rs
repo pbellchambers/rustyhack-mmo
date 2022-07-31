@@ -188,9 +188,9 @@ fn is_any_player_nearby<'a>(
     let monster_y_range = (monster_position_y - MONSTER_DISTANCE_ACTIVATION)
         ..(monster_position_y + MONSTER_DISTANCE_ACTIVATION);
     for (player_id, position) in player_positions {
-        if monster_x_range.contains(&(i32_from(position.pos_x)))
+        if monster_position.current_map == position.current_map
+            && monster_x_range.contains(&(i32_from(position.pos_x)))
             && monster_y_range.contains(&(i32_from(position.pos_y)))
-            && monster_position.current_map == position.current_map
         {
             debug!("There is a player near a monster");
             return Some((player_id, position));
