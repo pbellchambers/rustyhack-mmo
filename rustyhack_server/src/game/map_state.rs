@@ -59,6 +59,7 @@ pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> 
                     name: player.player_details.player_name.clone(),
                     client_addr: player.player_details.client_addr.clone(),
                     currently_online: player.player_details.currently_online,
+                    is_player: true,
                 }
             } else if let EntityType::Monster(monster) = entity_type {
                 colliding = monster.display_details.collidable;
@@ -67,6 +68,7 @@ pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> 
                     name: monster.monster_details.monster_type.clone(),
                     client_addr: "".to_string(),
                     currently_online: true,
+                    is_player: false,
                 }
             }
         }

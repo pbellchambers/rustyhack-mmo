@@ -47,14 +47,21 @@ pub(crate) fn check_for_combat(
         let attacker = get_attacker(player_details_option, monster_details_option);
 
         if entity_collision_status.0 {
-            debug!(
-                "Combat detected, attacker is: {:?}, defender is: {:?}",
-                &attacker, &entity_collision_status.1
-            );
-            combat_parties.insert(entity_collision_status.1, attacker.clone());
-            combat_attacker_stats.insert(attacker.id, (*stats, inventory.clone()));
-            position.velocity_x = 0;
-            position.velocity_y = 0;
+            if !attacker.is_player && !entity_collision_status.1.is_player {
+                debug!("Preventing possible monster combat.");
+                //monsters shouldn't attack other monsters, stop combat and movement
+                position.velocity_x = 0;
+                position.velocity_y = 0;
+            } else {
+                debug!(
+                    "Combat detected, attacker is: {:?}, defender is: {:?}",
+                    &attacker, &entity_collision_status.1
+                );
+                combat_parties.insert(entity_collision_status.1, attacker.clone());
+                combat_attacker_stats.insert(attacker.id, (*stats, inventory.clone()));
+                position.velocity_x = 0;
+                position.velocity_y = 0;
+            }
         }
     }
 }
@@ -69,6 +76,7 @@ fn get_attacker(
             name: player_details.player_name.clone(),
             client_addr: player_details.client_addr.clone(),
             currently_online: player_details.currently_online,
+            is_player: true,
         }
     } else if let Some(monster_details) = monster_details_option {
         Attacker {
@@ -76,6 +84,7 @@ fn get_attacker(
             name: monster_details.monster_type.clone(),
             client_addr: "".to_string(),
             currently_online: true,
+            is_player: false,
         }
     } else {
         panic!("Error: attacker was somehow not a player or monster.");
@@ -121,6 +130,7 @@ pub(crate) fn resolve_combat(
                 name: player_details.player_name.clone(),
                 client_addr: player_details.client_addr.clone(),
                 currently_online: player_details.currently_online,
+                is_player: true,
             };
         } else if let Some(monster_details) = monster_details_option {
             //monster is the defender
@@ -129,6 +139,7 @@ pub(crate) fn resolve_combat(
                 name: monster_details.monster_type.clone(),
                 client_addr: "".to_string(),
                 currently_online: true,
+                is_player: false,
             };
             defender_is_monster = true;
         }

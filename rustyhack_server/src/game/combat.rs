@@ -38,6 +38,7 @@ pub(crate) struct Attacker {
     pub name: String,
     pub client_addr: String,
     pub currently_online: bool,
+    pub is_player: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq, Hash)]
@@ -46,6 +47,7 @@ pub(crate) struct Defender {
     pub name: String,
     pub client_addr: String,
     pub currently_online: bool,
+    pub is_player: bool,
 }
 
 impl Default for Defender {
@@ -55,6 +57,7 @@ impl Default for Defender {
             name: "".to_string(),
             client_addr: "".to_string(),
             currently_online: false,
+            is_player: false,
         }
     }
 }

@@ -205,7 +205,7 @@ pub(crate) fn collate_all_item_positions(
             current_map: dead_map,
             ..Dead::dead()
         };
-        info!(
+        debug!(
             "Removing item id {} to dead map: {:?}",
             item_details.id, dead_position
         );
@@ -217,7 +217,7 @@ pub(crate) fn collate_all_item_positions(
                 "picked_up_item".to_string(),
             ),
         );
-        info!("Removing item id {} from world.", item_details.id);
+        debug!("Removing item id {} from world.", item_details.id);
         commands.remove(*entity);
     } else {
         let item_name: String = get_item_name(item);
