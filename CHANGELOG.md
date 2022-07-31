@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### 🚀 Features and Improvements
 - added messages for picking up and dropping items
+- monster collision checking with other monsters now exists
+- collision detection now more efficient
 
 ### 🐛 Bug Fixes
 - don't send drop item request to server if player inventory empty
 - don't send pickup item request to server if nothing to pickup
+- prevent entities from occupying the same tile by accident
+- stop monsters from following disconnected players
+- fix players not disappearing when disconnecting
 
 ### 🧰 Maintenance
 - .

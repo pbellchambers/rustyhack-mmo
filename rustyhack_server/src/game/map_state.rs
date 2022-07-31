@@ -32,6 +32,23 @@ pub(crate) fn insert_entity_at(map: &mut MapState, entity: EntityType, x: u32, y
     map[y as usize][x as usize].push(entity);
 }
 
+pub(crate) fn remove_entity_at(map: &mut MapState, entity: &EntityType, x: u32, y: u32) {
+    let mut entity_index: Option<usize> = None;
+    for (index, map_state_entity) in map[y as usize][x as usize].iter().enumerate() {
+        if *map_state_entity == *entity {
+            entity_index = Some(index);
+        }
+    }
+    match entity_index {
+        None => {
+            //do nothing
+        }
+        Some(index) => {
+            map[y as usize][x as usize].remove(index);
+        }
+    }
+}
+
 pub(crate) fn clear_all_entities(map_states: &mut AllMapStates) -> &mut AllMapStates {
     for map_state in &mut map_states.values_mut() {
         for map_row in map_state.iter_mut() {
@@ -73,26 +90,5 @@ pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> 
             }
         }
         (colliding, defending_entity)
-    }
-}
-
-pub(crate) fn contains_multiple_collidable_entities(x: u32, y: u32, map_state: &MapState) -> bool {
-    if y == 0 {
-        //don't bother checking for collisions at y == 0 as map_state overflows
-        false
-    } else {
-        let mut entity_count: u8 = 0;
-        for entity_type in &map_state[y as usize][x as usize] {
-            if let EntityType::Player(player) = entity_type {
-                if player.player_details.currently_online && player.display_details.collidable {
-                    entity_count += 1;
-                }
-            } else if let EntityType::Monster(monster) = entity_type {
-                if monster.display_details.collidable {
-                    entity_count += 1;
-                }
-            }
-        }
-        entity_count > 1
     }
 }

@@ -27,9 +27,6 @@ pub struct Position {
     pub pos_x: u32,
     pub pos_y: u32,
     pub current_map: String,
-    pub prev_pos_x: u32,
-    pub prev_pos_y: u32,
-    pub prev_map: String,
     pub velocity_x: i32,
     pub velocity_y: i32,
 }
@@ -41,9 +38,6 @@ impl Default for Position {
             pos_x: DEFAULT_PLAYER_POSITION_X,
             pos_y: DEFAULT_PLAYER_POSITION_Y,
             current_map: DEFAULT_MAP.to_string(),
-            prev_pos_x: DEFAULT_PLAYER_POSITION_X,
-            prev_pos_y: DEFAULT_PLAYER_POSITION_Y,
-            prev_map: DEFAULT_MAP.to_string(),
             velocity_x: 0,
             velocity_y: 0,
         }
@@ -56,10 +50,7 @@ impl Dead for Position {
             update_available: false,
             pos_x: 0,
             pos_y: 0,
-            prev_pos_x: 0,
-            prev_pos_y: 0,
             current_map: DEAD_MAP.to_string(),
-            prev_map: DEAD_MAP.to_string(),
             velocity_x: 0,
             velocity_y: 0,
         }

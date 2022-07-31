@@ -83,9 +83,6 @@ pub(crate) fn spawn_initial_monsters(
                     pos_x: spawn_position.x,
                     pos_y: spawn_position.y,
                     current_map: map.clone(),
-                    prev_pos_x: spawn_position.x,
-                    prev_pos_y: spawn_position.y,
-                    prev_map: map.clone(),
                     velocity_x: 0,
                     velocity_y: 0,
                 };
@@ -141,9 +138,6 @@ pub(crate) fn spawn_single_monster(
                 pos_x: random_spawn_position.x,
                 pos_y: random_spawn_position.y,
                 current_map: map.clone(),
-                prev_pos_x: random_spawn_position.x,
-                prev_pos_y: random_spawn_position.y,
-                prev_map: map.clone(),
                 velocity_x: 0,
                 velocity_y: 0,
             };

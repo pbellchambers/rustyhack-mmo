@@ -1,16 +1,13 @@
 use crate::consts::{
     BASE_HEALTH_REGEN_PERCENT, HEALTH_REGEN_CON_PERCENT, HEALTH_REGEN_CON_STATIC_FACTOR,
 };
-use crate::game::map_state;
-use crate::game::map_state::{AllMapStates, EntityPositionMap};
+use crate::game::map_state::EntityPositionMap;
 use legion::systems::CommandBuffer;
 use legion::world::SubWorld;
 use legion::{maybe_changed, system, Entity, Query};
 use rustyhack_lib::background_map::tiles::{Collidable, Tile};
 use rustyhack_lib::background_map::{AllMaps, BackgroundMap};
-use rustyhack_lib::consts::{
-    DEAD_MAP, DEFAULT_MAP, DEFAULT_PLAYER_POSITION_X, DEFAULT_PLAYER_POSITION_Y,
-};
+use rustyhack_lib::consts::{DEAD_MAP, DEFAULT_MAP};
 use rustyhack_lib::ecs::components::{
     Dead, DisplayDetails, ItemDetails, MonsterDetails, PlayerDetails, Position, Stats,
 };
@@ -18,7 +15,7 @@ use rustyhack_lib::ecs::item::{get_item_name, Item};
 use rustyhack_lib::math_utils::{i32_from, u32_from};
 
 #[system]
-pub(crate) fn update_entities_position(
+pub(crate) fn check_for_tile_collision(
     world: &mut SubWorld,
     query: &mut Query<&mut Position>,
     #[resource] all_maps: &AllMaps,
@@ -33,65 +30,31 @@ pub(crate) fn update_entities_position(
         let potential_pos_x = u32_from(i32_from(position.pos_x) + position.velocity_x);
         let potential_pos_y = u32_from(i32_from(position.pos_y) + position.velocity_y);
 
-        if !entity_is_colliding_with_tile(current_map.get_tile_at(potential_pos_x, potential_pos_y))
+        if entity_is_colliding_with_tile(current_map.get_tile_at(potential_pos_x, potential_pos_y))
         {
-            position.prev_pos_x = position.pos_x;
-            position.prev_pos_y = position.pos_y;
-            position.prev_map = position.current_map.clone();
-            position.pos_x = potential_pos_x;
-            position.pos_y = potential_pos_y;
-            position.update_available = true;
+            debug!("Entity colliding with tile, setting velocity to 0.");
+            position.velocity_x = 0;
+            position.velocity_y = 0;
+        } else {
+            debug!("Entity not colliding with tile, continuing to combat check.");
+            continue;
         }
-        position.velocity_x = 0;
-        position.velocity_y = 0;
     }
 }
 
 #[system]
-pub(crate) fn resolve_conflicting_positions(
-    world: &mut SubWorld,
-    query: &mut Query<(
-        &mut Position,
-        Option<&PlayerDetails>,
-        Option<&MonsterDetails>,
-    )>,
-    #[resource] all_map_states: &mut AllMapStates,
-) {
-    for (position, player_details_option, monster_details_option) in query.iter_mut(world) {
-        debug!("Checking for possible conflicting positions where entities have moved into same location.");
-        let map_state = all_map_states.get(&position.current_map).unwrap();
-        if let Some(player_details) = player_details_option {
-            if position.pos_x != DEFAULT_PLAYER_POSITION_X
-                && position.pos_y != DEFAULT_PLAYER_POSITION_Y
-                && map_state::contains_multiple_collidable_entities(
-                    position.pos_x,
-                    position.pos_y,
-                    map_state,
-                )
-            {
-                warn!(
-                    "Conflicting position detected, moving player {} back to previous position.",
-                    player_details.player_name
-                );
-                position.pos_x = position.prev_pos_x;
-                position.pos_y = position.prev_pos_y;
-                position.current_map = position.prev_map.clone();
-            }
-        } else if let Some(monster_details) = monster_details_option {
-            if map_state::contains_multiple_collidable_entities(
-                position.pos_x,
-                position.pos_y,
-                map_state,
-            ) {
-                warn!(
-                    "Conflicting position detected, moving monster {} back to previous position.",
-                    monster_details.monster_type
-                );
-                position.pos_x = position.prev_pos_x;
-                position.pos_y = position.prev_pos_y;
-                position.current_map = position.prev_map.clone();
-            }
+pub(crate) fn update_entities_position(world: &mut SubWorld, query: &mut Query<&mut Position>) {
+    for position in query.iter_mut(world) {
+        debug!("Updating all final positions.");
+        if position.velocity_x == 0 && position.velocity_y == 0 {
+            //no velocity, no updates
+            continue;
         }
+        position.pos_x = u32_from(i32_from(position.pos_x) + position.velocity_x);
+        position.pos_y = u32_from(i32_from(position.pos_y) + position.velocity_y);
+        position.velocity_x = 0;
+        position.velocity_y = 0;
+        position.update_available = true;
     }
 }
 
