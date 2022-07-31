@@ -15,7 +15,6 @@ use rustyhack_lib::ecs::components::{
 use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::ecs::monster::AllMonsterDefinitions;
 use rustyhack_lib::math_utils::i32_from;
-use std::cmp::Ordering;
 use std::collections::HashMap;
 use uuid::Uuid;
 
@@ -53,6 +52,9 @@ pub(crate) fn resolve_monster_deaths(
                         pos_x: position.pos_x,
                         pos_y: position.pos_y,
                         current_map: position.current_map.clone(),
+                        prev_pos_x: position.pos_x,
+                        prev_pos_y: position.pos_y,
+                        prev_map: position.current_map.clone(),
                         velocity_x: 0,
                         velocity_y: 0,
                     },
@@ -126,18 +128,42 @@ fn move_towards_target(monster_position: &mut Position, target_position: &Positi
     let mut new_pos_x = monster_position_x;
     let mut new_pos_y = monster_position_y;
 
-    match diff_x.abs().cmp(&diff_y.abs()) {
-        Ordering::Greater => new_pos_x = move_towards(diff_x, monster_position_x),
-        Ordering::Less => new_pos_y = move_towards(diff_y, monster_position_y),
-        Ordering::Equal => {
-            let mut rng = rand::thread_rng();
-            if rng.gen::<bool>() {
-                new_pos_x = move_towards(diff_x, monster_position_x);
-            } else {
-                new_pos_y = move_towards(diff_y, monster_position_y);
-            }
+    if (diff_x.abs() >= 1 && diff_y.abs() >= 1) || (diff_x == 0 && diff_y == 0) {
+        //far away, move randomly towards
+        let mut rng = rand::thread_rng();
+        if rng.gen::<bool>() {
+            new_pos_x = move_towards(diff_x, monster_position_x);
+        } else {
+            new_pos_y = move_towards(diff_y, monster_position_y);
         }
+    } else if diff_x.abs() > 1 && diff_y.abs() == 0 {
+        //in line, should mostly move towards, but sometimes randomly
+        let mut rng = rand::thread_rng();
+        if rng.gen_range(1..=6) > 1 {
+            new_pos_x = move_towards(diff_x, monster_position_x);
+        } else if rng.gen::<bool>() {
+            new_pos_y = move_towards(diff_y + 1, monster_position_y);
+        } else {
+            new_pos_y = move_towards(diff_y - 1, monster_position_y);
+        }
+    } else if diff_x.abs() == 0 && diff_y.abs() > 1 {
+        //in line, should mostly move towards, but sometimes randomly
+        let mut rng = rand::thread_rng();
+        if rng.gen_range(1..=6) > 1 {
+            new_pos_y = move_towards(diff_y, monster_position_y);
+        } else if rng.gen::<bool>() {
+            new_pos_x = move_towards(diff_x + 1, monster_position_x);
+        } else {
+            new_pos_x = move_towards(diff_x - 1, monster_position_x);
+        }
+    } else if diff_x.abs() == 1 && diff_y.abs() == 0 {
+        //should be an attack
+        new_pos_x = move_towards(diff_x, monster_position_x);
+    } else if diff_x.abs() == 0 && diff_y.abs() == 1 {
+        //should be an attack
+        new_pos_y = move_towards(diff_y, monster_position_y);
     }
+
     monster_position.velocity_x = new_pos_x - monster_position_x;
     monster_position.velocity_y = new_pos_y - monster_position_y;
 }

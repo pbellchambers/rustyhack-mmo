@@ -73,3 +73,24 @@ pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> 
         (colliding, defending_entity)
     }
 }
+
+pub(crate) fn contains_multiple_collidable_entities(x: u32, y: u32, map_state: &MapState) -> bool {
+    if y == 0 {
+        //don't bother checking for collisions at y == 0 as map_state overflows
+        false
+    } else {
+        let mut entity_count: u8 = 0;
+        for entity_type in &map_state[y as usize][x as usize] {
+            if let EntityType::Player(player) = entity_type {
+                if player.player_details.currently_online && player.display_details.collidable {
+                    entity_count += 1;
+                }
+            } else if let EntityType::Monster(monster) = entity_type {
+                if monster.display_details.collidable {
+                    entity_count += 1;
+                }
+            }
+        }
+        entity_count > 1
+    }
+}

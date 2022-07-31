@@ -1,13 +1,16 @@
 use crate::consts::{
     BASE_HEALTH_REGEN_PERCENT, HEALTH_REGEN_CON_PERCENT, HEALTH_REGEN_CON_STATIC_FACTOR,
 };
-use crate::game::map_state::EntityPositionMap;
+use crate::game::map_state;
+use crate::game::map_state::{AllMapStates, EntityPositionMap};
 use legion::systems::CommandBuffer;
 use legion::world::SubWorld;
 use legion::{maybe_changed, system, Entity, Query};
 use rustyhack_lib::background_map::tiles::{Collidable, Tile};
 use rustyhack_lib::background_map::{AllMaps, BackgroundMap};
-use rustyhack_lib::consts::{DEAD_MAP, DEFAULT_MAP};
+use rustyhack_lib::consts::{
+    DEAD_MAP, DEFAULT_MAP, DEFAULT_PLAYER_POSITION_X, DEFAULT_PLAYER_POSITION_Y,
+};
 use rustyhack_lib::ecs::components::{
     Dead, DisplayDetails, ItemDetails, MonsterDetails, PlayerDetails, Position, Stats,
 };
@@ -32,12 +35,63 @@ pub(crate) fn update_entities_position(
 
         if !entity_is_colliding_with_tile(current_map.get_tile_at(potential_pos_x, potential_pos_y))
         {
+            position.prev_pos_x = position.pos_x;
+            position.prev_pos_y = position.pos_y;
+            position.prev_map = position.current_map.clone();
             position.pos_x = potential_pos_x;
             position.pos_y = potential_pos_y;
             position.update_available = true;
         }
         position.velocity_x = 0;
         position.velocity_y = 0;
+    }
+}
+
+#[system]
+pub(crate) fn resolve_conflicting_positions(
+    world: &mut SubWorld,
+    query: &mut Query<(
+        &mut Position,
+        Option<&PlayerDetails>,
+        Option<&MonsterDetails>,
+    )>,
+    #[resource] all_map_states: &mut AllMapStates,
+) {
+    for (position, player_details_option, monster_details_option) in query.iter_mut(world) {
+        debug!("Checking for possible conflicting positions where entities have moved into same location.");
+        let map_state = all_map_states.get(&position.current_map).unwrap();
+        if let Some(player_details) = player_details_option {
+            if position.pos_x != DEFAULT_PLAYER_POSITION_X
+                && position.pos_y != DEFAULT_PLAYER_POSITION_Y
+                && map_state::contains_multiple_collidable_entities(
+                    position.pos_x,
+                    position.pos_y,
+                    map_state,
+                )
+            {
+                warn!(
+                    "Conflicting position detected, moving player {} back to previous position.",
+                    player_details.player_name
+                );
+                position.pos_x = position.prev_pos_x;
+                position.pos_y = position.prev_pos_y;
+                position.current_map = position.prev_map.clone();
+            }
+        } else if let Some(monster_details) = monster_details_option {
+            if map_state::contains_multiple_collidable_entities(
+                position.pos_x,
+                position.pos_y,
+                map_state,
+            ) {
+                warn!(
+                    "Conflicting position detected, moving monster {} back to previous position.",
+                    monster_details.monster_type
+                );
+                position.pos_x = position.prev_pos_x;
+                position.pos_y = position.prev_pos_y;
+                position.current_map = position.prev_map.clone();
+            }
+        }
     }
 }
 
