@@ -24,7 +24,7 @@ pub(crate) fn check_for_combat(
         Option<&MonsterDetails>,
         Option<&PlayerDetails>,
         &DisplayDetails,
-        &Stats,
+        &mut Stats,
         &Inventory,
     )>,
     #[resource] all_map_states: &mut AllMapStates,
@@ -41,8 +41,9 @@ pub(crate) fn check_for_combat(
     ) in query.iter_mut(world)
     {
         debug!("Checking for possible combat after velocity updates.");
-        if position.velocity_x == 0 && position.velocity_y == 0 {
-            //no velocity, no updates
+        if (position.velocity_x == 0 && position.velocity_y == 0) || stats.current_hp <= 0.0 {
+            //either not moving, or already dead, no combat
+            stats.in_combat = false;
             continue;
         }
         let current_map_state = get_current_map_states(all_map_states, &position.current_map);
@@ -64,6 +65,7 @@ pub(crate) fn check_for_combat(
                 //monsters shouldn't attack other monsters, stop combat and movement
                 position.velocity_x = 0;
                 position.velocity_y = 0;
+                stats.in_combat = false;
             } else {
                 debug!(
                     "Combat detected, attacker is: {:?}, defender is: {:?}",
@@ -73,6 +75,7 @@ pub(crate) fn check_for_combat(
                 combat_attacker_stats.insert(attacker.id, (*stats, inventory.clone()));
                 position.velocity_x = 0;
                 position.velocity_y = 0;
+                stats.in_combat = true;
             }
         } else if attacker.is_player {
             //no combat detected - update map state for movement
@@ -99,6 +102,7 @@ pub(crate) fn check_for_combat(
             if combat_parties.contains_key(&attacker) {
                 combat_parties.remove(&attacker);
             }
+            stats.in_combat = false;
         } else if !attacker.is_player {
             //no combat detected - update map state for movement
             let monster = Monster {
@@ -124,6 +128,7 @@ pub(crate) fn check_for_combat(
             if combat_parties.contains_key(&attacker) {
                 combat_parties.remove(&attacker);
             }
+            stats.in_combat = false;
         }
     }
 }
@@ -214,13 +219,14 @@ pub(crate) fn resolve_combat(
         }
         for (combat_parties_attacker, combat_parties_defender) in combat_parties.iter() {
             if combat_parties_defender == &defender {
+                //combat detected
+                defender_stats.in_combat = true;
                 let attacker = combat_parties_attacker;
                 let (mut attacker_stats, mut attacker_inventory) =
                     combat_attacker_stats.get(&attacker.id).unwrap().clone();
                 if attacker_stats.current_hp <= 0.0 {
                     // Skip combat if attacker is already dead.
-                    // This is possible if multiple player updates are processed
-                    // before the server tick for monsters.
+                    // This is possible if combat is happening simultaneously.
                     continue;
                 }
                 let damage = combat::resolve_combat(
@@ -231,6 +237,13 @@ pub(crate) fn resolve_combat(
                 )
                 .round();
                 apply_damage(defender_stats, damage);
+                if combat_attacker_stats.contains_key(&defender.id) {
+                    combat_attacker_stats
+                        .get_mut(&defender.id)
+                        .unwrap()
+                        .0
+                        .current_hp = defender_stats.current_hp;
+                }
                 let (exp_gain, gold_gain) = check_and_apply_gains(
                     defender_is_monster,
                     combat_attacker_stats,
@@ -240,7 +253,6 @@ pub(crate) fn resolve_combat(
                     defender_stats,
                     defender_inventory,
                 );
-
                 if defender_is_monster {
                     //set current monster target as attacker
                     monster_target = Some(attacker.id);
@@ -254,6 +266,7 @@ pub(crate) fn resolve_combat(
                     gold_gain,
                     sender,
                 );
+
                 if let Some(_player_details) = player_details_option {
                     //only set flag for players
                     defender_stats.update_available = true;

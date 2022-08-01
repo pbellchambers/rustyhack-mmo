@@ -29,6 +29,7 @@ pub(crate) fn resolve_player_deaths(
                 stats.exp -= exp_loss;
             }
             stats.current_hp = stats.max_hp;
+            stats.in_combat = false;
             stats.update_available = true;
             *position = Position::default();
             position.update_available = true;

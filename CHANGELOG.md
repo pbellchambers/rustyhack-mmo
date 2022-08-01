@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - monsters now change target if attacked
 - entities can now be attacked by multiple entities in the same tick
 - system messages now have colours
+- health regen now only applies when out of combat
 
 ### 🐛 Bug Fixes
 - don't send drop item request to server if player inventory empty
