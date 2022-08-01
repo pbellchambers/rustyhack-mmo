@@ -1,5 +1,6 @@
 use crate::client_consts::{VIEWPORT_HEIGHT_PERCENTAGE, VIEWPORT_WIDTH_PERCENTAGE};
 use console_engine::ConsoleEngine;
+use crossterm::style::Color;
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::math_utils::i32_from;
@@ -16,7 +17,7 @@ pub(crate) fn draw_screens(
     all_maps: &AllMaps,
     player: &Player,
     entity_position_broadcast: &EntityPositionBroadcast,
-    system_messages: &[String],
+    system_messages: &[(String, Color)],
 ) {
     //check and update if resized
     console.check_resize();

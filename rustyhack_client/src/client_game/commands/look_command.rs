@@ -1,10 +1,12 @@
+use crate::client_consts::DEFAULT_FG_COLOUR;
 use chrono::{DateTime, Local};
+use crossterm::style::Color;
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
 
 pub(crate) fn get_what_player_sees(
-    system_messages: &mut Vec<String>,
+    system_messages: &mut Vec<(String, Color)>,
     player: &Player,
     all_maps: &AllMaps,
     entity_position_map: &EntityPositionBroadcast,
@@ -66,12 +68,15 @@ pub(crate) fn get_what_player_sees(
         player.position.pos_y,
     );
 
-    system_messages.push(time.clone() + "You see...");
-    system_messages.push(time.clone() + "Underneath: " + &*underneath);
-    system_messages.push(time.clone() + "North: " + &*north);
-    system_messages.push(time.clone() + "South: " + &*south);
-    system_messages.push(time.clone() + "East: " + &*east);
-    system_messages.push(time + "West: " + &*west);
+    system_messages.push(((time.clone() + "You see..."), DEFAULT_FG_COLOUR));
+    system_messages.push((
+        (time.clone() + "Underneath: " + &*underneath),
+        DEFAULT_FG_COLOUR,
+    ));
+    system_messages.push(((time.clone() + "North: " + &*north), DEFAULT_FG_COLOUR));
+    system_messages.push(((time.clone() + "South: " + &*south), DEFAULT_FG_COLOUR));
+    system_messages.push(((time.clone() + "East: " + &*east), DEFAULT_FG_COLOUR));
+    system_messages.push(((time + "West: " + &*west), DEFAULT_FG_COLOUR));
 }
 
 pub(crate) fn return_visible_entity_at(

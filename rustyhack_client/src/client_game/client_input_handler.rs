@@ -1,6 +1,7 @@
 use crate::client_game::commands;
 use console_engine::{ConsoleEngine, KeyCode};
 use crossbeam_channel::Sender;
+use crossterm::style::Color;
 use laminar::Packet;
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::player::Player;
@@ -9,7 +10,7 @@ use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
 pub(crate) fn handle_other_input(
     sender: &Sender<Packet>,
     console: &mut ConsoleEngine,
-    system_messages: &mut Vec<String>,
+    system_messages: &mut Vec<(String, Color)>,
     player: &Player,
     all_maps: &AllMaps,
     entity_position_map: &EntityPositionBroadcast,

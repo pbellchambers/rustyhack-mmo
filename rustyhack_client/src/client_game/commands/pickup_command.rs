@@ -1,7 +1,9 @@
+use crate::client_consts::DEFAULT_FG_COLOUR;
 use crate::client_game::commands::look_command::return_visible_entity_at;
 use bincode::serialize;
 use chrono::{DateTime, Local};
 use crossbeam_channel::Sender;
+use crossterm::style::Color;
 use laminar::Packet;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::{
@@ -10,7 +12,7 @@ use rustyhack_lib::message_handler::messages::{
 
 pub(crate) fn send_pickup_request(
     entity_position_map: &EntityPositionBroadcast,
-    system_messages: &mut Vec<String>,
+    system_messages: &mut Vec<(String, Color)>,
     sender: &Sender<Packet>,
     player: &Player,
     server_addr: &str,
@@ -28,7 +30,7 @@ pub(crate) fn send_pickup_request(
         let date_time: DateTime<Local> = Local::now();
         let time = date_time.format("[%H:%M:%S] ").to_string();
         info!("No item to pickup.");
-        system_messages.push(time + "No item to pickup.");
+        system_messages.push(((time + "No item to pickup."), DEFAULT_FG_COLOUR));
     } else {
         let packet = Packet::reliable_ordered(
             server_addr

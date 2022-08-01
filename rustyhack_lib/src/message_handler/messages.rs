@@ -33,7 +33,7 @@ pub enum ServerMessage {
     UpdateStats(Stats),
     UpdateInventory(Inventory),
     UpdateOtherEntities((Uuid, (u32, u32, String, char, Color, String))),
-    SystemMessage(String),
+    SystemMessage(SystemMessage),
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -46,4 +46,10 @@ pub struct ClientDetails {
 pub struct PositionMessage {
     pub player_name: String,
     pub position: Position,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct SystemMessage {
+    pub message: String,
+    pub colour: Option<Color>,
 }
