@@ -58,6 +58,7 @@ pub(crate) fn check_for_combat(
         let attacker = get_attacker(player_details_option, monster_details_option);
 
         if entity_collision_status.0 {
+            //combat detected
             if !attacker.is_player && !entity_collision_status.1.is_player {
                 debug!("Preventing possible monster combat.");
                 //monsters shouldn't attack other monsters, stop combat and movement
@@ -68,12 +69,13 @@ pub(crate) fn check_for_combat(
                     "Combat detected, attacker is: {:?}, defender is: {:?}",
                     &attacker, &entity_collision_status.1
                 );
-                combat_parties.insert(entity_collision_status.1, attacker.clone());
+                combat_parties.insert(attacker.clone(), entity_collision_status.1);
                 combat_attacker_stats.insert(attacker.id, (*stats, inventory.clone()));
                 position.velocity_x = 0;
                 position.velocity_y = 0;
             }
         } else if attacker.is_player {
+            //no combat detected - update map state for movement
             let player = Player {
                 player_details: player_details_option.unwrap().clone(),
                 display_details: *display_details,
@@ -93,7 +95,12 @@ pub(crate) fn check_for_combat(
                 position.pos_x,
                 position.pos_y,
             );
+            //player has moved, therefore no longer attacking
+            if combat_parties.contains_key(&attacker) {
+                combat_parties.remove(&attacker);
+            }
         } else if !attacker.is_player {
+            //no combat detected - update map state for movement
             let monster = Monster {
                 monster_details: monster_details_option.unwrap().clone(),
                 display_details: *display_details,
@@ -113,6 +120,10 @@ pub(crate) fn check_for_combat(
                 position.pos_x,
                 position.pos_y,
             );
+            //monster has moved, therefore no longer attacking
+            if combat_parties.contains_key(&attacker) {
+                combat_parties.remove(&attacker);
+            }
         }
     }
 }
@@ -178,6 +189,7 @@ pub(crate) fn resolve_combat(
             continue;
         }
         let mut defender_is_monster = false;
+        let mut monster_target = None;
         let mut defender: Defender = Defender::default();
         if let Some(player_details) = player_details_option {
             //player is the defender
@@ -197,53 +209,60 @@ pub(crate) fn resolve_combat(
                 currently_online: true,
                 is_player: false,
             };
+            monster_target = monster_details.current_target;
             defender_is_monster = true;
         }
-        if combat_parties.contains_key(&defender) {
-            let attacker = combat_parties.get(&defender).unwrap();
-            let (mut attacker_stats, mut attacker_inventory) =
-                combat_attacker_stats.get(&attacker.id).unwrap().clone();
-            if attacker_stats.current_hp <= 0.0 {
-                // Skip combat if attacker is already dead.
-                // This is possible if multiple player updates are processed
-                // before the server tick for monsters.
-                continue;
-            }
-            let damage = combat::resolve_combat(
-                &attacker_stats,
-                &attacker_inventory,
-                defender_stats,
-                defender_inventory,
-            )
-            .round();
-            apply_damage(defender_stats, damage);
-            let mut exp_gain = 0;
-            let mut gold_gain = 0;
-            if defender_is_monster {
-                (exp_gain, gold_gain) = check_and_apply_gains(
-                    combat_attacker_stats,
-                    &attacker.id,
-                    &mut attacker_stats,
-                    &mut attacker_inventory,
+        for (combat_parties_attacker, combat_parties_defender) in combat_parties.iter() {
+            if combat_parties_defender == &defender {
+                let attacker = combat_parties_attacker;
+                let (mut attacker_stats, mut attacker_inventory) =
+                    combat_attacker_stats.get(&attacker.id).unwrap().clone();
+                if attacker_stats.current_hp <= 0.0 {
+                    // Skip combat if attacker is already dead.
+                    // This is possible if multiple player updates are processed
+                    // before the server tick for monsters.
+                    continue;
+                }
+                let damage = combat::resolve_combat(
+                    &attacker_stats,
+                    &attacker_inventory,
                     defender_stats,
                     defender_inventory,
+                )
+                .round();
+                apply_damage(defender_stats, damage);
+                let mut exp_gain = 0;
+                let mut gold_gain = 0;
+                if defender_is_monster {
+                    (exp_gain, gold_gain) = check_and_apply_gains(
+                        combat_attacker_stats,
+                        &attacker.id,
+                        &mut attacker_stats,
+                        &mut attacker_inventory,
+                        defender_stats,
+                        defender_inventory,
+                    );
+                    //set current monster target as attacker
+                    monster_target = Some(attacker.id);
+                }
+                combat::send_combat_updates_to_players(
+                    &defender,
+                    attacker,
+                    damage,
+                    defender_stats.current_hp,
+                    exp_gain,
+                    gold_gain,
+                    sender,
                 );
-                //set current monster target as attacker
-                monster_details_option.unwrap().current_target = Some(attacker.id);
+                if let Some(_player_details) = player_details_option {
+                    //only set flag for players
+                    defender_stats.update_available = true;
+                }
             }
-            combat::send_combat_updates_to_players(
-                &defender,
-                attacker,
-                damage,
-                defender_stats.current_hp,
-                exp_gain,
-                gold_gain,
-                sender,
-            );
-            if let Some(_player_details) = player_details_option {
-                //only set flag for players
-                defender_stats.update_available = true;
-            }
+        }
+        if defender_is_monster {
+            //set current_target to most recent attacker
+            monster_details_option.unwrap().current_target = monster_target;
         }
     }
     combat_parties.clear();

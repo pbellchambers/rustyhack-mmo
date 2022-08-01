@@ -29,7 +29,7 @@ Accuracy% = Base accuracy + ((100 - base accuracy) * (Attacker's Dex / 100)) - (
 
 */
 
-pub(crate) type CombatParties = HashMap<Defender, Attacker>;
+pub(crate) type CombatParties = HashMap<Attacker, Defender>;
 pub(crate) type CombatAttackerStats = HashMap<Uuid, (Stats, Inventory)>;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq, Hash)]
