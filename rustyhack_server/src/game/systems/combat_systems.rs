@@ -57,7 +57,6 @@ pub(crate) fn check_for_combat(
 
         let attacker = get_attacker(player_details_option, monster_details_option);
 
-        //todo consider breaking this all below out into separate methods for tidyness
         if entity_collision_status.0 {
             if !attacker.is_player && !entity_collision_status.1.is_player {
                 debug!("Preventing possible monster combat.");
