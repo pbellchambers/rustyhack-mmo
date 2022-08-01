@@ -1,5 +1,6 @@
 use console_engine::{ConsoleEngine, KeyCode, KeyModifiers};
 use crossbeam_channel::{Receiver, Sender};
+use crossterm::style::Color;
 use laminar::{Packet, SocketEvent};
 use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
 use std::collections::HashMap;
@@ -54,7 +55,7 @@ pub(crate) fn run(
 
     let mut entity_position_map: EntityPositionBroadcast = HashMap::new();
 
-    let mut system_messages: Vec<String> = vec![];
+    let mut system_messages: Vec<(String, Color)> = vec![];
 
     info!("Starting client_game loop");
     let mut client_cleanup_tick_time = Instant::now();

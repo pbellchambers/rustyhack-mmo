@@ -1,5 +1,7 @@
+use crate::client_consts::DEFAULT_FG_COLOUR;
 use chrono::{DateTime, Local};
 use crossbeam_channel::Receiver;
+use crossterm::style::Color;
 use rustyhack_lib::consts::DEAD_MAP;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::{EntityPositionBroadcast, ServerMessage};
@@ -8,7 +10,7 @@ pub(crate) fn check_for_received_server_messages(
     channel_receiver: &Receiver<ServerMessage>,
     player: &mut Player,
     entity_position_broadcast: &mut EntityPositionBroadcast,
-    status_messages: &mut Vec<String>,
+    status_messages: &mut Vec<(String, Color)>,
 ) {
     debug!("Checking for received messages from server.");
     while !channel_receiver.is_empty() {
@@ -28,10 +30,13 @@ pub(crate) fn check_for_received_server_messages(
                     player.inventory = new_inventory.clone();
                 }
                 ServerMessage::SystemMessage(message) => {
-                    debug!("System message received: {}", &message);
+                    debug!("System message received: {:?}", &message);
                     let date_time: DateTime<Local> = Local::now();
                     let time = date_time.format("[%H:%M:%S] ").to_string();
-                    status_messages.push(time + &message);
+                    status_messages.push((
+                        (time + &message.message),
+                        message.colour.unwrap_or(DEFAULT_FG_COLOUR),
+                    ));
                 }
                 ServerMessage::UpdateOtherEntities(new_update) => {
                     debug!("Entity position broadcast received: {:?}", &new_update);

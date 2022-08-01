@@ -1,12 +1,15 @@
 use crate::game::systems;
 use bincode::serialize;
 use crossbeam_channel::{Receiver, Sender};
+use crossterm::style::Color;
 use laminar::Packet;
 use legion::{IntoQuery, World};
 use rustyhack_lib::consts::{DEFAULT_ITEM_COLOUR, DEFAULT_PLAYER_ICON};
 use rustyhack_lib::ecs::components::{DisplayDetails, Inventory, PlayerDetails, Position, Stats};
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::messages::{PlayerRequest, PositionMessage, ServerMessage};
+use rustyhack_lib::message_handler::messages::{
+    PlayerRequest, PositionMessage, ServerMessage, SystemMessage,
+};
 use std::process;
 use uuid::Uuid;
 
@@ -252,7 +255,7 @@ fn join_player(world: &mut World, name: &str, client_addr: String, sender: &Send
                 process::exit(1);
             });
             rustyhack_lib::message_handler::send_packet(
-                Packet::reliable_ordered(client_addr.parse().unwrap(), response, Some(11)),
+                Packet::reliable_ordered(client_addr.parse().unwrap(), response, Some(14)),
                 sender,
             );
             should_create_new_player = false;
@@ -284,7 +287,7 @@ fn create_player(world: &mut World, name: &str, client_addr: String, sender: &Se
         player.stats,
         player.inventory.clone(),
     ));
-    info!("New player \"{}\" created: {:?}", name, &player_entity);
+    info!("New player \"{}\" created: {:?}", name, player_entity);
     send_player_joined_response(&player, sender);
 }
 
@@ -311,6 +314,7 @@ pub(crate) fn send_message_to_player(
     client_addr: &String,
     currently_online: bool,
     message: &str,
+    colour: Option<Color>,
     sender: &Sender<Packet>,
 ) {
     if currently_online && !client_addr.eq("") {
@@ -318,8 +322,12 @@ pub(crate) fn send_message_to_player(
             "Sending system message to player {} at: {}",
             &player_name, &client_addr
         );
-        let response = serialize(&ServerMessage::SystemMessage(message.to_string()))
-            .unwrap_or_else(|err| {
+        let system_message = SystemMessage {
+            message: message.to_string(),
+            colour,
+        };
+        let response =
+            serialize(&ServerMessage::SystemMessage(system_message)).unwrap_or_else(|err| {
                 error!(
                     "Failed to serialize system message: {}, error: {}",
                     message, err

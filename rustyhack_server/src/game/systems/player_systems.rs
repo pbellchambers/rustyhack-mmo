@@ -1,7 +1,8 @@
-use crate::consts::{BASE_HP_TABLE, CUMULATIVE_EXP_TABLE};
+use crate::consts::{BASE_HP_TABLE, CUMULATIVE_EXP_TABLE, EXP_LOSS_ON_DEATH_PERCENTAGE};
 use crate::game::player_updates::send_message_to_player;
 use crate::game::players::PlayersPositions;
 use crossbeam_channel::Sender;
+use crossterm::style::Color;
 use laminar::Packet;
 use legion::world::SubWorld;
 use legion::{system, IntoQuery, Query, World};
@@ -22,15 +23,32 @@ pub(crate) fn resolve_player_deaths(
 ) {
     for (player_details, position, stats) in query.iter_mut(world) {
         if stats.current_hp <= 0.0 {
+            let mut exp_loss = 0;
+            if stats.exp > 100 {
+                exp_loss = (stats.exp * EXP_LOSS_ON_DEATH_PERCENTAGE) / 100;
+                stats.exp -= exp_loss;
+            }
             stats.current_hp = stats.max_hp;
+            stats.in_combat = false;
             stats.update_available = true;
             *position = Position::default();
             position.update_available = true;
+            if exp_loss > 0 {
+                send_message_to_player(
+                    &player_details.player_name,
+                    &player_details.client_addr,
+                    player_details.currently_online,
+                    &("You lost ".to_string() + &exp_loss.to_string() + " exp."),
+                    Some(Color::DarkYellow),
+                    sender,
+                );
+            }
             send_message_to_player(
                 &player_details.player_name,
                 &player_details.client_addr,
                 player_details.currently_online,
                 "Now respawning at respawn point...",
+                None,
                 sender,
             );
         }
@@ -79,6 +97,7 @@ pub(crate) fn level_up(
                     &player_details.client_addr,
                     player_details.currently_online,
                     "You levelled up!",
+                    Some(Color::Cyan),
                     sender,
                 );
             }
@@ -143,6 +162,7 @@ pub(crate) fn pickup_item(
                         &player_details.client_addr,
                         player_details.currently_online,
                         "No item to pickup.",
+                        None,
                         sender,
                     );
                 }
@@ -159,6 +179,7 @@ pub(crate) fn pickup_item(
                         &player_details.client_addr,
                         player_details.currently_online,
                         &("Picked up ".to_string() + &item_name + "."),
+                        None,
                         sender,
                     );
                 }
@@ -208,6 +229,7 @@ pub(crate) fn drop_item(
                     &player_details.client_addr,
                     player_details.currently_online,
                     &("Dropped ".to_string() + &item_name + "."),
+                    None,
                     sender,
                 );
                 world.push(dropped_item);

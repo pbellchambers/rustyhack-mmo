@@ -125,6 +125,7 @@ pub struct Stats {
     pub level: u32,
     pub exp: u32,
     pub exp_next: u32,
+    pub in_combat: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]

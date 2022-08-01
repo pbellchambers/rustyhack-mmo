@@ -78,22 +78,25 @@ fn entity_is_colliding_with_tile(tile: Tile) -> bool {
 #[system]
 pub(crate) fn apply_health_regen(world: &mut SubWorld, query: &mut Query<&mut Stats>) {
     for stats in query.iter_mut(world) {
-        debug!("Applying health to all injured but still alive entities.");
-        if stats.current_hp > 0.0 && stats.current_hp < stats.max_hp {
-            let regen_amount = calculate_regen_amount(stats.max_hp, stats.con);
-            debug!(
-                "Current hp: {}/{}, regen amount is: {}, update_available is {}",
-                stats.current_hp,
-                stats.max_hp,
-                regen_amount.round(),
-                stats.update_available
-            );
-            stats.current_hp += regen_amount.round();
-            //don't heal more than max hp
-            if stats.current_hp > stats.max_hp {
-                stats.current_hp = stats.max_hp;
+        //only apply health regen if out of combat
+        if !stats.in_combat {
+            debug!("Applying health to all injured but still alive entities.");
+            if stats.current_hp > 0.0 && stats.current_hp < stats.max_hp {
+                let regen_amount = calculate_regen_amount(stats.max_hp, stats.con);
+                debug!(
+                    "Current hp: {}/{}, regen amount is: {}, update_available is {}",
+                    stats.current_hp,
+                    stats.max_hp,
+                    regen_amount.round(),
+                    stats.update_available
+                );
+                stats.current_hp += regen_amount.round();
+                //don't heal more than max hp
+                if stats.current_hp > stats.max_hp {
+                    stats.current_hp = stats.max_hp;
+                }
+                stats.update_available = true;
             }
-            stats.update_available = true;
         }
     }
 }

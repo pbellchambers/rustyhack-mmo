@@ -37,11 +37,12 @@
     "armour": 15.0,
     "level": 2,
     "exp": 0,
-    "exp_next": 1000
+    "exp_next": 1000,
+    "in_combat": false
   },
   "inventory": {
     "update_available": false,
-    "gold": 3,
+    "gold": 100,
     "equipped": {
       "weapon": {
         "name": "Zombie Arm",

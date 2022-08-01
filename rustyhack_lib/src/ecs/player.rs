@@ -40,6 +40,7 @@ impl Default for Player {
                 level: 1,
                 exp: 0,
                 exp_next: 1000,
+                in_combat: false,
             },
             inventory: Inventory::default(),
         }

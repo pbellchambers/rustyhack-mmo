@@ -16,7 +16,7 @@ pub(crate) fn build_map_state_update_schedule() -> Schedule {
     schedule
 }
 
-pub(crate) fn build_normal_player_update_schedule() -> Schedule {
+pub(crate) fn build_player_update_schedule() -> Schedule {
     let schedule = Schedule::builder()
         .add_system(common_entity_systems::check_for_tile_collision_system())
         .add_system(combat_systems::check_for_combat_system())
@@ -28,34 +28,22 @@ pub(crate) fn build_normal_player_update_schedule() -> Schedule {
     schedule
 }
 
-pub(crate) fn build_player_combat_update_schedule() -> Schedule {
-    let schedule = Schedule::builder()
-        .add_system(common_entity_systems::check_for_tile_collision_system())
-        .add_system(combat_systems::check_for_combat_system())
-        .add_system(combat_systems::resolve_combat_system())
-        .add_system(combat_systems::apply_combat_gains_system())
-        .add_system(player_systems::level_up_system())
-        .add_system(player_systems::resolve_player_deaths_system())
-        .add_system(common_entity_systems::update_entities_position_system())
-        .add_system(player_systems::update_player_positions_resource_system())
-        .build();
-    info!("Built player combat update system schedule.");
-    schedule
-}
-
-pub(crate) fn build_monster_update_schedule() -> Schedule {
+pub(crate) fn build_server_tick_update_schedule() -> Schedule {
     let schedule = Schedule::builder()
         .add_system(monster_systems::update_monster_velocities_system())
         .add_system(common_entity_systems::check_for_tile_collision_system())
         .add_system(combat_systems::check_for_combat_system())
         .add_system(combat_systems::resolve_combat_system())
+        .flush()
+        .add_system(combat_systems::apply_combat_gains_system())
+        .add_system(player_systems::level_up_system())
         .add_system(player_systems::resolve_player_deaths_system())
         .add_system(monster_systems::resolve_monster_deaths_system())
         .add_system(monster_systems::spawn_monsters_system())
         .add_system(common_entity_systems::update_entities_position_system())
         .add_system(player_systems::update_player_positions_resource_system())
         .build();
-    info!("Built monster update system schedule.");
+    info!("Built server tick update system schedule.");
     schedule
 }
 

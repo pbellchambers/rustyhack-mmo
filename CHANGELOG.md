@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - collision detection now more efficient
 - improved monster movement, wandering, and return to spawn behaviour
 - monsters now change target if attacked
+- entities can now be attacked by multiple entities in the same tick
+- system messages now have colours
+- health regen now only applies when out of combat
+- server tick ecs systems now more efficient
 
 ### 🐛 Bug Fixes
 - don't send drop item request to server if player inventory empty
@@ -18,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - prevent entities from occupying the same tile by accident
 - stop monsters from following disconnected players
 - fix players not disappearing when disconnecting
+- combat can no longer occur after player has moved away from target
 
 ### 🧰 Maintenance
 - .
