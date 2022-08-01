@@ -1,4 +1,4 @@
-use crate::consts::{BASE_HP_TABLE, CUMULATIVE_EXP_TABLE};
+use crate::consts::{BASE_HP_TABLE, CUMULATIVE_EXP_TABLE, EXP_LOSS_ON_DEATH_PERCENTAGE};
 use crate::game::player_updates::send_message_to_player;
 use crate::game::players::PlayersPositions;
 use crossbeam_channel::Sender;
@@ -22,6 +22,9 @@ pub(crate) fn resolve_player_deaths(
 ) {
     for (player_details, position, stats) in query.iter_mut(world) {
         if stats.current_hp <= 0.0 {
+            if stats.exp > 100 {
+                stats.exp = (stats.exp * (100 - EXP_LOSS_ON_DEATH_PERCENTAGE)) / 100;
+            }
             stats.current_hp = stats.max_hp;
             stats.update_available = true;
             *position = Position::default();
