@@ -1,4 +1,4 @@
-use crate::consts::MONSTER_EXP_MULTIPLICATION_FACTOR;
+use crate::consts::{GOLD_LOSS_ON_PVP_DEATH_PERCENTAGE, MONSTER_EXP_MULTIPLICATION_FACTOR};
 use crate::game::combat::{Attacker, CombatAttackerStats, CombatParties, Defender};
 use crate::game::map_state::{AllMapStates, MapState};
 use crate::game::{combat, map_state};
@@ -231,17 +231,17 @@ pub(crate) fn resolve_combat(
                 )
                 .round();
                 apply_damage(defender_stats, damage);
-                let mut exp_gain = 0;
-                let mut gold_gain = 0;
+                let (exp_gain, gold_gain) = check_and_apply_gains(
+                    defender_is_monster,
+                    combat_attacker_stats,
+                    &attacker.id,
+                    &mut attacker_stats,
+                    &mut attacker_inventory,
+                    defender_stats,
+                    defender_inventory,
+                );
+
                 if defender_is_monster {
-                    (exp_gain, gold_gain) = check_and_apply_gains(
-                        combat_attacker_stats,
-                        &attacker.id,
-                        &mut attacker_stats,
-                        &mut attacker_inventory,
-                        defender_stats,
-                        defender_inventory,
-                    );
                     //set current monster target as attacker
                     monster_target = Some(attacker.id);
                 }
@@ -269,23 +269,37 @@ pub(crate) fn resolve_combat(
 }
 
 fn check_and_apply_gains(
+    defender_is_monster: bool,
     combat_attacker_stats: &mut CombatAttackerStats,
     attacker_id: &Uuid,
     attacker_stats: &mut Stats,
     attacker_inventory: &mut Inventory,
     defender_stats: &Stats,
-    defender_inventory: &Inventory,
+    defender_inventory: &mut Inventory,
 ) -> (u32, u32) {
     if defender_stats.current_hp <= 0.0 {
         //calculate xp to be gained
-        let exp_gain = defender_stats.level * MONSTER_EXP_MULTIPLICATION_FACTOR;
-        attacker_stats.exp += exp_gain;
-        attacker_stats.update_available = true;
+        let mut exp_gain = 0;
+        if defender_is_monster {
+            exp_gain = defender_stats.level * MONSTER_EXP_MULTIPLICATION_FACTOR;
+            attacker_stats.exp += exp_gain;
+        }
 
         //calculate gold to be gained
-        let gold_gain = defender_inventory.gold;
+        let mut gold_gain = 0;
+        if defender_is_monster {
+            gold_gain = defender_inventory.gold;
+        } else if defender_inventory.gold > 100 {
+            gold_gain = (defender_inventory.gold * GOLD_LOSS_ON_PVP_DEATH_PERCENTAGE) / 100;
+            defender_inventory.gold -= gold_gain;
+            defender_inventory.update_available = true;
+        }
         attacker_inventory.gold += gold_gain;
+        if exp_gain > 0 || gold_gain > 0 {
+            attacker_stats.update_available = true;
+        }
         combat_attacker_stats.insert(*attacker_id, (*attacker_stats, attacker_inventory.clone()));
+
         return (exp_gain, gold_gain);
     }
     (0, 0)

@@ -15,6 +15,7 @@ pub(crate) const HEALTH_REGEN_CON_PERCENT: f32 = 2.0;
 pub(crate) const HEALTH_REGEN_CON_STATIC_FACTOR: f32 = 5.0;
 pub(crate) const MONSTER_EXP_MULTIPLICATION_FACTOR: u32 = 100;
 pub(crate) const EXP_LOSS_ON_DEATH_PERCENTAGE: u32 = 5;
+pub(crate) const GOLD_LOSS_ON_PVP_DEATH_PERCENTAGE: u32 = 5;
 
 /*
 The base exp table is based on the following formula:
