@@ -13,6 +13,7 @@ use rustyhack_lib::ecs::monster::Monster;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::math_utils::{i32_from, u32_from};
 use uuid::Uuid;
+use rustyhack_lib::consts::DEFAULT_MAP;
 
 #[system]
 #[allow(clippy::type_complexity)]
@@ -146,10 +147,13 @@ fn get_current_map_states<'a>(
     all_map_states: &'a mut AllMapStates,
     map: &String,
 ) -> &'a mut MapState {
-    //todo this could crash the server
-    all_map_states
-        .get_mut(map)
-        .expect("Cannot get map state for map that doesn't exist")
+    return if all_map_states.contains_key(map) {
+        all_map_states.get_mut(map).unwrap()
+    } else {
+        warn!("Tried to get map state for map that doesn't exist.");
+        warn!("Will return default map, but things might break.");
+        all_map_states.get_mut(DEFAULT_MAP).unwrap()
+    }
 }
 
 #[system]
