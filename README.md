@@ -1,7 +1,7 @@
 ![Rustyhack Logo](https://github.com/pbellchambers/rustyhack-mmo/raw/main/assets/logo/rustyhack-logo.png "Rustyhack Logo")
 
 # Rustyhack MMO
-A barebones cross between an ASCII "roguelike" and MMORPG / MUD written in Rust. Lacking a lot of basic features. Currently has a client & server console program that allows a player to be created, move around, fight other players/monsters, pick up and drop things, look at things, and level up.
+A barebones cross between an ASCII "roguelike" and MMORPG / MUD written in Rust. Lacking a lot of basic features. It currently has a client & server console program that allows a player to be created, move around, fight other players/monsters, pick up and drop things, look at things, and level up.
 
 [![Build status](https://img.shields.io/github/workflow/status/pbellchambers/rustyhack-mmo/CI/main)](https://github.com/pbellchambers/rustyhack-mmo/actions)
 [![Downloads](https://img.shields.io/github/downloads/pbellchambers/rustyhack-mmo/total)](https://github.com/pbellchambers/rustyhack-mmo/releases)
@@ -13,7 +13,8 @@ A barebones cross between an ASCII "roguelike" and MMORPG / MUD written in Rust.
 2. Unzip
 3. Run `rustyhack_server` from the command line
 4. Run `rustyhack_client` from the command line
-5. Connect client to server *(note: if you're running both locally, just accept the default address/ports and it will auto-configure)*
+5. Connect client to server *(note: if you're running both locally, just accept the default address/ports, and it will autoconfigure)*
+6. By default, the server will back up to `rustyhack_server_world_backup.json` every 60 seconds, and will attempt to load from this on start (if it exists)
 
 ## Controls
 - Movement: ← ↑ → ↓ Arrow keys
@@ -31,7 +32,7 @@ A barebones cross between an ASCII "roguelike" and MMORPG / MUD written in Rust.
 - **assets** - assets required for the server to run, note: assets directory must be in the same location as `rustyhack_server`
 
 ## Assets
-Currently the following functionality is defined entirely by text or json files located in the `assets` directory:
+Currently, the following functionality is defined entirely by text or json files located in the `assets` directory:
 - **maps** - *.map plain-text* - Map definitions. All maps should be enclosed by a boundary of # characters in any shape, and end with a % character on the last line. See existing examples.
 - **monsters** - *.json* - Types of monsters, their stats and inventory etc.
 - **spawns** - *.json* - Spawn locations of monsters. There should be one spawn file per map.

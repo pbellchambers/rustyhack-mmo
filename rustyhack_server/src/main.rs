@@ -9,6 +9,7 @@ mod consts;
 mod game;
 mod networking;
 mod setup;
+mod world_backup;
 
 #[macro_use]
 extern crate log;

@@ -57,11 +57,6 @@ impl Dead for Position {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct OpenState {
-    pub open: bool,
-}
-
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct DisplayDetails {
     pub icon: char,

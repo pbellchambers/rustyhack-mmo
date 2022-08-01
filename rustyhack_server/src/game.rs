@@ -4,21 +4,21 @@ use std::time::Instant;
 
 use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
-use legion::{Resources, World};
+use legion::Resources;
 
-use crate::consts;
 use crate::game::combat::{CombatAttackerStats, CombatParties};
 use crate::game::map_state::EntityPositionMap;
 use crate::game::players::PlayersPositions;
 use crate::networking::message_handler;
+use crate::{consts, world_backup};
 
 mod background_map;
 mod combat;
 mod map_state;
-mod monsters;
+pub(crate) mod monsters;
 mod player_updates;
 mod players;
-mod spawns;
+pub(crate) mod spawns;
 mod systems;
 
 pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
@@ -32,8 +32,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let entity_position_map: EntityPositionMap = HashMap::new();
     let all_monster_definitions = monsters::initialise_all_monster_definitions();
     let (default_spawn_counts, all_spawns_map) = spawns::initialise_all_spawn_definitions();
-    let mut world = World::default();
-    info!("Initialised ECS World");
+    let registry = world_backup::create_world_registry();
     let mut player_update_schedule = systems::build_player_update_schedule();
     let mut server_tick_update_schedule = systems::build_server_tick_update_schedule();
     let mut map_state_update_schedule = systems::build_map_state_update_schedule();
@@ -60,15 +59,21 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     resources.insert(default_spawn_counts);
     resources.insert(all_monster_definitions.clone());
     resources.insert(entity_position_map);
-    info!("Finished loading resources into world.");
+    info!("Finished loading resources.");
 
-    //spawn initial monsters
-    monsters::spawn_initial_monsters(&mut world, &all_monster_definitions, &all_spawns_map);
-    info!("Spawned all monsters in initial positions.");
+    let (mut world, is_saved_world) =
+        world_backup::load_world(&registry, &all_monster_definitions, &all_spawns_map);
+    info!("Finished initialising ECS World.");
+
+    if is_saved_world {
+        //marking all players as logged out on initial server start
+        players::logout_all_players(&mut world);
+    }
 
     //start tick counts
     let mut entity_update_broadcast_tick_time = Instant::now();
     let mut server_game_tick_time = Instant::now();
+    let mut server_backup_tick_time = Instant::now();
     let mut loop_tick_time = Instant::now();
     let mut server_game_tick_count = 0;
 
@@ -86,7 +91,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
         }
 
         //all other updates that depend on the server game tick
-        if server_game_tick_time.elapsed() > consts::SERVER_GAME_TICK {
+        if server_game_tick_time.elapsed() >= consts::SERVER_GAME_TICK {
             server_game_tick_count += 1;
             debug!("Executing server tick schedule...");
             map_state_update_schedule.execute(&mut world, &mut resources);
@@ -105,14 +110,19 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             server_game_tick_time = Instant::now();
         }
 
-        if entity_update_broadcast_tick_time.elapsed() > consts::ENTITY_UPDATE_BROADCAST_TICK {
+        if entity_update_broadcast_tick_time.elapsed() >= consts::ENTITY_UPDATE_BROADCAST_TICK {
             debug!("Broadcasting entity updates");
             network_broadcast_schedule.execute(&mut world, &mut resources);
             debug!("Finished broadcasting entity updates");
             entity_update_broadcast_tick_time = Instant::now();
         }
 
-        if loop_tick_time.elapsed() > consts::LOOP_TICK {
+        if server_backup_tick_time.elapsed() >= consts::SERVER_BACKUP_TICK {
+            world_backup::do_world_backup(&registry, &world);
+            server_backup_tick_time = Instant::now();
+        }
+
+        if loop_tick_time.elapsed() >= consts::LOOP_TICK {
             warn!(
                 "Loop took longer than specified tick time, expected: {:?}, actual: {:?}",
                 consts::LOOP_TICK,
@@ -121,6 +131,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             loop_tick_time = Instant::now();
             continue;
         }
+        //todo there is a possibility this creates a negative duration, should handle here
         let duration_to_sleep = consts::LOOP_TICK - loop_tick_time.elapsed();
         if duration_to_sleep.as_nanos() > 0 {
             //sleep here for LOOP_TICK so we don't hammer the CPU unnecessarily
