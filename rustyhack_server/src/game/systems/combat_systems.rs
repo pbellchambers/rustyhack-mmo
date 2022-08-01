@@ -7,7 +7,11 @@ use laminar::Packet;
 use legion::world::SubWorld;
 use legion::{system, Query};
 use rustyhack_lib::consts::DEFAULT_MAP;
-use rustyhack_lib::ecs::components::{Inventory, MonsterDetails, PlayerDetails, Position, Stats};
+use rustyhack_lib::ecs::components::{
+    DisplayDetails, EntityType, Inventory, MonsterDetails, PlayerDetails, Position, Stats,
+};
+use rustyhack_lib::ecs::monster::Monster;
+use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::math_utils::{i32_from, u32_from};
 use uuid::Uuid;
 
@@ -19,42 +23,96 @@ pub(crate) fn check_for_combat(
         &mut Position,
         Option<&MonsterDetails>,
         Option<&PlayerDetails>,
+        &DisplayDetails,
         &Stats,
         &Inventory,
     )>,
-    #[resource] all_map_states: &AllMapStates,
+    #[resource] all_map_states: &mut AllMapStates,
     #[resource] combat_parties: &mut CombatParties,
     #[resource] combat_attacker_stats: &mut CombatAttackerStats,
 ) {
-    for (position, monster_details_option, player_details_option, stats, inventory) in
-        query.iter_mut(world)
+    for (
+        position,
+        monster_details_option,
+        player_details_option,
+        display_details,
+        stats,
+        inventory,
+    ) in query.iter_mut(world)
     {
         debug!("Checking for possible combat after velocity updates.");
         if position.velocity_x == 0 && position.velocity_y == 0 {
             //no velocity, no updates
             continue;
         }
-        let current_map_states = get_current_map_states(all_map_states, &position.current_map);
+        let current_map_state = get_current_map_states(all_map_states, &position.current_map);
         let potential_pos_x = u32_from(i32_from(position.pos_x) + position.velocity_x);
         let potential_pos_y = u32_from(i32_from(position.pos_y) + position.velocity_y);
 
         let entity_collision_status = map_state::is_colliding_with_entity(
             potential_pos_x,
             potential_pos_y,
-            current_map_states,
+            current_map_state,
         );
 
         let attacker = get_attacker(player_details_option, monster_details_option);
 
         if entity_collision_status.0 {
-            debug!(
-                "Combat detected, attacker is: {:?}, defender is: {:?}",
-                &attacker, &entity_collision_status.1
+            if !attacker.is_player && !entity_collision_status.1.is_player {
+                debug!("Preventing possible monster combat.");
+                //monsters shouldn't attack other monsters, stop combat and movement
+                position.velocity_x = 0;
+                position.velocity_y = 0;
+            } else {
+                debug!(
+                    "Combat detected, attacker is: {:?}, defender is: {:?}",
+                    &attacker, &entity_collision_status.1
+                );
+                combat_parties.insert(entity_collision_status.1, attacker.clone());
+                combat_attacker_stats.insert(attacker.id, (*stats, inventory.clone()));
+                position.velocity_x = 0;
+                position.velocity_y = 0;
+            }
+        } else if attacker.is_player {
+            let player = Player {
+                player_details: player_details_option.unwrap().clone(),
+                display_details: *display_details,
+                position: position.clone(),
+                stats: *stats,
+                inventory: inventory.clone(),
+            };
+            map_state::insert_entity_at(
+                all_map_states.get_mut(&position.current_map).unwrap(),
+                EntityType::Player(player.clone()),
+                potential_pos_x,
+                potential_pos_y,
             );
-            combat_parties.insert(entity_collision_status.1, attacker.clone());
-            combat_attacker_stats.insert(attacker.id, (*stats, inventory.clone()));
-            position.velocity_x = 0;
-            position.velocity_y = 0;
+            map_state::remove_entity_at(
+                all_map_states.get_mut(&position.current_map).unwrap(),
+                &EntityType::Player(player),
+                position.pos_x,
+                position.pos_y,
+            );
+        } else if !attacker.is_player {
+            let monster = Monster {
+                monster_details: monster_details_option.unwrap().clone(),
+                display_details: *display_details,
+                position: position.clone(),
+                stats: *stats,
+                inventory: inventory.clone(),
+            };
+            map_state::insert_entity_at(
+                all_map_states.get_mut(&position.current_map).unwrap(),
+                EntityType::Monster(monster.clone()),
+                potential_pos_x,
+                potential_pos_y,
+            );
+            map_state::remove_entity_at(
+                all_map_states.get_mut(&position.current_map).unwrap(),
+                &EntityType::Monster(monster),
+                position.pos_x,
+                position.pos_y,
+            );
         }
     }
 }
@@ -69,6 +127,7 @@ fn get_attacker(
             name: player_details.player_name.clone(),
             client_addr: player_details.client_addr.clone(),
             currently_online: player_details.currently_online,
+            is_player: true,
         }
     } else if let Some(monster_details) = monster_details_option {
         Attacker {
@@ -76,18 +135,24 @@ fn get_attacker(
             name: monster_details.monster_type.clone(),
             client_addr: "".to_string(),
             currently_online: true,
+            is_player: false,
         }
     } else {
         panic!("Error: attacker was somehow not a player or monster.");
     }
 }
 
-fn get_current_map_states<'a>(all_map_states: &'a AllMapStates, map: &String) -> &'a MapState {
-    all_map_states.get(map).unwrap_or_else(|| {
-        error!("Entity is located on a map that does not exist: {}", &map);
-        warn!("Will return the default map, but this may cause problems.");
-        all_map_states.get(DEFAULT_MAP).unwrap()
-    })
+fn get_current_map_states<'a>(
+    all_map_states: &'a mut AllMapStates,
+    map: &String,
+) -> &'a mut MapState {
+    return if all_map_states.contains_key(map) {
+        all_map_states.get_mut(map).unwrap()
+    } else {
+        warn!("Tried to get map state for map that doesn't exist.");
+        warn!("Will return default map, but things might break.");
+        all_map_states.get_mut(DEFAULT_MAP).unwrap()
+    };
 }
 
 #[system]
@@ -95,7 +160,7 @@ pub(crate) fn resolve_combat(
     world: &mut SubWorld,
     query: &mut Query<(
         &mut Stats,
-        Option<&MonsterDetails>,
+        Option<&mut MonsterDetails>,
         Option<&PlayerDetails>,
         &mut Inventory,
     )>,
@@ -121,14 +186,16 @@ pub(crate) fn resolve_combat(
                 name: player_details.player_name.clone(),
                 client_addr: player_details.client_addr.clone(),
                 currently_online: player_details.currently_online,
+                is_player: true,
             };
-        } else if let Some(monster_details) = monster_details_option {
+        } else if let Some(monster_details) = &monster_details_option {
             //monster is the defender
             defender = Defender {
                 id: monster_details.id,
                 name: monster_details.monster_type.clone(),
                 client_addr: "".to_string(),
                 currently_online: true,
+                is_player: false,
             };
             defender_is_monster = true;
         }
@@ -161,6 +228,8 @@ pub(crate) fn resolve_combat(
                     defender_stats,
                     defender_inventory,
                 );
+                //set current monster target as attacker
+                monster_details_option.unwrap().current_target = Some(attacker.id);
             }
             combat::send_combat_updates_to_players(
                 &defender,

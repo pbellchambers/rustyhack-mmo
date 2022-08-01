@@ -105,7 +105,6 @@ pub struct MonsterDetails {
     pub id: Uuid,
     pub monster_type: String,
     pub spawn_position: Position,
-    pub is_active: bool,
     pub current_target: Option<Uuid>,
 }
 

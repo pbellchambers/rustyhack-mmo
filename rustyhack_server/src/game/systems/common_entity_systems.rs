@@ -15,7 +15,7 @@ use rustyhack_lib::ecs::item::{get_item_name, Item};
 use rustyhack_lib::math_utils::{i32_from, u32_from};
 
 #[system]
-pub(crate) fn update_entities_position(
+pub(crate) fn check_for_tile_collision(
     world: &mut SubWorld,
     query: &mut Query<&mut Position>,
     #[resource] all_maps: &AllMaps,
@@ -30,14 +30,31 @@ pub(crate) fn update_entities_position(
         let potential_pos_x = u32_from(i32_from(position.pos_x) + position.velocity_x);
         let potential_pos_y = u32_from(i32_from(position.pos_y) + position.velocity_y);
 
-        if !entity_is_colliding_with_tile(current_map.get_tile_at(potential_pos_x, potential_pos_y))
+        if entity_is_colliding_with_tile(current_map.get_tile_at(potential_pos_x, potential_pos_y))
         {
-            position.pos_x = potential_pos_x;
-            position.pos_y = potential_pos_y;
-            position.update_available = true;
+            debug!("Entity colliding with tile, setting velocity to 0.");
+            position.velocity_x = 0;
+            position.velocity_y = 0;
+        } else {
+            debug!("Entity not colliding with tile, continuing to combat check.");
+            continue;
         }
+    }
+}
+
+#[system]
+pub(crate) fn update_entities_position(world: &mut SubWorld, query: &mut Query<&mut Position>) {
+    for position in query.iter_mut(world) {
+        debug!("Updating all final positions.");
+        if position.velocity_x == 0 && position.velocity_y == 0 {
+            //no velocity, no updates
+            continue;
+        }
+        position.pos_x = u32_from(i32_from(position.pos_x) + position.velocity_x);
+        position.pos_y = u32_from(i32_from(position.pos_y) + position.velocity_y);
         position.velocity_x = 0;
         position.velocity_y = 0;
+        position.update_available = true;
     }
 }
 
@@ -151,7 +168,7 @@ pub(crate) fn collate_all_item_positions(
             current_map: dead_map,
             ..Dead::dead()
         };
-        info!(
+        debug!(
             "Removing item id {} to dead map: {:?}",
             item_details.id, dead_position
         );
@@ -163,7 +180,7 @@ pub(crate) fn collate_all_item_positions(
                 "picked_up_item".to_string(),
             ),
         );
-        info!("Removing item id {} from world.", item_details.id);
+        debug!("Removing item id {} from world.", item_details.id);
         commands.remove(*entity);
     } else {
         let item_name: String = get_item_name(item);

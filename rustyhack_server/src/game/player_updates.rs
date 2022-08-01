@@ -3,6 +3,7 @@ use bincode::serialize;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
 use legion::{IntoQuery, World};
+use rustyhack_lib::consts::{DEFAULT_ITEM_COLOUR, DEFAULT_PLAYER_ICON};
 use rustyhack_lib::ecs::components::{DisplayDetails, Inventory, PlayerDetails, Position, Stats};
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::{PlayerRequest, PositionMessage, ServerMessage};
@@ -67,14 +68,27 @@ pub(crate) fn process_player_messages(
                         "Player logout notification received for {} from: {}",
                         &client_details.player_name, &client_details.client_addr
                     );
-                    set_player_logged_out(
+                    let (logged_out_player_id, logged_out_map) = set_player_logged_out(
                         world,
                         &client_details.client_addr,
                         &client_details.player_name,
                     );
+                    broadcast_player_logged_out(
+                        world,
+                        sender,
+                        logged_out_player_id,
+                        &logged_out_map,
+                    );
                 }
                 PlayerRequest::Timeout(address) => {
-                    set_player_disconnected(world, &address);
+                    let (logged_out_player_id, logged_out_map) =
+                        set_player_disconnected(world, &address);
+                    broadcast_player_logged_out(
+                        world,
+                        sender,
+                        logged_out_player_id,
+                        &logged_out_map,
+                    );
                 }
                 _ => {
                     warn!("Didn't match any known message to process.");
@@ -98,12 +112,20 @@ fn set_player_velocity(world: &mut World, position_message: &PositionMessage) {
     }
 }
 
-fn set_player_logged_out(world: &mut World, address: &str, originating_player_name: &str) {
-    let mut query = <(&mut PlayerDetails, &mut DisplayDetails)>::query();
-    for (player_details, display_details) in query.iter_mut(world) {
+fn set_player_logged_out(
+    world: &mut World,
+    address: &str,
+    originating_player_name: &str,
+) -> (Uuid, String) {
+    let mut logged_out_id = Uuid::new_v4();
+    let mut logged_out_map = "".to_string();
+    let mut query = <(&mut PlayerDetails, &mut DisplayDetails, &Position)>::query();
+    for (player_details, display_details, position) in query.iter_mut(world) {
         if player_details.client_addr == address
             && player_details.player_name == originating_player_name
         {
+            logged_out_id = player_details.id;
+            logged_out_map = position.current_map.clone();
             display_details.visible = false;
             display_details.collidable = false;
             player_details.currently_online = false;
@@ -116,12 +138,17 @@ fn set_player_logged_out(world: &mut World, address: &str, originating_player_na
             break;
         }
     }
+    (logged_out_id, logged_out_map)
 }
 
-fn set_player_disconnected(world: &mut World, address: &str) {
-    let mut query = <(&mut PlayerDetails, &mut DisplayDetails)>::query();
-    for (player_details, display_details) in query.iter_mut(world) {
+fn set_player_disconnected(world: &mut World, address: &str) -> (Uuid, String) {
+    let mut logged_out_id = Uuid::new_v4();
+    let mut logged_out_map = "".to_string();
+    let mut query = <(&mut PlayerDetails, &mut DisplayDetails, &Position)>::query();
+    for (player_details, display_details, position) in query.iter_mut(world) {
         if player_details.client_addr == address {
+            logged_out_id = player_details.id;
+            logged_out_map = position.current_map.clone();
             display_details.visible = false;
             display_details.collidable = false;
             player_details.currently_online = false;
@@ -132,6 +159,56 @@ fn set_player_disconnected(world: &mut World, address: &str) {
                 &player_details.player_name, &address
             );
             break;
+        }
+    }
+    (logged_out_id, logged_out_map)
+}
+
+fn broadcast_player_logged_out(
+    world: &mut World,
+    sender: &Sender<Packet>,
+    logged_out_player_id: Uuid,
+    logged_out_map: &str,
+) {
+    //broadcast update to other players
+    let mut query = <(&PlayerDetails, &Position)>::query();
+    for (player_details, player_position) in query.iter(world) {
+        if player_details.currently_online && player_position.current_map == logged_out_map {
+            info!(
+                "Sending logged out player: {} update to: {}",
+                &logged_out_player_id, &player_details.client_addr
+            );
+
+            let response = serialize(&ServerMessage::UpdateOtherEntities((
+                logged_out_player_id,
+                (
+                    0,
+                    0,
+                    "LoggedOut".to_string(),
+                    DEFAULT_PLAYER_ICON,
+                    DEFAULT_ITEM_COLOUR,
+                    logged_out_player_id.to_string(),
+                ),
+            )))
+            .unwrap_or_else(|err| {
+                error!(
+                    "Failed to serialize entity position broadcast to: {}, {}, @ map: {} error: {}",
+                    &player_details.player_name,
+                    &player_details.client_addr,
+                    &player_position.current_map,
+                    err
+                );
+                process::exit(1);
+            });
+
+            rustyhack_lib::message_handler::send_packet(
+                Packet::reliable_ordered(
+                    player_details.client_addr.parse().unwrap(),
+                    response,
+                    Some(26),
+                ),
+                sender,
+            );
         }
     }
 }

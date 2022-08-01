@@ -32,7 +32,6 @@ impl Default for Monster {
                     velocity_x: 0,
                     velocity_y: 0,
                 },
-                is_active: false,
                 current_target: None,
             },
             display_details: DisplayDetails {

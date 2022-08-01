@@ -32,6 +32,23 @@ pub(crate) fn insert_entity_at(map: &mut MapState, entity: EntityType, x: u32, y
     map[y as usize][x as usize].push(entity);
 }
 
+pub(crate) fn remove_entity_at(map: &mut MapState, entity: &EntityType, x: u32, y: u32) {
+    let mut entity_index: Option<usize> = None;
+    for (index, map_state_entity) in map[y as usize][x as usize].iter().enumerate() {
+        if *map_state_entity == *entity {
+            entity_index = Some(index);
+        }
+    }
+    match entity_index {
+        None => {
+            //do nothing
+        }
+        Some(index) => {
+            map[y as usize][x as usize].remove(index);
+        }
+    }
+}
+
 pub(crate) fn clear_all_entities(map_states: &mut AllMapStates) -> &mut AllMapStates {
     for map_state in &mut map_states.values_mut() {
         for map_row in map_state.iter_mut() {
@@ -59,6 +76,7 @@ pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> 
                     name: player.player_details.player_name.clone(),
                     client_addr: player.player_details.client_addr.clone(),
                     currently_online: player.player_details.currently_online,
+                    is_player: true,
                 }
             } else if let EntityType::Monster(monster) = entity_type {
                 colliding = monster.display_details.collidable;
@@ -67,6 +85,7 @@ pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> 
                     name: monster.monster_details.monster_type.clone(),
                     client_addr: "".to_string(),
                     currently_online: true,
+                    is_player: false,
                 }
             }
         }
