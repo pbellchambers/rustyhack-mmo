@@ -122,17 +122,18 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
             server_backup_tick_time = Instant::now();
         }
 
-        if loop_tick_time.elapsed() >= consts::LOOP_TICK {
+        //snapshotting the duration here to prevent a possible server crash
+        let loop_tick_time_elapsed = loop_tick_time.elapsed();
+        if loop_tick_time_elapsed >= consts::LOOP_TICK {
             warn!(
-                "Loop took longer than specified tick time, expected: {:?}, actual: {:?}",
-                consts::LOOP_TICK,
-                loop_tick_time.elapsed()
+                "Loop took longer than specified tick time, expected: {}ms, actual: {}ms",
+                consts::LOOP_TICK.as_millis(),
+                loop_tick_time_elapsed.as_millis()
             );
             loop_tick_time = Instant::now();
             continue;
         }
-        //todo there is a possibility this creates a negative duration, should handle here
-        let duration_to_sleep = consts::LOOP_TICK - loop_tick_time.elapsed();
+        let duration_to_sleep = consts::LOOP_TICK - loop_tick_time_elapsed;
         if duration_to_sleep.as_nanos() > 0 {
             //sleep here for LOOP_TICK so we don't hammer the CPU unnecessarily
             thread::sleep(duration_to_sleep);
