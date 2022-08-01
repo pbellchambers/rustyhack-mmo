@@ -22,13 +22,22 @@ pub(crate) fn resolve_player_deaths(
 ) {
     for (player_details, position, stats) in query.iter_mut(world) {
         if stats.current_hp <= 0.0 {
+            let mut exp_loss = 0;
             if stats.exp > 100 {
-                stats.exp = (stats.exp * (100 - EXP_LOSS_ON_DEATH_PERCENTAGE)) / 100;
+                exp_loss = (stats.exp * EXP_LOSS_ON_DEATH_PERCENTAGE) / 100;
+                stats.exp -= exp_loss;
             }
             stats.current_hp = stats.max_hp;
             stats.update_available = true;
             *position = Position::default();
             position.update_available = true;
+            send_message_to_player(
+                &player_details.player_name,
+                &player_details.client_addr,
+                player_details.currently_online,
+                &("You lost ".to_string() + &exp_loss.to_string() + " exp."),
+                sender,
+            );
             send_message_to_player(
                 &player_details.player_name,
                 &player_details.client_addr,
