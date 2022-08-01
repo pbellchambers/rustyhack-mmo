@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - monster collision checking with other monsters now exists
 - collision detection now more efficient
 - improved monster movement, wandering, and return to spawn behaviour
+- monsters now change target if attacked
 
 ### 🐛 Bug Fixes
 - don't send drop item request to server if player inventory empty

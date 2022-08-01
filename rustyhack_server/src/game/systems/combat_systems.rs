@@ -157,7 +157,7 @@ pub(crate) fn resolve_combat(
     world: &mut SubWorld,
     query: &mut Query<(
         &mut Stats,
-        Option<&MonsterDetails>,
+        Option<&mut MonsterDetails>,
         Option<&PlayerDetails>,
         &mut Inventory,
     )>,
@@ -185,7 +185,7 @@ pub(crate) fn resolve_combat(
                 currently_online: player_details.currently_online,
                 is_player: true,
             };
-        } else if let Some(monster_details) = monster_details_option {
+        } else if let Some(monster_details) = &monster_details_option {
             //monster is the defender
             defender = Defender {
                 id: monster_details.id,
@@ -225,6 +225,8 @@ pub(crate) fn resolve_combat(
                     defender_stats,
                     defender_inventory,
                 );
+                //set current monster target as attacker
+                monster_details_option.unwrap().current_target = Some(attacker.id);
             }
             combat::send_combat_updates_to_players(
                 &defender,

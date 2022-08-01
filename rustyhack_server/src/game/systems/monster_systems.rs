@@ -105,7 +105,6 @@ pub(crate) fn update_monster_velocities(
         //else either return to spawn, pick a new target, or move randomly
         if outside_spawn_range && !moving_towards_existing_target {
             debug!("Monster returning to spawn location.");
-            monster.is_active = false;
             monster.current_target = None;
             move_towards_target(position, &monster.spawn_position);
         } else if !outside_spawn_range
@@ -114,7 +113,6 @@ pub(crate) fn update_monster_velocities(
         {
             debug!("Monster moving towards new target.");
             let nearest_target = get_nearest_target(&nearby_players, position);
-            monster.is_active = true;
             monster.current_target = Some(nearest_target);
             move_towards_target(position, nearby_players.get(&nearest_target).unwrap());
         } else if !outside_spawn_range
