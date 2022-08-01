@@ -6,6 +6,7 @@ use crossbeam_channel::Sender;
 use laminar::Packet;
 use legion::world::SubWorld;
 use legion::{system, Query};
+use rustyhack_lib::consts::DEFAULT_MAP;
 use rustyhack_lib::ecs::components::{
     DisplayDetails, EntityType, Inventory, MonsterDetails, PlayerDetails, Position, Stats,
 };
@@ -13,7 +14,6 @@ use rustyhack_lib::ecs::monster::Monster;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::math_utils::{i32_from, u32_from};
 use uuid::Uuid;
-use rustyhack_lib::consts::DEFAULT_MAP;
 
 #[system]
 #[allow(clippy::type_complexity)]
@@ -152,7 +152,7 @@ fn get_current_map_states<'a>(
         warn!("Tried to get map state for map that doesn't exist.");
         warn!("Will return default map, but things might break.");
         all_map_states.get_mut(DEFAULT_MAP).unwrap()
-    }
+    };
 }
 
 #[system]
