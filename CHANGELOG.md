@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### 🚀 Features and Improvements
+- server now backs up the world every 60 seconds
+- server will try to load from backup on start, else create a new world
 - added messages for picking up and dropping items
 - monster collision checking with other monsters now exists
 - collision detection now more efficient
@@ -23,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - stop monsters from following disconnected players
 - fix players not disappearing when disconnecting
 - combat can no longer occur after player has moved away from target
+- fix potential server crash when calculating loop sleep duration
 
 ### 🧰 Maintenance
 - .
