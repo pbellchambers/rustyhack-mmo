@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 🚀 Features and Improvements
 - server now backs up the world every 60 seconds
 - server will try to load from backup on start, else create a new world
+- server tick ecs systems now more efficient
+- player can now choose which item to drop
 - added messages for picking up and dropping items
 - monster collision checking with other monsters now exists
 - collision detection now more efficient
@@ -16,7 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - entities can now be attacked by multiple entities in the same tick
 - system messages now have colours
 - health regen now only applies when out of combat
-- server tick ecs systems now more efficient
 
 ### 🐛 Bug Fixes
 - don't send drop item request to server if player inventory empty
@@ -28,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix potential server crash when calculating loop sleep duration
 
 ### 🧰 Maintenance
-- .
+- updated dependencies
 
 ## [v0.3.0]
 The combat, stats, levelling, and inventory update!

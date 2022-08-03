@@ -55,9 +55,9 @@ pub(crate) fn run(
                                 channel_sender,
                             );
                         }
-                        PlayerRequest::DropItem(position_message) => {
+                        PlayerRequest::DropItem(drop_item_details) => {
                             send_channel_message(
-                                PlayerRequest::DropItem(position_message),
+                                PlayerRequest::DropItem(drop_item_details),
                                 channel_sender,
                             );
                         }

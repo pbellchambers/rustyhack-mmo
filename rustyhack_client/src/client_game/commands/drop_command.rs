@@ -1,36 +1,36 @@
-use crate::client_consts::DEFAULT_FG_COLOUR;
 use bincode::serialize;
-use chrono::{DateTime, Local};
 use crossbeam_channel::Sender;
-use crossterm::style::Color;
 use laminar::Packet;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::{PlayerRequest, PositionMessage};
 
 pub(crate) fn send_drop_item_request(
-    system_messages: &mut Vec<(String, Color)>,
     sender: &Sender<Packet>,
     player: &Player,
     server_addr: &str,
+    item_index: u8,
+    item_page_index: u16,
 ) {
-    if player.inventory.carried.is_empty() {
-        let date_time: DateTime<Local> = Local::now();
-        let time = date_time.format("[%H:%M:%S] ").to_string();
-        info!("No item available to drop.");
-        system_messages.push(((time + "No item available to drop."), DEFAULT_FG_COLOUR));
-    } else {
-        let packet = Packet::reliable_ordered(
-            server_addr
-                .parse()
-                .expect("Server address format is invalid."),
-            serialize(&PlayerRequest::DropItem(PositionMessage {
+    let item_index = (item_page_index.to_string() + &item_index.to_string())
+        .parse::<u16>()
+        .expect("Drop item request resulted in invalid u16 item index.");
+    let packet = Packet::reliable_ordered(
+        server_addr
+            .parse()
+            .expect("Server address format is invalid."),
+        serialize(&PlayerRequest::DropItem((
+            item_index,
+            PositionMessage {
                 player_name: player.player_details.player_name.clone(),
                 position: player.position.clone(),
-            }))
-            .unwrap(),
-            Some(13),
-        );
-        rustyhack_lib::message_handler::send_packet(packet, sender);
-        info!("Sent drop item request packet to server.");
-    }
+            },
+        )))
+        .unwrap(),
+        Some(13),
+    );
+    rustyhack_lib::message_handler::send_packet(packet, sender);
+    info!(
+        "Sent drop item request packet to server for item {}.",
+        item_index
+    );
 }

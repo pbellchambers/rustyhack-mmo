@@ -191,6 +191,7 @@ pub(crate) fn pickup_item(
 
 pub(crate) fn drop_item(
     world: &mut World,
+    item_index: u16,
     position_message: &PositionMessage,
     sender: &Sender<Packet>,
 ) {
@@ -218,11 +219,10 @@ pub(crate) fn drop_item(
                         velocity_x: 0,
                         velocity_y: 0,
                     },
-                    //todo give players option of what they want to drop
-                    player_inventory.carried[0].clone(),
+                    player_inventory.carried[item_index as usize].clone(),
                 );
                 let item_name = get_item_name(&dropped_item.3);
-                player_inventory.carried.remove(0);
+                player_inventory.carried.remove(item_index as usize);
                 player_inventory.update_available = true;
                 send_message_to_player(
                     &player_details.player_name,

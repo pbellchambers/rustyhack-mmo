@@ -8,9 +8,18 @@ use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
 use std::process;
 
 mod bottom_text_window;
+pub(crate) mod drop_item_choice;
+mod level_up_choice;
 mod side_status_bar;
 mod top_status_bar;
 pub(crate) mod viewport;
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum SidebarState {
+    StatusBar,
+    DropItemChoice(u16),
+    LevelUpChoice,
+}
 
 pub(crate) fn draw_screens(
     console: &mut ConsoleEngine,
@@ -18,6 +27,7 @@ pub(crate) fn draw_screens(
     player: &Player,
     entity_position_broadcast: &EntityPositionBroadcast,
     system_messages: &[(String, Color)],
+    sidebar_state: SidebarState,
 ) {
     //check and update if resized
     console.check_resize();
@@ -51,13 +61,19 @@ pub(crate) fn draw_screens(
     );
 
     let top_status_bar = top_status_bar::draw(player, console);
-    let side_status_bar = side_status_bar::draw(player, console, viewport_width);
+    let side_bar = match sidebar_state {
+        SidebarState::StatusBar => side_status_bar::draw(player, console, viewport_width),
+        SidebarState::DropItemChoice(item_page_index) => {
+            drop_item_choice::draw(player, console, viewport_width, item_page_index)
+        }
+        SidebarState::LevelUpChoice => level_up_choice::draw(player, console, viewport_width),
+    };
     let bottom_text_window =
         bottom_text_window::draw(system_messages, console, viewport_width, viewport_height);
 
     //final draw step
     console.print_screen(0, 0, &top_status_bar);
-    console.print_screen(i32_from(viewport_width), 1, &side_status_bar);
+    console.print_screen(i32_from(viewport_width), 1, &side_bar);
     console.print_screen(0, i32_from(viewport_height), &bottom_text_window);
     console.print_screen(0, 1, &viewport);
     console.draw();
