@@ -20,7 +20,7 @@ pub(crate) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32
 
     let gold_string = "Gold: ".to_owned() + &player.inventory.gold.to_string();
 
-    let equipped_title_string = "Equipped:".to_owned();
+    let equipped_title_string = "Equipped:";
     let weapon_string = player.inventory.equipped.weapon.name.to_string()
         + " ("
         + &player
@@ -49,7 +49,7 @@ pub(crate) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32
             .to_string()
         + "% armour)";
 
-    let inventory_title_string = "Inventory:".to_owned();
+    let inventory_title_string = "Inventory:";
 
     screen.print(1, 0, &player.player_details.player_name);
     screen.print(1, 1, &lvl_string);
@@ -60,14 +60,14 @@ pub(crate) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32
     screen.print(1, 7, &dex_string);
     screen.print(1, 8, &con_string);
     screen.print(1, 10, &gold_string);
-    screen.print(1, 12, &equipped_title_string);
+    screen.print(1, 12, equipped_title_string);
     screen.print(1, 13, &weapon_string);
     screen.print(1, 14, &armour_string);
-    screen.print(1, 16, &inventory_title_string);
+    screen.print(1, 16, inventory_title_string);
 
     let mut line_count = 17;
-    for item in player.inventory.carried.clone() {
-        let item_text = get_item_name(&item);
+    for item in &player.inventory.carried {
+        let item_text = get_item_name(item);
         screen.print(1, line_count, &item_text);
         line_count += 1;
     }

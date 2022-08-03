@@ -13,7 +13,7 @@ use crate::client_consts::{
 use crate::client_game::commands::movement;
 
 use crate::networking::client_message_handler;
-use crate::screens::draw_screens;
+use crate::screens::{draw_screens, SidebarState};
 
 mod client_input_handler;
 mod client_logout;
@@ -54,8 +54,8 @@ pub(crate) fn run(
     info!("Initialised console engine.");
 
     let mut entity_position_map: EntityPositionBroadcast = HashMap::new();
-
     let mut system_messages: Vec<(String, Color)> = vec![];
+    let mut sidebar_state = SidebarState::StatusBar;
 
     info!("Starting client_game loop");
     let mut client_cleanup_tick_time = Instant::now();
@@ -80,7 +80,7 @@ pub(crate) fn run(
             client_cleanup_tick_time = Instant::now();
         }
 
-        client_input_handler::handle_other_input(
+        sidebar_state = client_input_handler::handle_other_input(
             sender,
             &mut console,
             &mut system_messages,
@@ -88,6 +88,7 @@ pub(crate) fn run(
             &all_maps,
             &entity_position_map,
             server_addr,
+            sidebar_state,
         );
 
         //clear, update and redraw the screens
@@ -97,6 +98,7 @@ pub(crate) fn run(
             &player,
             &entity_position_map,
             &system_messages,
+            sidebar_state,
         );
 
         //check if we should quit
