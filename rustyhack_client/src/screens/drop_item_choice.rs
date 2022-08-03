@@ -6,7 +6,7 @@ use rustyhack_lib::ecs::player::Player;
 pub(crate) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32) -> Screen {
     let mut screen = Screen::new(console.get_width() - viewport_width, console.get_height());
 
-    let esc_string = "(Esc to cancel)";
+    let esc_string = "(Esc) to cancel";
     let drop_item_string = "Drop which item?";
 
     screen.print(1, 0, esc_string);
