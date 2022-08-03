@@ -1,5 +1,6 @@
 use crate::client_consts::DEFAULT_FG_COLOUR;
 use crate::client_game::commands;
+use crate::screens;
 use crate::screens::SidebarState;
 use chrono::{DateTime, Local};
 use console_engine::{ConsoleEngine, KeyCode};
@@ -7,6 +8,7 @@ use crossbeam_channel::Sender;
 use crossterm::style::Color;
 use laminar::Packet;
 use rustyhack_lib::background_map::AllMaps;
+use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
 
@@ -35,11 +37,21 @@ pub(crate) fn handle_other_input(
         SidebarState::StatusBar => {
             sidebar_state = sidebar_change_check(console, system_messages, player, sidebar_state);
         }
-        SidebarState::DropItemChoice => {
-            sidebar_state = drop_item_choice(console, player, sender, server_addr, sidebar_state);
+        SidebarState::DropItemChoice(item_page_index) => {
+            sidebar_state = drop_item_choice(
+                console,
+                player,
+                sender,
+                server_addr,
+                sidebar_state,
+                item_page_index,
+            );
         }
         SidebarState::LevelUpChoice => {
-            sidebar_state = escape_check(console, sidebar_state);
+            if check_for_escape(console) {
+                info!("Returning to default sidebar window.");
+                sidebar_state = SidebarState::StatusBar;
+            }
         }
     }
 
@@ -52,60 +64,73 @@ fn drop_item_choice(
     sender: &Sender<Packet>,
     server_addr: &str,
     mut sidebar_state: SidebarState,
+    item_page_index: u16,
 ) -> SidebarState {
-    if console.is_key_pressed(KeyCode::Esc) {
+    if check_for_escape(console) {
         info!("Returning to default sidebar window.");
         sidebar_state = SidebarState::StatusBar;
-    } else if console.is_key_pressed(KeyCode::Char('0')) && player.inventory.carried.get(0) != None
-    {
-        commands::drop_command::send_drop_item_request(sender, player, server_addr, 0);
-        sidebar_state = SidebarState::StatusBar;
-    } else if console.is_key_pressed(KeyCode::Char('1')) && player.inventory.carried.get(1) != None
-    {
-        commands::drop_command::send_drop_item_request(sender, player, server_addr, 1);
-        sidebar_state = SidebarState::StatusBar;
-    } else if console.is_key_pressed(KeyCode::Char('2')) && player.inventory.carried.get(2) != None
-    {
-        commands::drop_command::send_drop_item_request(sender, player, server_addr, 2);
-        sidebar_state = SidebarState::StatusBar;
-    } else if console.is_key_pressed(KeyCode::Char('3')) && player.inventory.carried.get(3) != None
-    {
-        commands::drop_command::send_drop_item_request(sender, player, server_addr, 3);
-        sidebar_state = SidebarState::StatusBar;
-    } else if console.is_key_pressed(KeyCode::Char('4')) && player.inventory.carried.get(4) != None
-    {
-        commands::drop_command::send_drop_item_request(sender, player, server_addr, 4);
-        sidebar_state = SidebarState::StatusBar;
-    } else if console.is_key_pressed(KeyCode::Char('5')) && player.inventory.carried.get(5) != None
-    {
-        commands::drop_command::send_drop_item_request(sender, player, server_addr, 5);
-        sidebar_state = SidebarState::StatusBar;
-    } else if console.is_key_pressed(KeyCode::Char('6')) && player.inventory.carried.get(6) != None
-    {
-        commands::drop_command::send_drop_item_request(sender, player, server_addr, 6);
-        sidebar_state = SidebarState::StatusBar;
-    } else if console.is_key_pressed(KeyCode::Char('7')) && player.inventory.carried.get(7) != None
-    {
-        commands::drop_command::send_drop_item_request(sender, player, server_addr, 7);
-        sidebar_state = SidebarState::StatusBar;
-    } else if console.is_key_pressed(KeyCode::Char('8')) && player.inventory.carried.get(8) != None
-    {
-        commands::drop_command::send_drop_item_request(sender, player, server_addr, 8);
-        sidebar_state = SidebarState::StatusBar;
-    } else if console.is_key_pressed(KeyCode::Char('9')) && player.inventory.carried.get(9) != None
-    {
-        commands::drop_command::send_drop_item_request(sender, player, server_addr, 9);
+    } else if check_for_back(console, item_page_index) {
+        sidebar_state = SidebarState::DropItemChoice(item_page_index - 1);
+    } else if check_for_next(console, item_page_index, player.inventory.carried.len()) {
+        sidebar_state = SidebarState::DropItemChoice(item_page_index + 1);
+    } else if let Some(item_index) = check_for_number(console, &player.inventory.carried) {
+        commands::drop_command::send_drop_item_request(
+            sender,
+            player,
+            server_addr,
+            item_index,
+            item_page_index,
+        );
         sidebar_state = SidebarState::StatusBar;
     }
     sidebar_state
 }
 
-fn escape_check(console: &mut ConsoleEngine, mut sidebar_state: SidebarState) -> SidebarState {
-    if console.is_key_pressed(KeyCode::Esc) {
-        info!("Returning to default sidebar window.");
-        sidebar_state = SidebarState::StatusBar;
+fn check_for_escape(console: &ConsoleEngine) -> bool {
+    console.is_key_pressed(KeyCode::Esc)
+}
+
+fn check_for_back(console: &ConsoleEngine, item_page_index: u16) -> bool {
+    console.is_key_pressed(KeyCode::Char('b')) && item_page_index > 0
+}
+
+fn check_for_next(console: &ConsoleEngine, item_page_index: u16, inventory_size: usize) -> bool {
+    console.is_key_pressed(KeyCode::Char('n'))
+        && screens::drop_item_choice::can_go_next_page(inventory_size, item_page_index)
+}
+
+fn check_for_number(console: &ConsoleEngine, player_carried_inventory: &[Item]) -> Option<u8> {
+    let key_pressed: Option<u8>;
+
+    if console.is_key_pressed(KeyCode::Char('0')) {
+        key_pressed = Some(0);
+    } else if console.is_key_pressed(KeyCode::Char('1')) {
+        key_pressed = Some(1);
+    } else if console.is_key_pressed(KeyCode::Char('2')) {
+        key_pressed = Some(2);
+    } else if console.is_key_pressed(KeyCode::Char('3')) {
+        key_pressed = Some(3);
+    } else if console.is_key_pressed(KeyCode::Char('4')) {
+        key_pressed = Some(4);
+    } else if console.is_key_pressed(KeyCode::Char('5')) {
+        key_pressed = Some(5);
+    } else if console.is_key_pressed(KeyCode::Char('6')) {
+        key_pressed = Some(6);
+    } else if console.is_key_pressed(KeyCode::Char('7')) {
+        key_pressed = Some(7);
+    } else if console.is_key_pressed(KeyCode::Char('8')) {
+        key_pressed = Some(8);
+    } else if console.is_key_pressed(KeyCode::Char('9')) {
+        key_pressed = Some(9);
+    } else {
+        key_pressed = None;
     }
-    sidebar_state
+
+    if key_pressed != None && player_carried_inventory.get(key_pressed.unwrap() as usize) != None {
+        key_pressed
+    } else {
+        None
+    }
 }
 
 fn sidebar_change_check(
@@ -122,7 +147,7 @@ fn sidebar_change_check(
             info!("No item available to drop.");
             system_messages.push(((time + "No item available to drop."), DEFAULT_FG_COLOUR));
         } else {
-            sidebar_state = SidebarState::DropItemChoice;
+            sidebar_state = SidebarState::DropItemChoice(0);
         }
     } else if console.is_key_pressed(KeyCode::Char('u')) {
         sidebar_state = SidebarState::LevelUpChoice;

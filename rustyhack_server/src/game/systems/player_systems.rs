@@ -191,7 +191,7 @@ pub(crate) fn pickup_item(
 
 pub(crate) fn drop_item(
     world: &mut World,
-    item_index: u8,
+    item_index: u16,
     position_message: &PositionMessage,
     sender: &Sender<Packet>,
 ) {

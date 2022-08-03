@@ -8,7 +8,7 @@ use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
 use std::process;
 
 mod bottom_text_window;
-mod drop_item_choice;
+pub(crate) mod drop_item_choice;
 mod level_up_choice;
 mod side_status_bar;
 mod top_status_bar;
@@ -17,7 +17,7 @@ pub(crate) mod viewport;
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum SidebarState {
     StatusBar,
-    DropItemChoice,
+    DropItemChoice(u16),
     LevelUpChoice,
 }
 
@@ -63,7 +63,9 @@ pub(crate) fn draw_screens(
     let top_status_bar = top_status_bar::draw(player, console);
     let side_bar = match sidebar_state {
         SidebarState::StatusBar => side_status_bar::draw(player, console, viewport_width),
-        SidebarState::DropItemChoice => drop_item_choice::draw(player, console, viewport_width),
+        SidebarState::DropItemChoice(item_page_index) => {
+            drop_item_choice::draw(player, console, viewport_width, item_page_index)
+        }
         SidebarState::LevelUpChoice => level_up_choice::draw(player, console, viewport_width),
     };
     let bottom_text_window =
