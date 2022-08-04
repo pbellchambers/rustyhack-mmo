@@ -77,49 +77,107 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let mut loop_tick_time = Instant::now();
     let mut server_game_tick_count = 0;
 
+    //measuring performance
+    let mut bench_loop_count = 1;
+    let mut bench_tick_loop_count = 1;
+    let mut bench_backup_regen_count = 1;
+    let mut bench_broadcast_loop_count = 1;
+    let mut bench_backup_loop_count = 1;
+    let mut rolling_bench_map_1 = 0;
+    let mut rolling_bench_player = 0;
+    let mut rolling_bench_network_1 = 0;
+    let mut rolling_bench_map_2 = 0;
+    let mut rolling_bench_tick = 0;
+    let mut rolling_bench_regen = 0;
+    let mut rolling_bench_network_2 = 0;
+    let mut rolling_bench_broadcast = 0;
+    let mut rolling_bench_backup = 0;
+
     info!("Starting game loop");
     loop {
         //process player updates as soon as they are received
         if player_updates::process_player_messages(&mut world, &channel_receiver, &local_sender) {
             debug!("Executing player update schedule...");
+            let instant = Instant::now();
             map_state_update_schedule.execute(&mut world, &mut resources);
+            rolling_bench_map_1 =
+                update_rolling_bench(rolling_bench_map_1, bench_loop_count, instant);
+            let instant = Instant::now();
             player_update_schedule.execute(&mut world, &mut resources);
+            rolling_bench_player =
+                update_rolling_bench(rolling_bench_player, bench_loop_count, instant);
             debug!("Player update schedule executed successfully.");
 
             //send game tick updates to players
+            let instant = Instant::now();
             send_network_messages_schedule.execute(&mut world, &mut resources);
+            rolling_bench_network_1 =
+                update_rolling_bench(rolling_bench_network_1, bench_loop_count, instant);
+            bench_loop_count += 1;
         }
 
         //all other updates that depend on the server game tick
         if server_game_tick_time.elapsed() >= consts::SERVER_GAME_TICK {
             server_game_tick_count += 1;
             debug!("Executing server tick schedule...");
+            let instant = Instant::now();
             map_state_update_schedule.execute(&mut world, &mut resources);
+            rolling_bench_map_2 =
+                update_rolling_bench(rolling_bench_map_2, bench_tick_loop_count, instant);
+            let instant = Instant::now();
             server_tick_update_schedule.execute(&mut world, &mut resources);
+            rolling_bench_tick =
+                update_rolling_bench(rolling_bench_tick, bench_tick_loop_count, instant);
             debug!("Server tick update schedule executed successfully.");
 
             //things that happen every 2 ticks rather than every tick
             if server_game_tick_count == 2 {
+                let instant = Instant::now();
                 health_regen_schedule.execute(&mut world, &mut resources);
+                rolling_bench_regen =
+                    update_rolling_bench(rolling_bench_regen, bench_backup_regen_count, instant);
                 server_game_tick_count = 0;
+                bench_backup_regen_count += 1;
             }
 
             //send game tick updates to players
+            let instant = Instant::now();
             send_network_messages_schedule.execute(&mut world, &mut resources);
+            rolling_bench_network_2 =
+                update_rolling_bench(rolling_bench_network_2, bench_tick_loop_count, instant);
 
             server_game_tick_time = Instant::now();
+            bench_tick_loop_count += 1;
         }
 
         if entity_update_broadcast_tick_time.elapsed() >= consts::ENTITY_UPDATE_BROADCAST_TICK {
             debug!("Broadcasting entity updates");
+            let instant = Instant::now();
             network_broadcast_schedule.execute(&mut world, &mut resources);
+            rolling_bench_broadcast =
+                update_rolling_bench(rolling_bench_broadcast, bench_broadcast_loop_count, instant);
             debug!("Finished broadcasting entity updates");
             entity_update_broadcast_tick_time = Instant::now();
+            bench_broadcast_loop_count += 1;
         }
 
         if server_backup_tick_time.elapsed() >= consts::SERVER_BACKUP_TICK {
+            let instant = Instant::now();
             world_backup::do_world_backup(&registry, &world);
+            rolling_bench_backup =
+                update_rolling_bench(rolling_bench_backup, bench_backup_loop_count, instant);
             server_backup_tick_time = Instant::now();
+            bench_backup_loop_count += 1;
+            info!("Average loop performance...");
+            info!("{} rolling_bench_map_1", rolling_bench_map_1);
+            info!("{} rolling_bench_player", rolling_bench_player);
+            info!("{} rolling_bench_network_1", rolling_bench_network_1);
+            info!("{} rolling_bench_map_2", rolling_bench_map_2);
+            info!("{} rolling_bench_tick", rolling_bench_tick);
+            info!("{} rolling_bench_regen", rolling_bench_regen);
+            info!("{} rolling_bench_network_2", rolling_bench_network_2);
+            info!("{} rolling_bench_broadcast", rolling_bench_broadcast);
+            info!("{} rolling_bench_backup", rolling_bench_backup);
         }
 
         //snapshotting the duration here to prevent a possible server crash
@@ -140,4 +198,8 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
         }
         loop_tick_time = Instant::now();
     }
+}
+
+fn update_rolling_bench(current_average: u128, loop_count: u128, instant: Instant) -> u128 {
+    (((current_average) * (loop_count - 1)) + instant.elapsed().as_nanos()) / loop_count
 }

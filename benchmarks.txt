@@ -1,0 +1,25 @@
+[debug]
+47462150 rolling_bench_backup
+2932028  rolling_bench_tick
+1629671  rolling_bench_map_2
+1603866  rolling_bench_map_1
+1035650  rolling_bench_broadcast
+645256   rolling_bench_player
+344980   rolling_bench_network_2
+323870   rolling_bench_network_1
+164173   rolling_bench_regen
+tot:                56141644 (56.14ms)
+tot without backup: 8679494 (8.68ms)
+
+[release]
+48424800 rolling_bench_backup
+1040935  rolling_bench_tick
+239627   rolling_bench_map_2
+235751   rolling_bench_map_1
+218011   rolling_bench_broadcast
+143939   rolling_bench_player
+95825    rolling_bench_network_2
+80954    rolling_bench_regen
+71050    rolling_bench_network_1
+tot:                50550892 (50.55ms)
+tot without backup: 2126092 (2.13ms)
