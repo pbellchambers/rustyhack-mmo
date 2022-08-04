@@ -6,7 +6,6 @@ use crossterm::style::Color;
 use laminar::Packet;
 use legion::world::SubWorld;
 use legion::{system, IntoQuery, Query, World};
-use rand::Rng;
 use rustyhack_lib::consts::{DEFAULT_ITEM_COLOUR, DEFAULT_ITEM_ICON};
 use rustyhack_lib::ecs::components::{
     DisplayDetails, Inventory, ItemDetails, PlayerDetails, Position, Stats,
@@ -96,7 +95,7 @@ pub(crate) fn level_up(
                     &player_details.player_name,
                     &player_details.client_addr,
                     player_details.currently_online,
-                    "You levelled up!",
+                    "You levelled up, 2 new stat points available to spend!",
                     Some(Color::Cyan),
                     sender,
                 );
@@ -109,20 +108,8 @@ fn calculate_new_stats(stats: &mut Stats) -> &mut Stats {
     // 2 new stat points are given on each level up
     // HP increases by 25
     // HP is increased by Constitution %
-    //todo make stat selection a player choice rather than randomly assigning 2 stat upgrades here
-    let mut stat_upgrades = 2;
-    while stat_upgrades > 0 {
-        let mut rng = rand::thread_rng();
-        let random_choice = rng.gen_range(1..=3);
-        if random_choice == 1 {
-            stats.str += 1.0;
-        } else if random_choice == 2 {
-            stats.dex += 1.0;
-        } else {
-            stats.con += 1.0;
-        }
-        stat_upgrades -= 1;
-    }
+    // need to recalculate HP whenever player increases con
+    stats.stat_points += 2;
     stats.max_hp =
         (BASE_HP_TABLE[(stats.level - 1) as usize] * (1.0 + (stats.con / 100.0))).round();
     stats
@@ -233,6 +220,62 @@ pub(crate) fn drop_item(
                     sender,
                 );
                 world.push(dropped_item);
+            }
+            break;
+        }
+    }
+}
+
+pub(crate) fn increase_stat(
+    world: &mut World,
+    stat: &str,
+    player_name: &str,
+    sender: &Sender<Packet>,
+) {
+    let mut player_query = <(&PlayerDetails, &mut Stats)>::query();
+    for (player_details, stats) in player_query.iter_mut(world) {
+        if player_details.player_name == player_name && stats.stat_points > 0 {
+            let mut updated_stat = false;
+            match stat {
+                "Str" => {
+                    if stats.str < 100.0 {
+                        stats.str += 1.0;
+                        stats.stat_points -= 1;
+                        updated_stat = true;
+                    }
+                }
+                "Dex" => {
+                    if stats.dex < 100.0 {
+                        stats.dex += 1.0;
+                        stats.stat_points -= 1;
+                        updated_stat = true;
+                    }
+                }
+                "Con" => {
+                    if stats.con < 100.0 {
+                        stats.con += 1.0;
+                        stats.stat_points -= 1;
+                        stats.max_hp = (BASE_HP_TABLE[(stats.level - 1) as usize]
+                            * (1.0 + (stats.con / 100.0)))
+                            .round();
+                        updated_stat = true;
+                    }
+                }
+                _ => {
+                    break;
+                }
+            }
+
+            if updated_stat {
+                stats.update_available = true;
+                send_message_to_player(
+                    &player_details.player_name,
+                    &player_details.client_addr,
+                    player_details.currently_online,
+                    &("Increased ".to_string() + stat + "."),
+                    None,
+                    sender,
+                );
             }
             break;
         }

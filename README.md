@@ -23,6 +23,7 @@ A barebones cross between an ASCII "roguelike" and MMORPG / MUD written in Rust.
   - L - Look around you
   - P - Pick up item underneath you
   - D - Drop item
+  - U - increase stat points after level up
 - Quit: Ctrl-q
 
 ## Components

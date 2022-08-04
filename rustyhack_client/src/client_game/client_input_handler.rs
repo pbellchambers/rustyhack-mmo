@@ -8,6 +8,7 @@ use crossbeam_channel::Sender;
 use crossterm::style::Color;
 use laminar::Packet;
 use rustyhack_lib::background_map::AllMaps;
+use rustyhack_lib::ecs::components::Stats;
 use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
@@ -47,14 +48,28 @@ pub(crate) fn handle_other_input(
                 item_page_index,
             );
         }
-        SidebarState::LevelUpChoice => {
-            if check_for_escape(console) {
-                info!("Returning to default sidebar window.");
-                sidebar_state = SidebarState::StatusBar;
-            }
+        SidebarState::StatUpChoice => {
+            sidebar_state = stat_up_choice(console, player, sender, server_addr, sidebar_state);
         }
     }
 
+    sidebar_state
+}
+
+fn stat_up_choice(
+    console: &mut ConsoleEngine,
+    player: &Player,
+    sender: &Sender<Packet>,
+    server_addr: &str,
+    mut sidebar_state: SidebarState,
+) -> SidebarState {
+    if check_for_escape(console) {
+        info!("Returning to default sidebar window.");
+        sidebar_state = SidebarState::StatusBar;
+    } else if let Some(stat) = check_for_stat_up(console, player.stats) {
+        commands::stat_up_command::send_stat_up_request(sender, player, server_addr, stat);
+        sidebar_state = SidebarState::StatusBar;
+    }
     sidebar_state
 }
 
@@ -73,7 +88,8 @@ fn drop_item_choice(
         sidebar_state = SidebarState::DropItemChoice(item_page_index - 1);
     } else if check_for_next(console, item_page_index, player.inventory.carried.len()) {
         sidebar_state = SidebarState::DropItemChoice(item_page_index + 1);
-    } else if let Some(item_index) = check_for_number(console, &player.inventory.carried) {
+    } else if let Some(item_index) = check_for_drop_item_number(console, &player.inventory.carried)
+    {
         commands::drop_command::send_drop_item_request(
             sender,
             player,
@@ -99,7 +115,10 @@ fn check_for_next(console: &ConsoleEngine, item_page_index: u16, inventory_size:
         && screens::drop_item_choice::can_go_next_page(inventory_size, item_page_index)
 }
 
-fn check_for_number(console: &ConsoleEngine, player_carried_inventory: &[Item]) -> Option<u8> {
+fn check_for_drop_item_number(
+    console: &ConsoleEngine,
+    player_carried_inventory: &[Item],
+) -> Option<u8> {
     let key_pressed: Option<u8>;
 
     if console.is_key_pressed(KeyCode::Char('0')) {
@@ -133,6 +152,26 @@ fn check_for_number(console: &ConsoleEngine, player_carried_inventory: &[Item]) 
     }
 }
 
+fn check_for_stat_up(console: &ConsoleEngine, stats: Stats) -> Option<&str> {
+    let stat: Option<&str>;
+
+    if console.is_key_pressed(KeyCode::Char('1')) && stats.str < 100.0 {
+        stat = Some("Str");
+    } else if console.is_key_pressed(KeyCode::Char('2')) && stats.dex < 100.0 {
+        stat = Some("Dex");
+    } else if console.is_key_pressed(KeyCode::Char('3')) && stats.con < 100.0 {
+        stat = Some("Con");
+    } else {
+        stat = None;
+    }
+
+    if stat != None && stats.stat_points > 0 {
+        stat
+    } else {
+        None
+    }
+}
+
 fn sidebar_change_check(
     console: &mut ConsoleEngine,
     system_messages: &mut Vec<(String, Color)>,
@@ -149,8 +188,9 @@ fn sidebar_change_check(
         } else {
             sidebar_state = SidebarState::DropItemChoice(0);
         }
-    } else if console.is_key_pressed(KeyCode::Char('u')) {
-        sidebar_state = SidebarState::LevelUpChoice;
+    } else if console.is_key_pressed(KeyCode::Char('u')) && player.stats.stat_points > 0 {
+        info!("Stat up command pressed.");
+        sidebar_state = SidebarState::StatUpChoice;
     }
     sidebar_state
 }

@@ -13,6 +13,8 @@ use rustyhack_lib::message_handler::messages::{
 use std::process;
 use uuid::Uuid;
 
+//todo resolve this clippy warning
+#[allow(clippy::too_many_lines)]
 pub(crate) fn process_player_messages(
     world: &mut World,
     channel_receiver: &Receiver<PlayerRequest>,
@@ -70,6 +72,19 @@ pub(crate) fn process_player_messages(
                         sender,
                     );
                     debug!("Processed item pickup request.");
+                }
+                PlayerRequest::StatUp(stat_up_details) => {
+                    debug!(
+                        "Stat up request received from {} for {}.",
+                        &stat_up_details.1, &stat_up_details.0,
+                    );
+                    systems::player_systems::increase_stat(
+                        world,
+                        &stat_up_details.0,
+                        &stat_up_details.1,
+                        sender,
+                    );
+                    debug!("Processed stat up request.");
                 }
                 PlayerRequest::PlayerLogout(client_details) => {
                     info!(

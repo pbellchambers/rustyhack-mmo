@@ -9,8 +9,8 @@ use std::process;
 
 mod bottom_text_window;
 pub(crate) mod drop_item_choice;
-mod level_up_choice;
 mod side_status_bar;
+mod stat_up_choice;
 mod top_status_bar;
 pub(crate) mod viewport;
 
@@ -18,7 +18,7 @@ pub(crate) mod viewport;
 pub enum SidebarState {
     StatusBar,
     DropItemChoice(u16),
-    LevelUpChoice,
+    StatUpChoice,
 }
 
 pub(crate) fn draw_screens(
@@ -66,7 +66,7 @@ pub(crate) fn draw_screens(
         SidebarState::DropItemChoice(item_page_index) => {
             drop_item_choice::draw(player, console, viewport_width, item_page_index)
         }
-        SidebarState::LevelUpChoice => level_up_choice::draw(player, console, viewport_width),
+        SidebarState::StatUpChoice => stat_up_choice::draw(player, console, viewport_width),
     };
     let bottom_text_window =
         bottom_text_window::draw(system_messages, console, viewport_width, viewport_height);

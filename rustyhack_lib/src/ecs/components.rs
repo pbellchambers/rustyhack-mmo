@@ -117,6 +117,7 @@ pub struct Stats {
     pub str: f32,
     pub dex: f32,
     pub con: f32,
+    pub stat_points: u8,
     pub level: u32,
     pub exp: u32,
     pub exp_next: u32,

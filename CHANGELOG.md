@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - server will try to load from backup on start, else create a new world
 - server tick ecs systems now more efficient
 - player can now choose which item to drop
+- player can now choose which stats to increase on level up
 - added messages for picking up and dropping items
 - monster collision checking with other monsters now exists
 - collision detection now more efficient

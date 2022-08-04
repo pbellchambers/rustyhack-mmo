@@ -37,6 +37,7 @@ impl Default for Player {
                 str: 10.0,
                 dex: 10.0,
                 con: 10.0,
+                stat_points: 0,
                 level: 1,
                 exp: 0,
                 exp_next: 1000,
