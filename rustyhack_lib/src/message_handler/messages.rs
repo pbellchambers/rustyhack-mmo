@@ -17,6 +17,7 @@ pub enum PlayerRequest {
     UpdateVelocity(PositionMessage),
     PickupItem(PositionMessage),
     DropItem((u16, PositionMessage)),
+    StatUp((String, String)),
     GetChunkedAllMaps,
     Timeout(String),
     Undefined,

@@ -34,6 +34,7 @@
     "str": 2.0,
     "dex": 20.0,
     "con": 5.0,
+    "stat_points": 0,
     "armour": 1.0,
     "level": 1,
     "exp": 0,

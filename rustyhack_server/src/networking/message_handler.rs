@@ -61,6 +61,12 @@ pub(crate) fn run(
                                 channel_sender,
                             );
                         }
+                        PlayerRequest::StatUp(stat_up_details) => {
+                            send_channel_message(
+                                PlayerRequest::StatUp(stat_up_details),
+                                channel_sender,
+                            );
+                        }
                         PlayerRequest::GetChunkedAllMaps => {
                             send_all_maps_chunks(
                                 &serialize_all_maps(all_maps.clone()),
