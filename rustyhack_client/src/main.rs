@@ -19,6 +19,13 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     client_setup::initialise_log(&args);
 
+    let previous_panic_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |panic_info| {
+        error!("{}", panic_info.to_string());
+        previous_panic_hook(panic_info);
+        std::process::exit(1);
+    }));
+
     let (server_addr, client_addr, player_name) = client_setup::get_player_setup_details();
     let (sender, receiver) = networking::bind_to_socket(&client_addr);
 
