@@ -1,12 +1,13 @@
 use crate::consts::{GOLD_LOSS_ON_PVP_DEATH_PERCENTAGE, MONSTER_EXP_MULTIPLICATION_FACTOR};
+use crate::game::combat;
 use crate::game::combat::{Attacker, CombatAttackerStats, CombatParties, Defender};
-use crate::game::map_state::{AllMapStates, MapState};
-use crate::game::{combat, map_state};
+use crate::game::map::state;
+use crate::game::map::state::AllMapStates;
+use crate::network_messages::combat_updates;
 use crossbeam_channel::Sender;
 use laminar::Packet;
 use legion::world::SubWorld;
 use legion::{system, Query};
-use rustyhack_lib::consts::DEFAULT_MAP;
 use rustyhack_lib::ecs::components::{
     DisplayDetails, EntityType, Inventory, MonsterDetails, PlayerDetails, Position, Stats,
 };
@@ -46,15 +47,13 @@ pub(crate) fn check_for_combat(
             stats.in_combat = false;
             continue;
         }
-        let current_map_state = get_current_map_states(all_map_states, &position.current_map);
+        let current_map_state =
+            state::get_current_map_states(all_map_states, &position.current_map);
         let potential_pos_x = u32_from(i32_from(position.pos_x) + position.velocity_x);
         let potential_pos_y = u32_from(i32_from(position.pos_y) + position.velocity_y);
 
-        let entity_collision_status = map_state::is_colliding_with_entity(
-            potential_pos_x,
-            potential_pos_y,
-            current_map_state,
-        );
+        let entity_collision_status =
+            state::is_colliding_with_entity(potential_pos_x, potential_pos_y, current_map_state);
 
         let attacker = get_attacker(player_details_option, monster_details_option);
 
@@ -86,13 +85,13 @@ pub(crate) fn check_for_combat(
                 stats: *stats,
                 inventory: inventory.clone(),
             };
-            map_state::insert_entity_at(
+            state::insert_entity_at(
                 all_map_states.get_mut(&position.current_map).unwrap(),
                 EntityType::Player(player.clone()),
                 potential_pos_x,
                 potential_pos_y,
             );
-            map_state::remove_entity_at(
+            state::remove_entity_at(
                 all_map_states.get_mut(&position.current_map).unwrap(),
                 &EntityType::Player(player),
                 position.pos_x,
@@ -112,13 +111,13 @@ pub(crate) fn check_for_combat(
                 stats: *stats,
                 inventory: inventory.clone(),
             };
-            map_state::insert_entity_at(
+            state::insert_entity_at(
                 all_map_states.get_mut(&position.current_map).unwrap(),
                 EntityType::Monster(monster.clone()),
                 potential_pos_x,
                 potential_pos_y,
             );
-            map_state::remove_entity_at(
+            state::remove_entity_at(
                 all_map_states.get_mut(&position.current_map).unwrap(),
                 &EntityType::Monster(monster),
                 position.pos_x,
@@ -156,19 +155,6 @@ fn get_attacker(
     } else {
         panic!("Error: attacker was somehow not a player or monster.");
     }
-}
-
-fn get_current_map_states<'a>(
-    all_map_states: &'a mut AllMapStates,
-    map: &String,
-) -> &'a mut MapState {
-    return if all_map_states.contains_key(map) {
-        all_map_states.get_mut(map).unwrap()
-    } else {
-        warn!("Tried to get map state for map that doesn't exist.");
-        warn!("Will return default map, but things might break.");
-        all_map_states.get_mut(DEFAULT_MAP).unwrap()
-    };
 }
 
 #[system]
@@ -257,7 +243,7 @@ pub(crate) fn resolve_combat(
                     //set current monster target as attacker
                     monster_target = Some(attacker.id);
                 }
-                combat::send_combat_updates_to_players(
+                combat_updates::send_combat_updates_to_players(
                     &defender,
                     attacker,
                     damage,
@@ -318,6 +304,10 @@ fn check_and_apply_gains(
     (0, 0)
 }
 
+fn apply_damage(stats: &mut Stats, damage: f32) {
+    stats.current_hp -= damage;
+}
+
 #[system]
 pub(crate) fn apply_combat_gains(
     world: &mut SubWorld,
@@ -345,8 +335,4 @@ pub(crate) fn apply_combat_gains(
         }
     }
     combat_attacker_stats.clear();
-}
-
-fn apply_damage(stats: &mut Stats, damage: f32) {
-    stats.current_hp -= damage;
 }

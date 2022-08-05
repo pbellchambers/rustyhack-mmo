@@ -1,15 +1,12 @@
-use crate::consts::{
-    BASE_HEALTH_REGEN_PERCENT, HEALTH_REGEN_CON_PERCENT, HEALTH_REGEN_CON_STATIC_FACTOR,
-};
-use crate::game::map_state::EntityPositionMap;
+use crate::game::map::state::EntityPositionMap;
+use crate::game::map::{state, tiles};
 use legion::systems::CommandBuffer;
 use legion::world::SubWorld;
 use legion::{maybe_changed, system, Entity, Query};
-use rustyhack_lib::background_map::tiles::{Collidable, Tile};
-use rustyhack_lib::background_map::{AllMaps, BackgroundMap};
-use rustyhack_lib::consts::{DEAD_MAP, DEFAULT_MAP};
+use rustyhack_lib::background_map::AllMaps;
+use rustyhack_lib::consts::DEAD_MAP;
 use rustyhack_lib::ecs::components::{
-    Dead, DisplayDetails, ItemDetails, MonsterDetails, PlayerDetails, Position, Stats,
+    Dead, DisplayDetails, ItemDetails, MonsterDetails, PlayerDetails, Position,
 };
 use rustyhack_lib::ecs::item::{get_item_name, Item};
 use rustyhack_lib::utils::math::{i32_from, u32_from};
@@ -26,12 +23,13 @@ pub(crate) fn check_for_tile_collision(
             //no velocity, no updates
             continue;
         }
-        let current_map = get_current_map(all_maps, &position.current_map);
+        let current_map = state::get_current_map(all_maps, &position.current_map);
         let potential_pos_x = u32_from(i32_from(position.pos_x) + position.velocity_x);
         let potential_pos_y = u32_from(i32_from(position.pos_y) + position.velocity_y);
 
-        if entity_is_colliding_with_tile(current_map.get_tile_at(potential_pos_x, potential_pos_y))
-        {
+        if tiles::entity_is_colliding_with_tile(
+            current_map.get_tile_at(potential_pos_x, potential_pos_y),
+        ) {
             debug!("Entity colliding with tile, setting velocity to 0.");
             position.velocity_x = 0;
             position.velocity_y = 0;
@@ -56,60 +54,6 @@ pub(crate) fn update_entities_position(world: &mut SubWorld, query: &mut Query<&
         position.velocity_y = 0;
         position.update_available = true;
     }
-}
-
-fn get_current_map<'a>(all_maps: &'a AllMaps, map: &String) -> &'a BackgroundMap {
-    all_maps.get(map).unwrap_or_else(|| {
-        error!("Entity is located on a map that does not exist: {}", &map);
-        warn!("Will return the default map, but this may cause problems.");
-        all_maps.get(DEFAULT_MAP).unwrap()
-    })
-}
-
-fn entity_is_colliding_with_tile(tile: Tile) -> bool {
-    match tile {
-        Tile::Door(door) => door.collidable == Collidable::True,
-        Tile::Wall(wall) => wall.collidable == Collidable::True,
-        Tile::Boundary => true,
-        _ => false,
-    }
-}
-
-#[system]
-pub(crate) fn apply_health_regen(world: &mut SubWorld, query: &mut Query<&mut Stats>) {
-    for stats in query.iter_mut(world) {
-        //only apply health regen if out of combat
-        if !stats.in_combat {
-            debug!("Applying health to all injured but still alive entities.");
-            if stats.current_hp > 0.0 && stats.current_hp < stats.max_hp {
-                let regen_amount = calculate_regen_amount(stats.max_hp, stats.con);
-                debug!(
-                    "Current hp: {}/{}, regen amount is: {}, update_available is {}",
-                    stats.current_hp,
-                    stats.max_hp,
-                    regen_amount.round(),
-                    stats.update_available
-                );
-                stats.current_hp += regen_amount.round();
-                //don't heal more than max hp
-                if stats.current_hp > stats.max_hp {
-                    stats.current_hp = stats.max_hp;
-                }
-                stats.update_available = true;
-            }
-        }
-    }
-}
-
-fn calculate_regen_amount(max_hp: f32, con: f32) -> f32 {
-    // Current regen calculation is as follows, this is just a first pass, it may not make sense.
-    // current hp
-    // + (max hp * BASE_HEALTH_REGEN_PERCENT)
-    // + (con * HEALTH_REGEN_CON_PERCENT)
-    // + (con / HEALTH_REGEN_CON_STATIC_FACTOR)
-    (max_hp * (BASE_HEALTH_REGEN_PERCENT / 100.0))
-        + (con * (HEALTH_REGEN_CON_PERCENT / 100.0))
-        + (con / HEALTH_REGEN_CON_STATIC_FACTOR)
 }
 
 #[system(for_each)]

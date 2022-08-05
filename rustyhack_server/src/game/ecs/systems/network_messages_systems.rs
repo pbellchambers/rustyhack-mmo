@@ -1,4 +1,4 @@
-use crate::game::map_state::EntityPositionMap;
+use crate::game::map::state::EntityPositionMap;
 use bincode::serialize;
 use crossbeam_channel::Sender;
 use laminar::Packet;

@@ -1,6 +1,6 @@
 use crate::consts::{WORLD_BACKUP_FILENAME, WORLD_BACKUP_TMP_FILENAME};
-use crate::game::monsters::spawn_initial_monsters;
-use crate::game::spawns::AllSpawnsMap;
+use crate::game::map::spawns::AllSpawnsMap;
+use crate::game::monsters::spawning::spawn_initial_monsters;
 use crossterm::style::Color;
 use legion::serialize::Canon;
 use legion::{Registry, World};

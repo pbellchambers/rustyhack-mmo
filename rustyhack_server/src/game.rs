@@ -3,36 +3,37 @@ use std::thread;
 use std::time::Instant;
 
 use crossbeam_channel::{Receiver, Sender};
+use ecs::queries::players;
+use ecs::systems;
 use laminar::{Packet, SocketEvent};
 use legion::Resources;
 
+use crate::consts;
 use crate::game::combat::{CombatAttackerStats, CombatParties};
-use crate::game::map_state::EntityPositionMap;
-use crate::game::players::PlayersPositions;
-use crate::networking::message_handler;
-use crate::{consts, world_backup};
+use crate::network_messages::packet_receiver;
+use ecs::queries::players::PlayersPositions;
+use map::state::EntityPositionMap;
+use map::{spawns, state, tiles};
 
-mod background_map;
-mod combat;
-mod map_state;
+mod backup;
+pub(crate) mod combat;
+mod ecs;
+mod map;
 pub(crate) mod monsters;
-mod player_updates;
-mod players;
-pub(crate) mod spawns;
-mod systems;
+pub(crate) mod player_message_handler;
 
 pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     //initialise all basic resources
-    let all_maps = background_map::initialise_all_maps();
+    let all_maps = tiles::initialise_all_maps();
     let all_maps_resource = all_maps.clone();
-    let all_map_states = map_state::initialise_all_map_states(&all_maps);
+    let all_map_states = state::initialise_all_map_states(&all_maps);
     let combat_parties: CombatParties = HashMap::new();
     let combat_attacker_stats: CombatAttackerStats = HashMap::new();
     let players_positions: PlayersPositions = HashMap::new();
     let entity_position_map: EntityPositionMap = HashMap::new();
     let all_monster_definitions = monsters::initialise_all_monster_definitions();
     let (default_spawn_counts, all_spawns_map) = spawns::initialise_all_spawn_definitions();
-    let registry = world_backup::create_world_registry();
+    let registry = backup::create_world_registry();
     let mut player_update_schedule = systems::build_player_update_schedule();
     let mut server_tick_update_schedule = systems::build_server_tick_update_schedule();
     let mut map_state_update_schedule = systems::build_map_state_update_schedule();
@@ -44,7 +45,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     let (channel_sender, channel_receiver) = crossbeam_channel::unbounded();
     info!("Created thread channel sender and receiver.");
     let local_sender = sender.clone();
-    message_handler::spawn_message_handler_thread(sender, receiver, all_maps, channel_sender);
+    packet_receiver::spawn_packet_receiver_thread(sender, receiver, all_maps, channel_sender);
 
     //load resources into world
     //todo are all of these needed here, can they be handled dynamically
@@ -62,7 +63,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     info!("Finished loading resources.");
 
     let (mut world, is_saved_world) =
-        world_backup::load_world(&registry, &all_monster_definitions, &all_spawns_map);
+        backup::load_world(&registry, &all_monster_definitions, &all_spawns_map);
     info!("Finished initialising ECS World.");
 
     if is_saved_world {
@@ -80,7 +81,11 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     info!("Starting game loop");
     loop {
         //process player updates as soon as they are received
-        if player_updates::process_player_messages(&mut world, &channel_receiver, &local_sender) {
+        if player_message_handler::process_player_messages(
+            &mut world,
+            &channel_receiver,
+            &local_sender,
+        ) {
             debug!("Executing player update schedule...");
             map_state_update_schedule.execute(&mut world, &mut resources);
             player_update_schedule.execute(&mut world, &mut resources);
@@ -118,7 +123,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
         }
 
         if server_backup_tick_time.elapsed() >= consts::SERVER_BACKUP_TICK {
-            world_backup::do_world_backup(&registry, &world);
+            backup::do_world_backup(&registry, &world);
             server_backup_tick_time = Instant::now();
         }
 

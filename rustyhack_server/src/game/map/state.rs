@@ -1,5 +1,6 @@
 use crate::game::combat::Defender;
-use rustyhack_lib::background_map::AllMaps;
+use rustyhack_lib::background_map::{AllMaps, BackgroundMap};
+use rustyhack_lib::consts::DEFAULT_MAP;
 use rustyhack_lib::ecs::components::{DisplayDetails, EntityType, Position};
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -91,4 +92,25 @@ pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> 
         }
         (colliding, defending_entity)
     }
+}
+
+pub fn get_current_map<'a>(all_maps: &'a AllMaps, map: &String) -> &'a BackgroundMap {
+    all_maps.get(map).unwrap_or_else(|| {
+        error!("Entity is located on a map that does not exist: {}", &map);
+        warn!("Will return the default map, but this may cause problems.");
+        all_maps.get(DEFAULT_MAP).unwrap()
+    })
+}
+
+pub fn get_current_map_states<'a>(
+    all_map_states: &'a mut AllMapStates,
+    map: &String,
+) -> &'a mut MapState {
+    return if all_map_states.contains_key(map) {
+        all_map_states.get_mut(map).unwrap()
+    } else {
+        warn!("Tried to get map state for map that doesn't exist.");
+        warn!("Will return default map, but things might break.");
+        all_map_states.get_mut(DEFAULT_MAP).unwrap()
+    };
 }

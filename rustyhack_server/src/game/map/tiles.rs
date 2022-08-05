@@ -1,5 +1,5 @@
 use crate::consts;
-use rustyhack_lib::background_map::tiles::Tile;
+use rustyhack_lib::background_map::tiles::{Collidable, Tile};
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::background_map::{character_map, BackgroundMap};
 use rustyhack_lib::utils::file;
@@ -79,4 +79,13 @@ fn process_map_data(data: &str) -> Vec<Vec<Tile>> {
     }
     debug!("Finished processing map data into Vec.");
     processed_data
+}
+
+pub fn entity_is_colliding_with_tile(tile: Tile) -> bool {
+    match tile {
+        Tile::Door(door) => door.collidable == Collidable::True,
+        Tile::Wall(wall) => wall.collidable == Collidable::True,
+        Tile::Boundary => true,
+        _ => false,
+    }
 }

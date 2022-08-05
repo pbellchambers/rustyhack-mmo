@@ -1,5 +1,5 @@
-use crate::game::map_state;
-use crate::game::map_state::AllMapStates;
+use crate::game::map::state;
+use crate::game::map::state::AllMapStates;
 use legion::system;
 use rustyhack_lib::ecs::components::{
     DisplayDetails, EntityType, Inventory, MonsterDetails, PlayerDetails, Position, Stats,
@@ -10,7 +10,7 @@ use rustyhack_lib::ecs::player::Player;
 #[system]
 pub(crate) fn reset_map_state(#[resource] all_map_states: &mut AllMapStates) {
     debug!("Clearing map state.");
-    map_state::clear_all_entities(all_map_states);
+    state::clear_all_entities(all_map_states);
 }
 
 #[system(for_each)]
@@ -33,7 +33,7 @@ pub(crate) fn add_entities_to_map_state(
             stats: *stats,
             inventory: inventory.clone(),
         };
-        map_state::insert_entity_at(
+        state::insert_entity_at(
             all_map_states.get_mut(&position.current_map).unwrap(),
             EntityType::Monster(monster),
             position.pos_x,
@@ -48,7 +48,7 @@ pub(crate) fn add_entities_to_map_state(
             stats: *stats,
             inventory: inventory.clone(),
         };
-        map_state::insert_entity_at(
+        state::insert_entity_at(
             all_map_states.get_mut(&position.current_map).unwrap(),
             EntityType::Player(player),
             position.pos_x,
