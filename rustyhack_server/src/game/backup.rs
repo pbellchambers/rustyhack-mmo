@@ -11,6 +11,7 @@ use rustyhack_lib::ecs::inventory::{Armour, Equipment, Trinket, Weapon};
 use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::ecs::monster::{AllMonsterDefinitions, Monster};
 use rustyhack_lib::ecs::player::Player;
+use rustyhack_lib::utils::file;
 use serde::de::DeserializeSeed;
 use serde_json::Value;
 use std::fs;
@@ -52,7 +53,11 @@ pub(super) fn do_world_backup(registry: &Registry<String>, world: &World) {
     let filter = legion::any();
     let entity_serializer = Canon::default();
 
-    let file = File::create(WORLD_BACKUP_TMP_FILENAME)
+    let mut tmp_backup_file = file::current_exe_location();
+    tmp_backup_file.pop();
+    tmp_backup_file.push(WORLD_BACKUP_TMP_FILENAME);
+
+    let file = File::create(&tmp_backup_file)
         .expect("Failed to create server backup file in current directory.");
     serde_json::to_writer(
         file,
@@ -61,7 +66,11 @@ pub(super) fn do_world_backup(registry: &Registry<String>, world: &World) {
     .expect(
         "Failed to serialize world for backup, unable to proceed. Please use last good backup.",
     );
-    fs::rename(WORLD_BACKUP_TMP_FILENAME, WORLD_BACKUP_FILENAME)
+
+    let mut backup_file = file::current_exe_location();
+    backup_file.pop();
+    backup_file.push(WORLD_BACKUP_FILENAME);
+    fs::rename(tmp_backup_file, backup_file)
         .expect("Failed to rename world backup tmp to world backup filename.");
     info!("World backup done.");
 }
