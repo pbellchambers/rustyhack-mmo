@@ -6,7 +6,7 @@ use rustyhack_lib::consts::DEAD_MAP;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::message_handler::messages::{EntityPositionBroadcast, ServerMessage};
 
-pub(crate) fn check_for_received_server_messages(
+pub(crate) fn handle_received_server_messages(
     channel_receiver: &Receiver<ServerMessage>,
     player: &mut Player,
     entity_position_broadcast: &mut EntityPositionBroadcast,

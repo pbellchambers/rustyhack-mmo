@@ -1,5 +1,5 @@
 use crate::client_consts::DEFAULT_FG_COLOUR;
-use crate::client_game::commands::look_command::return_visible_entity_at;
+use crate::client_game::input::commands::look::return_visible_entity_at;
 use bincode::serialize;
 use chrono::{DateTime, Local};
 use crossbeam_channel::Sender;

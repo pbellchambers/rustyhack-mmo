@@ -4,7 +4,7 @@ use laminar::SocketEvent;
 use rustyhack_lib::message_handler::messages::ServerMessage;
 use std::{process, thread};
 
-pub(crate) fn spawn_message_handler_thread(
+pub(crate) fn spawn_network_packet_receiver_thread(
     receiver: Receiver<SocketEvent>,
     incoming_server_messages: Sender<ServerMessage>,
 ) {
@@ -17,7 +17,7 @@ pub(crate) fn run(
     receiver: &Receiver<SocketEvent>,
     incoming_server_messages: &Sender<ServerMessage>,
 ) {
-    info!("Spawned message handler thread.");
+    info!("Spawned network packet receiver thread.");
     loop {
         debug!("Waiting for packet to be received.");
         if let Ok(event) = receiver.recv() {
