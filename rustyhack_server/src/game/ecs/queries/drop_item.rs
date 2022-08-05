@@ -17,8 +17,8 @@ pub(crate) fn drop_item(
     sender: &Sender<Packet>,
 ) {
     //remove item from player inventory and add it to world
-    let mut player_query = <(&PlayerDetails, &Position, &mut Inventory)>::query();
-    for (player_details, position, player_inventory) in player_query.iter_mut(world) {
+    let mut query = <(&PlayerDetails, &Position, &mut Inventory)>::query();
+    for (player_details, position, player_inventory) in query.iter_mut(world) {
         if player_details.player_name == position_message.player_name {
             if !player_inventory.carried.is_empty() {
                 let dropped_item: (ItemDetails, DisplayDetails, Position, Item) = (

@@ -11,8 +11,8 @@ pub(crate) fn increase_stat(
     player_name: &str,
     sender: &Sender<Packet>,
 ) {
-    let mut player_query = <(&PlayerDetails, &mut Stats)>::query();
-    for (player_details, stats) in player_query.iter_mut(world) {
+    let mut query = <(&PlayerDetails, &mut Stats)>::query();
+    query.par_for_each_mut(world, |(player_details, stats)| {
         if player_details.player_name == player_name && stats.stat_points > 0 {
             let mut updated_stat = false;
             match stat {
@@ -40,10 +40,8 @@ pub(crate) fn increase_stat(
                         updated_stat = true;
                     }
                 }
-                _ => {
-                    break;
-                }
-            }
+                _ => {}
+            };
 
             if updated_stat {
                 stats.update_available = true;
@@ -56,7 +54,6 @@ pub(crate) fn increase_stat(
                     sender,
                 );
             }
-            break;
         }
-    }
+    });
 }

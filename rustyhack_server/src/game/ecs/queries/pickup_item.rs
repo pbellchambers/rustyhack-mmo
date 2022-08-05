@@ -30,9 +30,9 @@ pub(crate) fn pickup_item(
 
     //add item to player carried inventory
     let mut player_query = <(&PlayerDetails, &mut Inventory)>::query();
-    for (player_details, player_inventory) in player_query.iter_mut(world) {
+    player_query.par_for_each_mut(world, |(player_details, player_inventory)| {
         if player_details.player_name == position_message.player_name {
-            match item_option {
+            match &item_option {
                 None => {
                     debug!("No matching item found.");
                     send_message_to_player(
@@ -49,8 +49,8 @@ pub(crate) fn pickup_item(
                         "Item found, added to player {} inventory.",
                         player_details.player_name
                     );
-                    let item_name = get_item_name(&item);
-                    player_inventory.carried.push(item);
+                    let item_name = get_item_name(item);
+                    player_inventory.carried.push(item.clone());
                     player_inventory.update_available = true;
                     send_message_to_player(
                         &player_details.player_name,
@@ -62,7 +62,6 @@ pub(crate) fn pickup_item(
                     );
                 }
             }
-            break;
         }
-    }
+    });
 }

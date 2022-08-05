@@ -64,12 +64,12 @@ pub(crate) fn broadcast_player_logged_out(
     world: &mut World,
     sender: &Sender<Packet>,
     logged_out_player_id: Uuid,
-    logged_out_map: &str,
+    logged_out_player_map: &str,
 ) {
     //broadcast update to other players
     let mut query = <(&PlayerDetails, &Position)>::query();
-    for (player_details, player_position) in query.iter(world) {
-        if player_details.currently_online && player_position.current_map == logged_out_map {
+    query.par_for_each(world, |(player_details, player_position)| {
+        if player_details.currently_online && player_position.current_map == logged_out_player_map {
             info!(
                 "Sending logged out player: {} update to: {}",
                 &logged_out_player_id, &player_details.client_addr
@@ -106,5 +106,5 @@ pub(crate) fn broadcast_player_logged_out(
                 sender,
             );
         }
-    }
+    });
 }
