@@ -11,7 +11,7 @@ use rustyhack_lib::ecs::components::{
     DisplayDetails, Inventory, ItemDetails, PlayerDetails, Position, Stats,
 };
 use rustyhack_lib::ecs::item::{get_item_name, Item};
-use rustyhack_lib::message_handler::messages::PositionMessage;
+use rustyhack_lib::network::packets::PositionMessage;
 use uuid::Uuid;
 
 #[system]

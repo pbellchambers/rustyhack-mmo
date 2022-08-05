@@ -1,3 +1,6 @@
+use crate::client_game::input;
+use crate::client_game::screens;
+use crate::client_game::screens::SidebarState;
 use bincode::serialize;
 use console_engine::ConsoleEngine;
 use crossbeam_channel::Sender;
@@ -5,10 +8,7 @@ use crossterm::event::KeyCode;
 use laminar::Packet;
 use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::messages::{PlayerRequest, PositionMessage};
-use crate::client_game::input;
-use crate::client_game::screens;
-use crate::client_game::screens::SidebarState;
+use rustyhack_lib::network::packets::{PlayerRequest, PositionMessage};
 
 pub(crate) fn send_drop_item_request(
     sender: &Sender<Packet>,
@@ -34,7 +34,7 @@ pub(crate) fn send_drop_item_request(
         .unwrap(),
         Some(13),
     );
-    rustyhack_lib::message_handler::send_packet(packet, sender);
+    rustyhack_lib::network::send_packet(packet, sender);
     info!(
         "Sent drop item request packet to server for item {}.",
         item_index
@@ -58,13 +58,7 @@ pub(crate) fn drop_item_choice(
         sidebar_state = SidebarState::DropItemChoice(item_page_index + 1);
     } else if let Some(item_index) = check_for_drop_item_number(console, &player.inventory.carried)
     {
-        send_drop_item_request(
-            sender,
-            player,
-            server_addr,
-            item_index,
-            item_page_index,
-        );
+        send_drop_item_request(sender, player, server_addr, item_index, item_page_index);
         sidebar_state = SidebarState::StatusBar;
     }
     sidebar_state

@@ -2,7 +2,7 @@ use bincode::serialize;
 use crossbeam_channel::Sender;
 use laminar::Packet;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::messages::{ClientDetails, PlayerRequest};
+use rustyhack_lib::network::packets::{ClientDetails, PlayerRequest};
 
 pub(crate) fn send_logout_notification(sender: &Sender<Packet>, player: Player, server_addr: &str) {
     let logout_notification_packet = Packet::reliable_unordered(
@@ -15,6 +15,6 @@ pub(crate) fn send_logout_notification(sender: &Sender<Packet>, player: Player, 
         }))
         .unwrap(),
     );
-    rustyhack_lib::message_handler::send_packet(logout_notification_packet, sender);
+    rustyhack_lib::network::send_packet(logout_notification_packet, sender);
     info!("Logout notification sent to server.");
 }

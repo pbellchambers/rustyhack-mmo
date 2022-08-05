@@ -6,9 +6,7 @@ use crossbeam_channel::Sender;
 use crossterm::style::Color;
 use laminar::Packet;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::messages::{
-    EntityPositionBroadcast, PlayerRequest, PositionMessage,
-};
+use rustyhack_lib::network::packets::{EntityPositionBroadcast, PlayerRequest, PositionMessage};
 
 pub(crate) fn send_pickup_request(
     entity_position_map: &EntityPositionBroadcast,
@@ -43,7 +41,7 @@ pub(crate) fn send_pickup_request(
             .unwrap(),
             Some(12),
         );
-        rustyhack_lib::message_handler::send_packet(packet, sender);
+        rustyhack_lib::network::send_packet(packet, sender);
         info!("Sent pickup request packet to server.");
     }
 }

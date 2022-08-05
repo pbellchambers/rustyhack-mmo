@@ -7,7 +7,7 @@ use legion::{IntoQuery, World};
 use rustyhack_lib::consts::{DEFAULT_ITEM_COLOUR, DEFAULT_PLAYER_ICON};
 use rustyhack_lib::ecs::components::{DisplayDetails, Inventory, PlayerDetails, Position, Stats};
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::messages::{
+use rustyhack_lib::network::packets::{
     PlayerRequest, PositionMessage, ServerMessage, SystemMessage,
 };
 use std::process;
@@ -224,7 +224,7 @@ fn broadcast_player_logged_out(
                 process::exit(1);
             });
 
-            rustyhack_lib::message_handler::send_packet(
+            rustyhack_lib::network::send_packet(
                 Packet::reliable_ordered(
                     player_details.client_addr.parse().unwrap(),
                     response,
@@ -274,7 +274,7 @@ fn join_player(world: &mut World, name: &str, client_addr: String, sender: &Send
                 );
                 process::exit(1);
             });
-            rustyhack_lib::message_handler::send_packet(
+            rustyhack_lib::network::send_packet(
                 Packet::reliable_ordered(client_addr.parse().unwrap(), response, Some(14)),
                 sender,
             );
@@ -319,7 +319,7 @@ fn send_player_joined_response(player: &Player, sender: &Sender<Packet>) {
         );
         process::exit(1);
     });
-    rustyhack_lib::message_handler::send_packet(
+    rustyhack_lib::network::send_packet(
         Packet::reliable_ordered(
             player.player_details.client_addr.parse().unwrap(),
             response,
@@ -354,7 +354,7 @@ pub(crate) fn send_message_to_player(
                 );
                 process::exit(1);
             });
-        rustyhack_lib::message_handler::send_packet(
+        rustyhack_lib::network::send_packet(
             Packet::reliable_ordered(client_addr.parse().unwrap(), response, Some(23)),
             sender,
         );

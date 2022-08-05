@@ -4,7 +4,7 @@ use crossbeam_channel::Sender;
 use crossterm::event::KeyCode;
 use laminar::Packet;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::messages::{PlayerRequest, PositionMessage};
+use rustyhack_lib::network::packets::{PlayerRequest, PositionMessage};
 
 pub(crate) fn send_player_updates(
     sender: &Sender<Packet>,
@@ -42,6 +42,6 @@ fn send_velocity_packet(sender: &Sender<Packet>, server_addr: &str, player: &Pla
         .unwrap(),
         Some(10),
     );
-    rustyhack_lib::message_handler::send_packet(packet, sender);
+    rustyhack_lib::network::send_packet(packet, sender);
     debug!("Sent velocity packet to server.");
 }

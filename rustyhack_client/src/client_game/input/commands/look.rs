@@ -3,7 +3,7 @@ use chrono::{DateTime, Local};
 use crossterm::style::Color;
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
+use rustyhack_lib::network::packets::EntityPositionBroadcast;
 
 pub(crate) fn get_what_player_sees(
     system_messages: &mut Vec<(String, Color)>,

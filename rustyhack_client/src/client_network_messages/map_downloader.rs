@@ -3,7 +3,7 @@ use crossbeam_channel::{Receiver, Sender};
 use itertools::Itertools;
 use laminar::Packet;
 use rustyhack_lib::background_map::{AllMaps, BackgroundMap};
-use rustyhack_lib::message_handler::messages::{PlayerRequest, ServerMessage};
+use rustyhack_lib::network::packets::{PlayerRequest, ServerMessage};
 use std::collections::HashMap;
 use std::thread;
 use std::time::Duration;
@@ -21,7 +21,7 @@ pub(crate) fn request_all_maps_data(
             .expect("Error serializing GetAllMaps request."),
         Some(1),
     );
-    rustyhack_lib::message_handler::send_packet(get_all_maps_request_packet, sender);
+    rustyhack_lib::network::send_packet(get_all_maps_request_packet, sender);
     info!("Requested all maps data from server.");
     wait_for_all_maps_response(channel_receiver)
 }

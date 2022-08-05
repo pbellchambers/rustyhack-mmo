@@ -8,7 +8,7 @@ pub mod consts;
 pub mod ecs;
 pub mod file_utils;
 pub mod math_utils;
-pub mod message_handler;
+pub mod network;
 
 #[macro_use]
 extern crate log;

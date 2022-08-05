@@ -4,7 +4,7 @@ use crossbeam_channel::Receiver;
 use crossterm::style::Color;
 use rustyhack_lib::consts::DEAD_MAP;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::messages::{EntityPositionBroadcast, ServerMessage};
+use rustyhack_lib::network::packets::{EntityPositionBroadcast, ServerMessage};
 
 pub(crate) fn handle_received_server_messages(
     channel_receiver: &Receiver<ServerMessage>,

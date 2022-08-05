@@ -7,8 +7,8 @@ use std::env;
 
 mod client_consts;
 mod client_game;
-mod client_setup;
 mod client_network_messages;
+mod client_setup;
 
 #[macro_use]
 extern crate log;

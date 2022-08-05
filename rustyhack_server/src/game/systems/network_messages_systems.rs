@@ -6,7 +6,7 @@ use legion::world::SubWorld;
 use legion::{system, Query};
 use rustyhack_lib::consts::DEAD_MAP;
 use rustyhack_lib::ecs::components::{DisplayDetails, Inventory, PlayerDetails, Position, Stats};
-use rustyhack_lib::message_handler::messages::ServerMessage;
+use rustyhack_lib::network::packets::ServerMessage;
 use std::process;
 use uuid::Uuid;
 
@@ -30,7 +30,7 @@ pub(crate) fn send_player_position_updates(
                     );
                     process::exit(1);
                 });
-            rustyhack_lib::message_handler::send_packet(
+            rustyhack_lib::network::send_packet(
                 Packet::unreliable_sequenced(
                     player_details.client_addr.parse().unwrap(),
                     response,
@@ -63,7 +63,7 @@ pub(crate) fn send_player_stats_updates(
                 );
                 process::exit(1);
             });
-            rustyhack_lib::message_handler::send_packet(
+            rustyhack_lib::network::send_packet(
                 Packet::unreliable_sequenced(
                     player_details.client_addr.parse().unwrap(),
                     response,
@@ -97,7 +97,7 @@ pub(crate) fn send_player_inventory_updates(
                     );
                     process::exit(1);
                 });
-            rustyhack_lib::message_handler::send_packet(
+            rustyhack_lib::network::send_packet(
                 Packet::unreliable_sequenced(
                     player_details.client_addr.parse().unwrap(),
                     response,
@@ -134,7 +134,7 @@ pub(crate) fn broadcast_entity_updates(
                         player_position,
                     );
 
-                    rustyhack_lib::message_handler::send_packet(
+                    rustyhack_lib::network::send_packet(
                         Packet::unreliable_sequenced(
                             player_details.client_addr.parse().unwrap(),
                             response,
@@ -158,7 +158,7 @@ pub(crate) fn broadcast_entity_updates(
                         player_position,
                     );
 
-                    rustyhack_lib::message_handler::send_packet(
+                    rustyhack_lib::network::send_packet(
                         Packet::reliable_ordered(
                             player_details.client_addr.parse().unwrap(),
                             response,

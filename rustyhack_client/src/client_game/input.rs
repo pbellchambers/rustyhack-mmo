@@ -9,7 +9,7 @@ use crossterm::style::Color;
 use laminar::Packet;
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
+use rustyhack_lib::network::packets::EntityPositionBroadcast;
 
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn handle_other_input(
@@ -47,7 +47,13 @@ pub(crate) fn handle_other_input(
             );
         }
         SidebarState::StatUpChoice => {
-            sidebar_state = commands::stat_up::stat_up_choice(console, player, sender, server_addr, sidebar_state);
+            sidebar_state = commands::stat_up::stat_up_choice(
+                console,
+                player,
+                sender,
+                server_addr,
+                sidebar_state,
+            );
         }
     }
 

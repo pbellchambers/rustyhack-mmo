@@ -1,3 +1,5 @@
+use crate::client_game::input;
+use crate::client_game::screens::SidebarState;
 use bincode::serialize;
 use console_engine::ConsoleEngine;
 use crossbeam_channel::Sender;
@@ -5,9 +7,7 @@ use crossterm::event::KeyCode;
 use laminar::Packet;
 use rustyhack_lib::ecs::components::Stats;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::messages::PlayerRequest;
-use crate::client_game::input;
-use crate::client_game::screens::SidebarState;
+use rustyhack_lib::network::packets::PlayerRequest;
 
 pub(crate) fn send_stat_up_request(
     sender: &Sender<Packet>,
@@ -26,7 +26,7 @@ pub(crate) fn send_stat_up_request(
         .unwrap(),
         Some(13),
     );
-    rustyhack_lib::message_handler::send_packet(packet, sender);
+    rustyhack_lib::network::send_packet(packet, sender);
     info!("Sent stat up request packet to server for {}.", stat);
 }
 

@@ -1,7 +1,7 @@
 use bincode::deserialize;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::SocketEvent;
-use rustyhack_lib::message_handler::messages::ServerMessage;
+use rustyhack_lib::network::packets::ServerMessage;
 use std::{process, thread};
 
 pub(crate) fn spawn_network_packet_receiver_thread(

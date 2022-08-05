@@ -2,7 +2,7 @@ use bincode::serialize;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::message_handler::messages::{ClientDetails, PlayerRequest, ServerMessage};
+use rustyhack_lib::network::packets::{ClientDetails, PlayerRequest, ServerMessage};
 use std::time::Duration;
 use std::{process, thread};
 
@@ -23,7 +23,7 @@ pub(crate) fn send_new_player_request(
         }))
         .unwrap(),
     );
-    rustyhack_lib::message_handler::send_packet(create_player_request_packet, sender);
+    rustyhack_lib::network::send_packet(create_player_request_packet, sender);
     info!("Sent new player request to server.");
     wait_for_new_player_response(channel_receiver)
 }

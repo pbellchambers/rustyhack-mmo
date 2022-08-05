@@ -2,7 +2,7 @@ use console_engine::{ConsoleEngine, KeyCode, KeyModifiers};
 use crossbeam_channel::{Receiver, Sender};
 use crossterm::style::Color;
 use laminar::{Packet, SocketEvent};
-use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
+use rustyhack_lib::network::packets::EntityPositionBroadcast;
 use std::collections::HashMap;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -10,10 +10,12 @@ use std::time::{Duration, Instant};
 use crate::client_consts::{
     CLIENT_CLEANUP_TICK, GAME_TITLE, INITIAL_CONSOLE_HEIGHT, INITIAL_CONSOLE_WIDTH, TARGET_FPS,
 };
-use input::commands::movement;
 use crate::client_game::screens::{draw_screens, SidebarState};
+use input::commands::movement;
 
-use crate::client_network_messages::{player_logout, client_network_packet_receiver, map_downloader, new_player};
+use crate::client_network_messages::{
+    client_network_packet_receiver, map_downloader, new_player, player_logout,
+};
 
 mod client_updates_handler;
 mod input;
@@ -29,7 +31,10 @@ pub(crate) fn run(
     //setup message handling threads
     let (player_update_sender, player_update_receiver) = crossbeam_channel::unbounded();
     debug!("Spawned thread channels.");
-    client_network_packet_receiver::spawn_network_packet_receiver_thread(receiver, player_update_sender);
+    client_network_packet_receiver::spawn_network_packet_receiver_thread(
+        receiver,
+        player_update_sender,
+    );
 
     //get basic data from server needed to start client_game
     let all_maps =

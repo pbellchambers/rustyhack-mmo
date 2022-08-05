@@ -2,7 +2,7 @@ use bincode::{deserialize, serialize};
 use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, SocketEvent};
 use rustyhack_lib::background_map::AllMaps;
-use rustyhack_lib::message_handler::messages::{PlayerRequest, ServerMessage};
+use rustyhack_lib::network::packets::{PlayerRequest, ServerMessage};
 use std::net::SocketAddr;
 use std::thread;
 
@@ -134,7 +134,7 @@ fn send_all_maps_chunks(all_maps_serialized: &[u8], address: SocketAddr, sender:
                 "Sending first AllMapsChunk packet {} to: {}",
                 chunk_count, address
             );
-            rustyhack_lib::message_handler::send_packet(
+            rustyhack_lib::network::send_packet(
                 Packet::reliable_ordered(address, chunk_packet, Some(stream_id)),
                 sender,
             );
@@ -148,14 +148,14 @@ fn send_all_maps_chunks(all_maps_serialized: &[u8], address: SocketAddr, sender:
                 "Sending last AllMapsChunk packet {} to: {}",
                 chunk_count, address
             );
-            rustyhack_lib::message_handler::send_packet(
+            rustyhack_lib::network::send_packet(
                 Packet::reliable_ordered(address, chunk_packet, Some(stream_id)),
                 sender,
             );
 
             let complete_response = serialize(&ServerMessage::AllMapsChunksComplete)
                 .expect("Error serializing AllMapsChunksComplete response.");
-            rustyhack_lib::message_handler::send_packet(
+            rustyhack_lib::network::send_packet(
                 Packet::reliable_ordered(address, complete_response, Some(stream_id + 1)),
                 sender,
             );
@@ -164,7 +164,7 @@ fn send_all_maps_chunks(all_maps_serialized: &[u8], address: SocketAddr, sender:
                 "Sending AllMapsChunk packet {} to: {}",
                 chunk_count, address
             );
-            rustyhack_lib::message_handler::send_packet(
+            rustyhack_lib::network::send_packet(
                 Packet::reliable_ordered(address, chunk_packet, Some(stream_id)),
                 sender,
             );
