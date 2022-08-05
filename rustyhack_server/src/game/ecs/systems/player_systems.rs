@@ -65,35 +65,33 @@ pub(super) fn update_player_positions_resource(
 #[system]
 pub(super) fn level_up(
     world: &mut SubWorld,
-    query: &mut Query<(&mut Stats, Option<&PlayerDetails>)>,
+    query: &mut Query<(&mut Stats, &PlayerDetails)>,
     #[resource] sender: &Sender<Packet>,
 ) {
-    for (mut stats, player_details_option) in query.iter_mut(world) {
-        if let Some(player_details) = player_details_option {
-            if stats.exp >= stats.exp_next && stats.level < 100 {
-                info!(
-                    "Player {} levelled up from {} to {}!",
-                    player_details.player_name,
-                    stats.level,
-                    stats.level + 1
-                );
-                stats.level += 1;
-                if stats.level >= 100 {
-                    stats.exp_next = 0;
-                } else {
-                    stats.exp_next = CUMULATIVE_EXP_TABLE[(stats.level - 1) as usize];
-                }
-                stats = calculate_new_stats(stats);
-                stats.update_available = true;
-                send_message_to_player(
-                    &player_details.player_name,
-                    &player_details.client_addr,
-                    player_details.currently_online,
-                    "You levelled up, 2 new stat points available to spend!",
-                    Some(Color::Cyan),
-                    sender,
-                );
+    for (mut stats, player_details) in query.iter_mut(world) {
+        if stats.exp >= stats.exp_next && stats.level < 100 {
+            info!(
+                "Player {} levelled up from {} to {}!",
+                player_details.player_name,
+                stats.level,
+                stats.level + 1
+            );
+            stats.level += 1;
+            if stats.level >= 100 {
+                stats.exp_next = 0;
+            } else {
+                stats.exp_next = CUMULATIVE_EXP_TABLE[(stats.level - 1) as usize];
             }
+            stats = calculate_new_stats(stats);
+            stats.update_available = true;
+            send_message_to_player(
+                &player_details.player_name,
+                &player_details.client_addr,
+                player_details.currently_online,
+                "You levelled up, 2 new stat points available to spend!",
+                Some(Color::Cyan),
+                sender,
+            );
         }
     }
 }
