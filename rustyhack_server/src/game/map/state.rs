@@ -38,6 +38,7 @@ pub(crate) fn remove_entity_at(map: &mut MapState, entity: &EntityType, x: u32, 
     for (index, map_state_entity) in map[y as usize][x as usize].iter().enumerate() {
         if *map_state_entity == *entity {
             entity_index = Some(index);
+            break;
         }
     }
     match entity_index {
