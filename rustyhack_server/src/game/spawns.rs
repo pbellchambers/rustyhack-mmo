@@ -1,5 +1,5 @@
 use crate::consts;
-use rustyhack_lib::file_utils;
+use rustyhack_lib::utils::file;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
@@ -35,11 +35,11 @@ pub(crate) fn initialise_all_spawn_definitions() -> (AllSpawnCounts, AllSpawnsMa
 fn get_all_spawns_positions() -> AllSpawnsMap {
     info!("About to initialise all spawn positions");
     let mut all_spawns: HashMap<String, Spawns> = HashMap::new();
-    let mut file_location = file_utils::current_exe_location();
+    let mut file_location = file::current_exe_location();
     file_location.pop();
     file_location.push(consts::ASSETS_DIRECTORY);
     file_location.push(consts::SPAWNS_DIRECTORY);
-    let paths = file_utils::get_all_files_in_location(&file_location);
+    let paths = file::get_all_files_in_location(&file_location);
     for path in paths {
         let unwrapped_path = path.unwrap();
         let map = String::from(

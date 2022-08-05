@@ -2,7 +2,7 @@ use crate::consts;
 use rustyhack_lib::background_map::tiles::Tile;
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::background_map::{character_map, BackgroundMap};
-use rustyhack_lib::file_utils;
+use rustyhack_lib::utils::file;
 use std::collections::HashMap;
 use std::path::Path;
 use std::{fs, process};
@@ -10,11 +10,11 @@ use std::{fs, process};
 pub(crate) fn initialise_all_maps() -> AllMaps {
     info!("About to initialise all maps");
     let mut all_maps: AllMaps = HashMap::new();
-    let mut file_location = file_utils::current_exe_location();
+    let mut file_location = file::current_exe_location();
     file_location.pop();
     file_location.push(consts::ASSETS_DIRECTORY);
     file_location.push(consts::MAPS_DIRECTORY);
-    let paths = file_utils::get_all_files_in_location(&file_location);
+    let paths = file::get_all_files_in_location(&file_location);
     for path in paths {
         let unwrapped_path = path.unwrap();
         let filename = String::from(

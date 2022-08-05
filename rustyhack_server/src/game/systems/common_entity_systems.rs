@@ -12,7 +12,7 @@ use rustyhack_lib::ecs::components::{
     Dead, DisplayDetails, ItemDetails, MonsterDetails, PlayerDetails, Position, Stats,
 };
 use rustyhack_lib::ecs::item::{get_item_name, Item};
-use rustyhack_lib::math_utils::{i32_from, u32_from};
+use rustyhack_lib::utils::math::{i32_from, u32_from};
 
 #[system]
 pub(crate) fn check_for_tile_collision(

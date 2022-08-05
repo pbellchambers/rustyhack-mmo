@@ -1,5 +1,5 @@
 use crate::consts;
-use rustyhack_lib::file_utils;
+use rustyhack_lib::utils::file;
 use simplelog::{
     ColorChoice, CombinedLogger, Config, LevelFilter, TermLogger, TerminalMode, WriteLogger,
 };
@@ -13,7 +13,7 @@ pub(crate) fn initialise_log(args: &[String]) {
         println!("Debug logging enabled.");
         log_level = LevelFilter::Debug;
     }
-    let mut file_location = file_utils::current_exe_location();
+    let mut file_location = file::current_exe_location();
     file_location.pop();
     file_location.push(consts::LOG_NAME);
     CombinedLogger::init(vec![

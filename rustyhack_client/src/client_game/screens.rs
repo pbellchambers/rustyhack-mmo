@@ -3,8 +3,8 @@ use console_engine::ConsoleEngine;
 use crossterm::style::Color;
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::math_utils::i32_from;
 use rustyhack_lib::network::packets::EntityPositionBroadcast;
+use rustyhack_lib::utils::math::i32_from;
 use std::process;
 
 mod bottom_text_window;

@@ -14,7 +14,7 @@ use rustyhack_lib::ecs::components::{
 };
 use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::ecs::monster::AllMonsterDefinitions;
-use rustyhack_lib::math_utils::i32_from;
+use rustyhack_lib::utils::math::i32_from;
 use std::collections::HashMap;
 use uuid::Uuid;
 

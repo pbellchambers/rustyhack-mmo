@@ -1,6 +1,6 @@
 use crate::client_consts::{LOG_NAME, VALID_NAME_REGEX};
 use regex::Regex;
-use rustyhack_lib::file_utils;
+use rustyhack_lib::utils::file;
 use simplelog::{ColorChoice, CombinedLogger, LevelFilter, TermLogger, TerminalMode, WriteLogger};
 use std::fs::File;
 use std::net::SocketAddr;
@@ -13,7 +13,7 @@ pub(crate) fn initialise_log(args: &[String]) {
         log_level = LevelFilter::Debug;
     }
 
-    let mut file_location = file_utils::current_exe_location();
+    let mut file_location = file::current_exe_location();
     file_location.pop();
     file_location.push(LOG_NAME);
     CombinedLogger::init(vec![

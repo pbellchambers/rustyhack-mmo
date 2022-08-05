@@ -12,7 +12,7 @@ use rustyhack_lib::ecs::components::{
 };
 use rustyhack_lib::ecs::monster::Monster;
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::math_utils::{i32_from, u32_from};
+use rustyhack_lib::utils::math::{i32_from, u32_from};
 use uuid::Uuid;
 
 #[system]

@@ -1,7 +1,7 @@
 use console_engine::screen::Screen;
 use console_engine::{pixel, ConsoleEngine};
 use rustyhack_lib::ecs::player::Player;
-use rustyhack_lib::math_utils::i32_from;
+use rustyhack_lib::utils::math::i32_from;
 
 pub(crate) fn draw(player: &Player, console: &ConsoleEngine) -> Screen {
     let mut screen = Screen::new(console.get_width(), 1);

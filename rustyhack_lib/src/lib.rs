@@ -6,9 +6,8 @@
 pub mod background_map;
 pub mod consts;
 pub mod ecs;
-pub mod file_utils;
-pub mod math_utils;
 pub mod network;
+pub mod utils;
 
 #[macro_use]
 extern crate log;

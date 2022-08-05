@@ -5,7 +5,7 @@ use legion::World;
 use rand::seq::SliceRandom;
 use rustyhack_lib::ecs::components::{DisplayDetails, Inventory, MonsterDetails, Position, Stats};
 use rustyhack_lib::ecs::monster::{AllMonsterDefinitions, Monster};
-use rustyhack_lib::file_utils;
+use rustyhack_lib::utils::file;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
@@ -16,11 +16,11 @@ use uuid::Uuid;
 pub(crate) fn initialise_all_monster_definitions() -> AllMonsterDefinitions {
     info!("About to initialise all monster definitions");
     let mut all_monster_definitions: AllMonsterDefinitions = HashMap::new();
-    let mut file_location = file_utils::current_exe_location();
+    let mut file_location = file::current_exe_location();
     file_location.pop();
     file_location.push(consts::ASSETS_DIRECTORY);
     file_location.push(consts::MONSTERS_DIRECTORY);
-    let paths = file_utils::get_all_files_in_location(&file_location);
+    let paths = file::get_all_files_in_location(&file_location);
     for path in paths {
         let unwrapped_path = path.unwrap();
         let name = String::from(
