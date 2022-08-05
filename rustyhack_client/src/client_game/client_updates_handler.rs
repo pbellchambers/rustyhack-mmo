@@ -2,7 +2,6 @@ use crate::client_consts::DEFAULT_FG_COLOUR;
 use chrono::{DateTime, Local};
 use crossbeam_channel::Receiver;
 use crossterm::style::Color;
-use rustyhack_lib::consts::DEAD_MAP;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::network::packets::{EntityPositionBroadcast, ServerMessage};
 
@@ -53,25 +52,19 @@ pub(super) fn handle_received_server_messages(
     }
 }
 
-pub(super) fn cleanup_dead_entities(
+pub(super) fn cleanup_entities_on_other_maps(
     player: &Player,
     entity_position_map: &mut EntityPositionBroadcast,
 ) {
-    for (
-        uuid,
-        (
+    entity_position_map.retain(
+        |_uuid,
+         (
             _position_x,
             _position_y,
             entity_current_map,
             _entity_icon,
             _entity_icon_colour,
             _entity_name,
-        ),
-    ) in entity_position_map.clone()
-    {
-        if (player.position.current_map.clone() + DEAD_MAP) == entity_current_map {
-            entity_position_map.remove(&uuid);
-            debug!("Removed dead entity from entity map.");
-        }
-    }
+        )| { entity_current_map == &player.position.current_map },
+    );
 }

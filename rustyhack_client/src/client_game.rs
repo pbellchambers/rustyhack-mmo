@@ -77,8 +77,11 @@ pub(super) fn run(
         );
 
         if client_cleanup_tick_time.elapsed() > CLIENT_CLEANUP_TICK {
-            //no need to do this often, dead entities are already not displayed
-            client_updates_handler::cleanup_dead_entities(&player, &mut entity_position_map);
+            //no need to do this often, entities on other maps already not displayed
+            client_updates_handler::cleanup_entities_on_other_maps(
+                &player,
+                &mut entity_position_map,
+            );
             client_cleanup_tick_time = Instant::now();
         }
 

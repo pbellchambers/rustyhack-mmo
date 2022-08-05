@@ -4,6 +4,7 @@ use console_engine::ConsoleEngine;
 use crossterm::style::Color;
 use rustyhack_lib::ecs::item::get_item_name;
 use rustyhack_lib::ecs::player::Player;
+use rustyhack_lib::utils::math::i32_from;
 
 pub(super) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32) -> Screen {
     let mut screen = Screen::new(console.get_width() - viewport_width, console.get_height());
@@ -55,6 +56,7 @@ pub(super) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32
     let inventory_title_string = "Inventory:";
 
     let mut y = 0;
+    let max_y = i32_from(screen.get_height()) - 1;
     screen.print(1, y, &player.player_details.player_name);
     screen.print(1, y + 1, &lvl_string);
     screen.print(1, y + 2, &exp_string);
@@ -75,6 +77,9 @@ pub(super) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32
 
     let mut line_count = y + 17;
     for item in &player.inventory.carried {
+        if line_count > max_y {
+            break;
+        }
         let item_text = get_item_name(item);
         screen.print(1, line_count, &item_text);
         line_count += 1;

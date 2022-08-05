@@ -101,6 +101,7 @@ pub(super) fn return_visible_entity_at(
             && *entity_position_y == y
         {
             entity_name = entity_name_or_type.clone();
+            break;
         }
     }
     entity_name
