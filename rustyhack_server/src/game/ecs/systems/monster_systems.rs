@@ -4,7 +4,7 @@ use crate::game::monsters::{movement, spawning};
 use crate::game::players::PlayersPositions;
 use legion::systems::CommandBuffer;
 use legion::world::SubWorld;
-use legion::{system, Entity, Query};
+use legion::{maybe_changed, system, Entity, Query};
 use rustyhack_lib::consts::{DEAD_MAP, DEFAULT_ITEM_COLOUR, DEFAULT_ITEM_ICON};
 use rustyhack_lib::ecs::components::{
     Dead, DisplayDetails, Inventory, ItemDetails, MonsterDetails, Position, Stats,
@@ -16,6 +16,7 @@ use uuid::Uuid;
 
 #[allow(clippy::trivially_copy_pass_by_ref)]
 #[system(for_each)]
+#[filter(maybe_changed::<Stats>())]
 pub(super) fn resolve_monster_deaths(
     entity: &Entity,
     monster: &MonsterDetails,
@@ -119,7 +120,7 @@ pub(super) fn update_monster_velocities(
 #[system]
 pub(super) fn spawn_monsters(
     world: &mut SubWorld,
-    query: &mut Query<(&mut MonsterDetails, &mut Position)>,
+    query: &mut Query<(&MonsterDetails, &Position)>,
     commands: &mut CommandBuffer,
     #[resource] all_spawns_map: &AllSpawnsMap,
     #[resource] default_spawn_counts: &AllSpawnCounts,
@@ -127,7 +128,7 @@ pub(super) fn spawn_monsters(
 ) {
     debug!("Checking whether replacement monsters need to spawn.");
     let mut current_monsters_count: AllSpawnCounts = HashMap::new();
-    for (monster, position) in query.iter_mut(world) {
+    for (monster, position) in query.iter(world) {
         current_monsters_count =
             spawning::count_alive_monsters(current_monsters_count, monster, position);
     }

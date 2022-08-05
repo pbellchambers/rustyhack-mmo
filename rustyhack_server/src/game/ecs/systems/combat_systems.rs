@@ -6,7 +6,7 @@ use crate::game::map::state::AllMapStates;
 use crate::network_messages::combat_updates;
 use crossbeam_channel::Sender;
 use laminar::Packet;
-use legion::system;
+use legion::{maybe_changed, system};
 use rustyhack_lib::ecs::components::{
     DisplayDetails, EntityType, Inventory, MonsterDetails, PlayerDetails, Position, Stats,
 };
@@ -17,6 +17,7 @@ use uuid::Uuid;
 
 #[allow(clippy::too_many_arguments)]
 #[system(for_each)]
+#[filter(maybe_changed::<Position>())]
 pub(super) fn check_for_combat(
     position: &mut Position,
     monster_details_option: Option<&MonsterDetails>,
