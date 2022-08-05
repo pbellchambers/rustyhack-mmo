@@ -4,7 +4,7 @@ use console_engine::ConsoleEngine;
 use crossterm::style::Color;
 use rustyhack_lib::utils::math::i32_from_usize;
 
-pub(crate) fn draw(
+pub(super) fn draw(
     system_messages: &[(String, Color)],
     console: &ConsoleEngine,
     viewport_width: u32,

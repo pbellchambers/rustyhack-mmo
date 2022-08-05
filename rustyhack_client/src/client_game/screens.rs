@@ -1,3 +1,10 @@
+mod bottom_text_window;
+pub(crate) mod drop_item_choice;
+mod side_status_bar;
+mod stat_up_choice;
+mod top_status_bar;
+mod viewport;
+
 use crate::client_consts::{VIEWPORT_HEIGHT_PERCENTAGE, VIEWPORT_WIDTH_PERCENTAGE};
 use console_engine::ConsoleEngine;
 use crossterm::style::Color;
@@ -7,21 +14,14 @@ use rustyhack_lib::network::packets::EntityPositionBroadcast;
 use rustyhack_lib::utils::math::i32_from;
 use std::process;
 
-mod bottom_text_window;
-pub(crate) mod drop_item_choice;
-mod side_status_bar;
-mod stat_up_choice;
-mod top_status_bar;
-pub(crate) mod viewport;
-
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub enum SidebarState {
+pub(crate) enum SidebarState {
     StatusBar,
     DropItemChoice(u16),
     StatUpChoice,
 }
 
-pub(crate) fn draw_screens(
+pub(super) fn draw_screens(
     console: &mut ConsoleEngine,
     all_maps: &AllMaps,
     player: &Player,

@@ -79,7 +79,7 @@ pub(crate) fn get_what_player_sees(
     system_messages.push(((time + "West: " + &*west), DEFAULT_FG_COLOUR));
 }
 
-pub(crate) fn return_visible_entity_at(
+pub(super) fn return_visible_entity_at(
     mut entity_name: String,
     entity_position_map: &EntityPositionBroadcast,
     player: &Player,

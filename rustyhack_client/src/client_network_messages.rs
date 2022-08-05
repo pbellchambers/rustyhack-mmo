@@ -1,14 +1,14 @@
+pub(super) mod client_network_packet_receiver;
+pub(super) mod map_downloader;
+pub(super) mod new_player;
+pub(super) mod player_logout;
+
 use crossbeam_channel::{Receiver, Sender};
 use laminar::{Packet, Socket, SocketEvent};
 use std::time::Duration;
 use std::{process, thread};
 
-pub(crate) mod client_network_packet_receiver;
-pub mod map_downloader;
-pub mod new_player;
-pub mod player_logout;
-
-pub(crate) fn bind_to_socket(client_addr: &str) -> (Sender<Packet>, Receiver<SocketEvent>) {
+pub(super) fn bind_to_socket(client_addr: &str) -> (Sender<Packet>, Receiver<SocketEvent>) {
     info!("Attempting to bind listen socket to: {}", &client_addr);
     let socket =
         Socket::bind_with_config(&client_addr, get_laminar_config()).unwrap_or_else(|err| {

@@ -13,10 +13,7 @@ pub(crate) fn spawn_network_packet_receiver_thread(
     });
 }
 
-pub(crate) fn run(
-    receiver: &Receiver<SocketEvent>,
-    incoming_server_messages: &Sender<ServerMessage>,
-) {
+fn run(receiver: &Receiver<SocketEvent>, incoming_server_messages: &Sender<ServerMessage>) {
     info!("Spawned network packet receiver thread.");
     loop {
         debug!("Waiting for packet to be received.");

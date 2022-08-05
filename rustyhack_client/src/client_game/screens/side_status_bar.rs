@@ -5,7 +5,7 @@ use crossterm::style::Color;
 use rustyhack_lib::ecs::item::get_item_name;
 use rustyhack_lib::ecs::player::Player;
 
-pub(crate) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32) -> Screen {
+pub(super) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32) -> Screen {
     let mut screen = Screen::new(console.get_width() - viewport_width, console.get_height());
 
     let lvl_string = "Lvl: ".to_owned() + &player.stats.level.to_string();

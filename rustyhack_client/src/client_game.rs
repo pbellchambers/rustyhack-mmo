@@ -1,3 +1,7 @@
+mod client_updates_handler;
+mod input;
+mod screens;
+
 use console_engine::{ConsoleEngine, KeyCode, KeyModifiers};
 use crossbeam_channel::{Receiver, Sender};
 use crossterm::style::Color;
@@ -17,11 +21,7 @@ use crate::client_network_messages::{
     client_network_packet_receiver, map_downloader, new_player, player_logout,
 };
 
-mod client_updates_handler;
-mod input;
-mod screens;
-
-pub(crate) fn run(
+pub(super) fn run(
     sender: &Sender<Packet>,
     receiver: Receiver<SocketEvent>,
     server_addr: &str,

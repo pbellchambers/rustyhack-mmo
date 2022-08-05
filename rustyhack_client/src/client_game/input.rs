@@ -1,4 +1,4 @@
-pub mod commands;
+pub(super) mod commands;
 
 use crate::client_consts::DEFAULT_FG_COLOUR;
 use crate::client_game::screens::SidebarState;
@@ -12,7 +12,7 @@ use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::network::packets::EntityPositionBroadcast;
 
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn handle_other_input(
+pub(super) fn handle_other_input(
     sender: &Sender<Packet>,
     console: &mut ConsoleEngine,
     system_messages: &mut Vec<(String, Color)>,
@@ -60,7 +60,7 @@ pub(crate) fn handle_other_input(
     sidebar_state
 }
 
-pub(crate) fn check_for_escape(console: &ConsoleEngine) -> bool {
+fn check_for_escape(console: &ConsoleEngine) -> bool {
     console.is_key_pressed(KeyCode::Esc)
 }
 

@@ -14,13 +14,13 @@ struct Viewport {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub struct RelativePosition {
+struct RelativePosition {
     //the only position that allows for negative coordinates, indicating something is positioned off-screen
     pub x: i32,
     pub y: i32,
 }
 
-pub(crate) fn draw_viewport_contents(
+pub(super) fn draw_viewport_contents(
     player: &Player,
     background_map: &BackgroundMap,
     entity_position_map: &EntityPositionBroadcast,

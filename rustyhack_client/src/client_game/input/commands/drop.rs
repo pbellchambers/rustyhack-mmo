@@ -10,7 +10,30 @@ use rustyhack_lib::ecs::item::Item;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::network::packets::{PlayerRequest, PositionMessage};
 
-pub(crate) fn send_drop_item_request(
+pub(crate) fn drop_item_choice(
+    console: &mut ConsoleEngine,
+    player: &Player,
+    sender: &Sender<Packet>,
+    server_addr: &str,
+    mut sidebar_state: SidebarState,
+    item_page_index: u16,
+) -> SidebarState {
+    if input::check_for_escape(console) {
+        info!("Returning to default sidebar window.");
+        sidebar_state = SidebarState::StatusBar;
+    } else if check_for_back(console, item_page_index) {
+        sidebar_state = SidebarState::DropItemChoice(item_page_index - 1);
+    } else if check_for_next(console, item_page_index, player.inventory.carried.len()) {
+        sidebar_state = SidebarState::DropItemChoice(item_page_index + 1);
+    } else if let Some(item_index) = check_for_drop_item_number(console, &player.inventory.carried)
+    {
+        send_drop_item_request(sender, player, server_addr, item_index, item_page_index);
+        sidebar_state = SidebarState::StatusBar;
+    }
+    sidebar_state
+}
+
+fn send_drop_item_request(
     sender: &Sender<Packet>,
     player: &Player,
     server_addr: &str,
@@ -39,29 +62,6 @@ pub(crate) fn send_drop_item_request(
         "Sent drop item request packet to server for item {}.",
         item_index
     );
-}
-
-pub(crate) fn drop_item_choice(
-    console: &mut ConsoleEngine,
-    player: &Player,
-    sender: &Sender<Packet>,
-    server_addr: &str,
-    mut sidebar_state: SidebarState,
-    item_page_index: u16,
-) -> SidebarState {
-    if input::check_for_escape(console) {
-        info!("Returning to default sidebar window.");
-        sidebar_state = SidebarState::StatusBar;
-    } else if check_for_back(console, item_page_index) {
-        sidebar_state = SidebarState::DropItemChoice(item_page_index - 1);
-    } else if check_for_next(console, item_page_index, player.inventory.carried.len()) {
-        sidebar_state = SidebarState::DropItemChoice(item_page_index + 1);
-    } else if let Some(item_index) = check_for_drop_item_number(console, &player.inventory.carried)
-    {
-        send_drop_item_request(sender, player, server_addr, item_index, item_page_index);
-        sidebar_state = SidebarState::StatusBar;
-    }
-    sidebar_state
 }
 
 fn check_for_back(console: &ConsoleEngine, item_page_index: u16) -> bool {

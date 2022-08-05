@@ -3,7 +3,7 @@ use console_engine::{pixel, ConsoleEngine};
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::utils::math::i32_from;
 
-pub(crate) fn draw(player: &Player, console: &ConsoleEngine) -> Screen {
+pub(super) fn draw(player: &Player, console: &ConsoleEngine) -> Screen {
     let mut screen = Screen::new(console.get_width(), 1);
     screen.line(0, 0, i32_from(console.get_width() - 1), 0, pixel::pxl('='));
     let player_update_text = player.position.current_map.clone()

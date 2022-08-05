@@ -9,27 +9,6 @@ use rustyhack_lib::ecs::components::Stats;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::network::packets::PlayerRequest;
 
-pub(crate) fn send_stat_up_request(
-    sender: &Sender<Packet>,
-    player: &Player,
-    server_addr: &str,
-    stat: &str,
-) {
-    let packet = Packet::reliable_ordered(
-        server_addr
-            .parse()
-            .expect("Server address format is invalid."),
-        serialize(&PlayerRequest::StatUp((
-            stat.to_string(),
-            player.player_details.player_name.clone(),
-        )))
-        .unwrap(),
-        Some(13),
-    );
-    rustyhack_lib::network::send_packet(packet, sender);
-    info!("Sent stat up request packet to server for {}.", stat);
-}
-
 pub(crate) fn stat_up_choice(
     console: &mut ConsoleEngine,
     player: &Player,
@@ -45,6 +24,22 @@ pub(crate) fn stat_up_choice(
         sidebar_state = SidebarState::StatusBar;
     }
     sidebar_state
+}
+
+fn send_stat_up_request(sender: &Sender<Packet>, player: &Player, server_addr: &str, stat: &str) {
+    let packet = Packet::reliable_ordered(
+        server_addr
+            .parse()
+            .expect("Server address format is invalid."),
+        serialize(&PlayerRequest::StatUp((
+            stat.to_string(),
+            player.player_details.player_name.clone(),
+        )))
+        .unwrap(),
+        Some(13),
+    );
+    rustyhack_lib::network::send_packet(packet, sender);
+    info!("Sent stat up request packet to server for {}.", stat);
 }
 
 fn check_for_stat_up(console: &ConsoleEngine, stats: Stats) -> Option<&str> {

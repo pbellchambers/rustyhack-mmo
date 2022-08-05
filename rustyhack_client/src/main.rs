@@ -3,12 +3,12 @@
 #![warn(clippy::pedantic)]
 #![allow(clippy::unreadable_literal)]
 
-use std::env;
-
 mod client_consts;
 mod client_game;
 mod client_network_messages;
 mod client_setup;
+
+use std::env;
 
 #[macro_use]
 extern crate log;

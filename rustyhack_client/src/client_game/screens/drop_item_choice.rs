@@ -3,7 +3,7 @@ use console_engine::ConsoleEngine;
 use rustyhack_lib::ecs::item::get_item_name;
 use rustyhack_lib::ecs::player::Player;
 
-pub(crate) fn draw(
+pub(super) fn draw(
     player: &Player,
     console: &ConsoleEngine,
     viewport_width: u32,
