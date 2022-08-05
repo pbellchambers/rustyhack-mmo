@@ -12,19 +12,19 @@ pub(crate) type AllSpawnCounts = HashMap<String, HashMap<String, u32>>;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Spawns {
-    pub monsters: Vec<MonsterSpawnPositions>,
+    pub(crate) monsters: Vec<MonsterSpawnPositions>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub(crate) struct MonsterSpawnPositions {
-    pub monster_type: String,
-    pub spawn_positions: Vec<PositionWithoutMap>,
+    pub(crate) monster_type: String,
+    pub(crate) spawn_positions: Vec<PositionWithoutMap>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub(crate) struct PositionWithoutMap {
-    pub x: u32,
-    pub y: u32,
+    pub(crate) x: u32,
+    pub(crate) y: u32,
 }
 
 pub(crate) fn initialise_all_spawn_definitions() -> (AllSpawnCounts, AllSpawnsMap) {

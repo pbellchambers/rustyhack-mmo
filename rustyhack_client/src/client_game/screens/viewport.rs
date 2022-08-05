@@ -16,8 +16,8 @@ struct Viewport {
 #[derive(Clone, Copy, Debug)]
 struct RelativePosition {
     //the only position that allows for negative coordinates, indicating something is positioned off-screen
-    pub x: i32,
-    pub y: i32,
+    x: i32,
+    y: i32,
 }
 
 pub(super) fn draw_viewport_contents(

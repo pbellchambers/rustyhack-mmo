@@ -31,20 +31,20 @@ pub(super) type CombatAttackerStats = HashMap<Uuid, (Stats, Inventory)>;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq, Hash)]
 pub(crate) struct Attacker {
-    pub id: Uuid,
-    pub name: String,
-    pub client_addr: String,
-    pub currently_online: bool,
-    pub is_player: bool,
+    pub(crate) id: Uuid,
+    pub(crate) name: String,
+    pub(crate) client_addr: String,
+    pub(crate) currently_online: bool,
+    pub(crate) is_player: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq, Hash)]
 pub(crate) struct Defender {
-    pub id: Uuid,
-    pub name: String,
-    pub client_addr: String,
-    pub currently_online: bool,
-    pub is_player: bool,
+    pub(crate) id: Uuid,
+    pub(crate) name: String,
+    pub(crate) client_addr: String,
+    pub(crate) currently_online: bool,
+    pub(crate) is_player: bool,
 }
 
 impl Default for Defender {
