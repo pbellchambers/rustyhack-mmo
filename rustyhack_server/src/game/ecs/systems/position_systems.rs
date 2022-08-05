@@ -1,8 +1,7 @@
 use crate::game::map::state::EntityPositionMap;
 use crate::game::map::{state, tiles};
 use legion::systems::CommandBuffer;
-use legion::world::SubWorld;
-use legion::{maybe_changed, system, Entity, Query};
+use legion::{maybe_changed, system, Entity};
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::consts::DEAD_MAP;
 use rustyhack_lib::ecs::components::{
@@ -11,18 +10,11 @@ use rustyhack_lib::ecs::components::{
 use rustyhack_lib::ecs::item::{get_item_name, Item};
 use rustyhack_lib::utils::math::{i32_from, u32_from};
 
-#[system]
-pub(super) fn check_for_tile_collision(
-    world: &mut SubWorld,
-    query: &mut Query<&mut Position>,
-    #[resource] all_maps: &AllMaps,
-) {
-    for position in query.iter_mut(world) {
-        debug!("Checking for possible movement after velocity updates and combat check.");
-        if position.velocity_x == 0 && position.velocity_y == 0 {
-            //no velocity, no updates
-            continue;
-        }
+#[system(par_for_each)]
+#[filter(maybe_changed::<Position>())]
+pub(super) fn check_for_tile_collision(position: &mut Position, #[resource] all_maps: &AllMaps) {
+    //no velocity, no updates
+    if position.velocity_x != 0 || position.velocity_y != 0 {
         let current_map = state::get_current_map(all_maps, &position.current_map);
         let potential_pos_x = u32_from(i32_from(position.pos_x) + position.velocity_x);
         let potential_pos_y = u32_from(i32_from(position.pos_y) + position.velocity_y);
@@ -35,19 +27,15 @@ pub(super) fn check_for_tile_collision(
             position.velocity_y = 0;
         } else {
             debug!("Entity not colliding with tile, continuing to combat check.");
-            continue;
         }
     }
 }
 
-#[system]
-pub(super) fn update_entities_position(world: &mut SubWorld, query: &mut Query<&mut Position>) {
-    for position in query.iter_mut(world) {
-        debug!("Updating all final positions.");
-        if position.velocity_x == 0 && position.velocity_y == 0 {
-            //no velocity, no updates
-            continue;
-        }
+#[system(par_for_each)]
+#[filter(maybe_changed::<Position>())]
+pub(super) fn update_entities_position(position: &mut Position) {
+    //no velocity, no updates
+    if position.velocity_x != 0 || position.velocity_y != 0 {
         position.pos_x = u32_from(i32_from(position.pos_x) + position.velocity_x);
         position.pos_y = u32_from(i32_from(position.pos_y) + position.velocity_y);
         position.velocity_x = 0;
@@ -57,14 +45,12 @@ pub(super) fn update_entities_position(world: &mut SubWorld, query: &mut Query<&
 }
 
 #[system(for_each)]
-#[filter(maybe_changed::<Position>())]
 pub(super) fn collate_all_player_positions(
     player_details: &PlayerDetails,
     position: &Position,
     display_details: &DisplayDetails,
     #[resource] entity_position_map: &mut EntityPositionMap,
 ) {
-    debug!("Getting all players positions");
     if player_details.currently_online {
         entity_position_map.insert(
             player_details.id,
@@ -78,7 +64,6 @@ pub(super) fn collate_all_player_positions(
 }
 
 #[system(for_each)]
-#[filter(maybe_changed::<Position>())]
 pub(super) fn collate_all_monster_positions(
     monster_details: &MonsterDetails,
     position: &Position,
@@ -98,7 +83,6 @@ pub(super) fn collate_all_monster_positions(
 
 #[allow(clippy::trivially_copy_pass_by_ref)]
 #[system(for_each)]
-#[filter(maybe_changed::<Position>())]
 pub(super) fn collate_all_item_positions(
     entity: &Entity,
     item_details: &ItemDetails,

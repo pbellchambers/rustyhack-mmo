@@ -23,6 +23,7 @@ pub(crate) fn build_player_update_schedule() -> Schedule {
         .add_system(combat_systems::check_for_combat_system())
         .add_system(player_systems::resolve_player_deaths_system())
         .add_system(position_systems::update_entities_position_system())
+        .add_system(player_systems::clear_player_positions_resource_system())
         .add_system(player_systems::update_player_positions_resource_system())
         .build();
     info!("Built normal player update system schedule.");
@@ -35,13 +36,16 @@ pub(crate) fn build_server_tick_update_schedule() -> Schedule {
         .add_system(position_systems::check_for_tile_collision_system())
         .add_system(combat_systems::check_for_combat_system())
         .add_system(combat_systems::resolve_combat_system())
+        .add_system(combat_systems::clear_combat_parties_system())
         .flush()
         .add_system(combat_systems::apply_combat_gains_system())
+        .add_system(combat_systems::clear_combat_attacker_stats_system())
         .add_system(player_systems::level_up_system())
         .add_system(player_systems::resolve_player_deaths_system())
         .add_system(monster_systems::resolve_monster_deaths_system())
         .add_system(monster_systems::spawn_monsters_system())
         .add_system(position_systems::update_entities_position_system())
+        .add_system(player_systems::clear_player_positions_resource_system())
         .add_system(player_systems::update_player_positions_resource_system())
         .build();
     info!("Built server tick update system schedule.");
@@ -72,6 +76,7 @@ pub(crate) fn network_broadcast_schedule() -> Schedule {
         .add_system(position_systems::collate_all_monster_positions_system())
         .add_system(position_systems::collate_all_item_positions_system())
         .add_system(network_messages_systems::broadcast_entity_updates_system())
+        .add_system(network_messages_systems::clear_entity_position_map_system())
         .build();
     info!("Built network broadcast schedule.");
     schedule

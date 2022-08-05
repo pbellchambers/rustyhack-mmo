@@ -2,31 +2,27 @@ use crate::consts::{
     BASE_HEALTH_REGEN_PERCENT, HEALTH_REGEN_CON_PERCENT, HEALTH_REGEN_CON_STATIC_FACTOR,
 };
 use legion::system;
-use legion::world::SubWorld;
-use legion::Query;
 use rustyhack_lib::ecs::components::Stats;
 
-#[system]
-pub(super) fn apply_health_regen(world: &mut SubWorld, query: &mut Query<&mut Stats>) {
-    for stats in query.iter_mut(world) {
-        //only apply health regen if out of combat
-        if !stats.in_combat && stats.current_hp > 0.0 && stats.current_hp < stats.max_hp {
-            debug!("Applying health to all injured but still alive entities.");
-            let regen_amount = calculate_regen_amount(stats.max_hp, stats.con);
-            debug!(
-                "Current hp: {}/{}, regen amount is: {}, update_available is {}",
-                stats.current_hp,
-                stats.max_hp,
-                regen_amount.round(),
-                stats.update_available
-            );
-            stats.current_hp += regen_amount.round();
-            //don't heal more than max hp
-            if stats.current_hp > stats.max_hp {
-                stats.current_hp = stats.max_hp;
-            }
-            stats.update_available = true;
+#[system(par_for_each)]
+pub(super) fn apply_health_regen(stats: &mut Stats) {
+    //only apply health regen if out of combat
+    if !stats.in_combat && stats.current_hp > 0.0 && stats.current_hp < stats.max_hp {
+        debug!("Applying health to all injured but still alive entities.");
+        let regen_amount = calculate_regen_amount(stats.max_hp, stats.con);
+        debug!(
+            "Current hp: {}/{}, regen amount is: {}, update_available is {}",
+            stats.current_hp,
+            stats.max_hp,
+            regen_amount.round(),
+            stats.update_available
+        );
+        stats.current_hp += regen_amount.round();
+        //don't heal more than max hp
+        if stats.current_hp > stats.max_hp {
+            stats.current_hp = stats.max_hp;
         }
+        stats.update_available = true;
     }
 }
 

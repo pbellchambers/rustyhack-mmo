@@ -6,8 +6,7 @@ use crate::game::map::state::AllMapStates;
 use crate::network_messages::combat_updates;
 use crossbeam_channel::Sender;
 use laminar::Packet;
-use legion::world::SubWorld;
-use legion::{system, Query};
+use legion::system;
 use rustyhack_lib::ecs::components::{
     DisplayDetails, EntityType, Inventory, MonsterDetails, PlayerDetails, Position, Stats,
 };
@@ -16,37 +15,24 @@ use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::utils::math::{i32_from, u32_from};
 use uuid::Uuid;
 
-#[system]
-#[allow(clippy::type_complexity)]
+#[allow(clippy::too_many_arguments)]
+#[system(for_each)]
 pub(super) fn check_for_combat(
-    world: &mut SubWorld,
-    query: &mut Query<(
-        &mut Position,
-        Option<&MonsterDetails>,
-        Option<&PlayerDetails>,
-        &DisplayDetails,
-        &mut Stats,
-        &Inventory,
-    )>,
+    position: &mut Position,
+    monster_details_option: Option<&MonsterDetails>,
+    player_details_option: Option<&PlayerDetails>,
+    display_details: &DisplayDetails,
+    stats: &mut Stats,
+    inventory: &Inventory,
     #[resource] all_map_states: &mut AllMapStates,
     #[resource] combat_parties: &mut CombatParties,
     #[resource] combat_attacker_stats: &mut CombatAttackerStats,
 ) {
-    for (
-        position,
-        monster_details_option,
-        player_details_option,
-        display_details,
-        stats,
-        inventory,
-    ) in query.iter_mut(world)
-    {
-        debug!("Checking for possible combat after velocity updates.");
-        if (position.velocity_x == 0 && position.velocity_y == 0) || stats.current_hp <= 0.0 {
-            //either not moving, or already dead, no combat
-            stats.in_combat = false;
-            continue;
-        }
+    debug!("Checking for possible combat after velocity updates.");
+    if (position.velocity_x == 0 && position.velocity_y == 0) || stats.current_hp <= 0.0 {
+        //either not moving, or already dead, no combat
+        stats.in_combat = false;
+    } else {
         let current_map_state =
             state::get_current_map_states(all_map_states, &position.current_map);
         let potential_pos_x = u32_from(i32_from(position.pos_x) + position.velocity_x);
@@ -157,28 +143,20 @@ fn get_attacker(
     }
 }
 
-#[system]
+#[system(for_each)]
 pub(super) fn resolve_combat(
-    world: &mut SubWorld,
-    query: &mut Query<(
-        &mut Stats,
-        Option<&mut MonsterDetails>,
-        Option<&PlayerDetails>,
-        &mut Inventory,
-    )>,
-    #[resource] combat_parties: &mut CombatParties,
+    defender_stats: &mut Stats,
+    monster_details_option: Option<&mut MonsterDetails>,
+    player_details_option: Option<&PlayerDetails>,
+    defender_inventory: &mut Inventory,
+    #[resource] combat_parties: &CombatParties,
     #[resource] combat_attacker_stats: &mut CombatAttackerStats,
     #[resource] sender: &Sender<Packet>,
 ) {
-    for (defender_stats, monster_details_option, player_details_option, defender_inventory) in
-        query.iter_mut(world)
-    {
-        if defender_stats.current_hp <= 0.0 {
-            // Skip combat if defender is already dead.
-            // This is possible if multiple player updates are processed
-            // before the server tick for monsters.
-            continue;
-        }
+    // Skip combat if defender is already dead.
+    // This is possible if multiple player updates are processed
+    // before the server tick for monsters.
+    if defender_stats.current_hp > 0.0 {
         let mut defender_is_monster = false;
         let mut monster_target = None;
         let mut defender: Defender = Defender::default();
@@ -264,6 +242,10 @@ pub(super) fn resolve_combat(
             monster_details_option.unwrap().current_target = monster_target;
         }
     }
+}
+
+#[system]
+pub(super) fn clear_combat_parties(#[resource] combat_parties: &mut CombatParties) {
     combat_parties.clear();
 }
 
@@ -308,31 +290,34 @@ fn apply_damage(stats: &mut Stats, damage: f32) {
     stats.current_hp -= damage;
 }
 
-#[system]
+#[system(par_for_each)]
 pub(super) fn apply_combat_gains(
-    world: &mut SubWorld,
-    query: &mut Query<(&mut Stats, &mut Inventory, Option<&PlayerDetails>)>,
+    stats: &mut Stats,
+    inventory: &mut Inventory,
+    player_details: &PlayerDetails,
+    #[resource] combat_attacker_stats: &CombatAttackerStats,
+) {
+    if combat_attacker_stats.contains_key(&player_details.id)
+        && combat_attacker_stats
+            .get(&player_details.id)
+            .unwrap()
+            .0
+            .update_available
+    {
+        stats.exp = combat_attacker_stats.get(&player_details.id).unwrap().0.exp;
+        inventory.gold = combat_attacker_stats
+            .get(&player_details.id)
+            .unwrap()
+            .1
+            .gold;
+        stats.update_available = true;
+        inventory.update_available = true;
+    }
+}
+
+#[system]
+pub(super) fn clear_combat_attacker_stats(
     #[resource] combat_attacker_stats: &mut CombatAttackerStats,
 ) {
-    for (stats, inventory, player_details_option) in query.iter_mut(world) {
-        if let Some(player_details) = player_details_option {
-            if combat_attacker_stats.contains_key(&player_details.id)
-                && combat_attacker_stats
-                    .get(&player_details.id)
-                    .unwrap()
-                    .0
-                    .update_available
-            {
-                stats.exp = combat_attacker_stats.get(&player_details.id).unwrap().0.exp;
-                inventory.gold = combat_attacker_stats
-                    .get(&player_details.id)
-                    .unwrap()
-                    .1
-                    .gold;
-                stats.update_available = true;
-                inventory.update_available = true;
-            }
-        }
-    }
     combat_attacker_stats.clear();
 }
