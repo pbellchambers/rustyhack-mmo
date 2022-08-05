@@ -10,13 +10,7 @@ use std::collections::HashMap;
 use std::process;
 use uuid::Uuid;
 
-pub fn should_respawn_this_tick() -> bool {
-    //random chance for respawning each chick
-    let mut rng = rand::thread_rng();
-    consts::TICK_SPAWN_CHANCE_PERCENTAGE >= rng.gen_range(0..=101)
-}
-
-pub fn count_monsters_needing_respawn(
+pub(crate) fn count_monsters_needing_respawn(
     current_monsters_count: &AllSpawnCounts,
     default_spawn_counts: &AllSpawnCounts,
 ) -> AllSpawnCounts {
@@ -42,7 +36,7 @@ pub fn count_monsters_needing_respawn(
     monsters_needing_respawn
 }
 
-pub fn count_alive_monsters(
+pub(crate) fn count_alive_monsters(
     mut current_monsters_count: AllSpawnCounts,
     monster: &MonsterDetails,
     position: &Position,
@@ -70,7 +64,7 @@ pub fn count_alive_monsters(
     current_monsters_count
 }
 
-pub fn respawn_monsters(
+pub(crate) fn respawn_monsters(
     monsters_needing_respawn: &AllSpawnCounts,
     all_monster_definitions: &AllMonsterDefinitions,
     all_spawns_map: &AllSpawnsMap,
@@ -90,6 +84,12 @@ pub fn respawn_monsters(
             }
         }
     }
+}
+
+fn should_respawn_this_tick() -> bool {
+    //random chance for respawning each chick
+    let mut rng = rand::thread_rng();
+    consts::TICK_SPAWN_CHANCE_PERCENTAGE >= rng.gen_range(0..=101)
 }
 
 pub(crate) fn spawn_initial_monsters(
@@ -141,7 +141,7 @@ pub(crate) fn spawn_initial_monsters(
     world.extend(monsters_vec);
 }
 
-pub(crate) fn spawn_single_monster(
+fn spawn_single_monster(
     all_monster_definitions: &AllMonsterDefinitions,
     all_spawns_map: &AllSpawnsMap,
     map: &String,

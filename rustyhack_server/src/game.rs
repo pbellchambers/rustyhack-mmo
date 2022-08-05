@@ -1,9 +1,17 @@
+mod backup;
+pub(super) mod combat;
+mod ecs;
+mod map;
+mod monsters;
+mod player_message_handler;
+mod players;
+
 use std::collections::HashMap;
 use std::thread;
 use std::time::Instant;
 
 use crossbeam_channel::{Receiver, Sender};
-use ecs::queries::players;
+use ecs::queries::common_player;
 use ecs::systems;
 use laminar::{Packet, SocketEvent};
 use legion::Resources;
@@ -11,18 +19,11 @@ use legion::Resources;
 use crate::consts;
 use crate::game::combat::{CombatAttackerStats, CombatParties};
 use crate::network_messages::packet_receiver;
-use ecs::queries::players::PlayersPositions;
 use map::state::EntityPositionMap;
 use map::{spawns, state, tiles};
+use players::PlayersPositions;
 
-mod backup;
-pub(crate) mod combat;
-mod ecs;
-mod map;
-pub(crate) mod monsters;
-pub(crate) mod player_message_handler;
-
-pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
+pub(super) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     //initialise all basic resources
     let all_maps = tiles::initialise_all_maps();
     let all_maps_resource = all_maps.clone();
@@ -68,7 +69,7 @@ pub(crate) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
 
     if is_saved_world {
         //marking all players as logged out on initial server start
-        players::logout_all_players(&mut world);
+        common_player::logout_all_players(&mut world);
     }
 
     //start tick counts

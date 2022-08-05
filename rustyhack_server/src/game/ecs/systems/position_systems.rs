@@ -12,7 +12,7 @@ use rustyhack_lib::ecs::item::{get_item_name, Item};
 use rustyhack_lib::utils::math::{i32_from, u32_from};
 
 #[system]
-pub(crate) fn check_for_tile_collision(
+pub(super) fn check_for_tile_collision(
     world: &mut SubWorld,
     query: &mut Query<&mut Position>,
     #[resource] all_maps: &AllMaps,
@@ -41,7 +41,7 @@ pub(crate) fn check_for_tile_collision(
 }
 
 #[system]
-pub(crate) fn update_entities_position(world: &mut SubWorld, query: &mut Query<&mut Position>) {
+pub(super) fn update_entities_position(world: &mut SubWorld, query: &mut Query<&mut Position>) {
     for position in query.iter_mut(world) {
         debug!("Updating all final positions.");
         if position.velocity_x == 0 && position.velocity_y == 0 {
@@ -58,7 +58,7 @@ pub(crate) fn update_entities_position(world: &mut SubWorld, query: &mut Query<&
 
 #[system(for_each)]
 #[filter(maybe_changed::<Position>())]
-pub(crate) fn collate_all_player_positions(
+pub(super) fn collate_all_player_positions(
     player_details: &PlayerDetails,
     position: &Position,
     display_details: &DisplayDetails,
@@ -79,7 +79,7 @@ pub(crate) fn collate_all_player_positions(
 
 #[system(for_each)]
 #[filter(maybe_changed::<Position>())]
-pub(crate) fn collate_all_monster_positions(
+pub(super) fn collate_all_monster_positions(
     monster_details: &MonsterDetails,
     position: &Position,
     display_details: &DisplayDetails,
@@ -99,7 +99,7 @@ pub(crate) fn collate_all_monster_positions(
 #[allow(clippy::trivially_copy_pass_by_ref)]
 #[system(for_each)]
 #[filter(maybe_changed::<Position>())]
-pub(crate) fn collate_all_item_positions(
+pub(super) fn collate_all_item_positions(
     entity: &Entity,
     item_details: &ItemDetails,
     item: &Item,

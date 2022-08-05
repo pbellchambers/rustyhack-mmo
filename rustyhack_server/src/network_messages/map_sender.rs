@@ -5,11 +5,11 @@ use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::network::packets::ServerMessage;
 use std::net::SocketAddr;
 
-pub(crate) fn serialize_all_maps(all_maps: AllMaps) -> Vec<u8> {
+pub(super) fn serialize_all_maps(all_maps: AllMaps) -> Vec<u8> {
     serialize(&ServerMessage::AllMaps(all_maps)).expect("Error serializing AllMaps data.")
 }
 
-pub(crate) fn send_all_maps_chunks(
+pub(super) fn send_all_maps_chunks(
     all_maps_serialized: &[u8],
     address: SocketAddr,
     sender: &Sender<Packet>,

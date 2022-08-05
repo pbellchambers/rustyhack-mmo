@@ -11,7 +11,7 @@ use std::process;
 use uuid::Uuid;
 
 #[system]
-pub(crate) fn send_player_position_updates(
+pub(super) fn send_player_position_updates(
     world: &mut SubWorld,
     query: &mut Query<(&PlayerDetails, &mut Position)>,
     #[resource] sender: &Sender<Packet>,
@@ -45,7 +45,7 @@ pub(crate) fn send_player_position_updates(
 }
 
 #[system]
-pub(crate) fn send_player_stats_updates(
+pub(super) fn send_player_stats_updates(
     world: &mut SubWorld,
     query: &mut Query<(&PlayerDetails, &mut Stats)>,
     #[resource] sender: &Sender<Packet>,
@@ -78,7 +78,7 @@ pub(crate) fn send_player_stats_updates(
 }
 
 #[system]
-pub(crate) fn send_player_inventory_updates(
+pub(super) fn send_player_inventory_updates(
     world: &mut SubWorld,
     query: &mut Query<(&PlayerDetails, &mut Inventory)>,
     #[resource] sender: &Sender<Packet>,
@@ -112,7 +112,7 @@ pub(crate) fn send_player_inventory_updates(
 }
 
 #[system]
-pub(crate) fn broadcast_entity_updates(
+pub(super) fn broadcast_entity_updates(
     world: &mut SubWorld,
     query: &mut Query<(&PlayerDetails, &Position)>,
     #[resource] sender: &Sender<Packet>,

@@ -18,7 +18,7 @@ use uuid::Uuid;
 
 #[system]
 #[allow(clippy::type_complexity)]
-pub(crate) fn check_for_combat(
+pub(super) fn check_for_combat(
     world: &mut SubWorld,
     query: &mut Query<(
         &mut Position,
@@ -158,7 +158,7 @@ fn get_attacker(
 }
 
 #[system]
-pub(crate) fn resolve_combat(
+pub(super) fn resolve_combat(
     world: &mut SubWorld,
     query: &mut Query<(
         &mut Stats,
@@ -309,7 +309,7 @@ fn apply_damage(stats: &mut Stats, damage: f32) {
 }
 
 #[system]
-pub(crate) fn apply_combat_gains(
+pub(super) fn apply_combat_gains(
     world: &mut SubWorld,
     query: &mut Query<(&mut Stats, &mut Inventory, Option<&PlayerDetails>)>,
     #[resource] combat_attacker_stats: &mut CombatAttackerStats,

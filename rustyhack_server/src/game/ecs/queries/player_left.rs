@@ -8,7 +8,7 @@ use rustyhack_lib::network::packets::ServerMessage;
 use std::process;
 use uuid::Uuid;
 
-pub fn set_player_logged_out(
+pub(crate) fn set_player_logged_out(
     world: &mut World,
     address: &str,
     originating_player_name: &str,
@@ -37,7 +37,7 @@ pub fn set_player_logged_out(
     (logged_out_id, logged_out_map)
 }
 
-pub fn set_player_disconnected(world: &mut World, address: &str) -> (Uuid, String) {
+pub(crate) fn set_player_disconnected(world: &mut World, address: &str) -> (Uuid, String) {
     let mut logged_out_id = Uuid::new_v4();
     let mut logged_out_map = "".to_string();
     let mut query = <(&mut PlayerDetails, &mut DisplayDetails, &Position)>::query();
@@ -60,7 +60,7 @@ pub fn set_player_disconnected(world: &mut World, address: &str) -> (Uuid, Strin
     (logged_out_id, logged_out_map)
 }
 
-pub fn broadcast_player_logged_out(
+pub(crate) fn broadcast_player_logged_out(
     world: &mut World,
     sender: &Sender<Packet>,
     logged_out_player_id: Uuid,

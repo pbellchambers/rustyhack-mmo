@@ -7,7 +7,7 @@ use std::fs::File;
 use std::net::SocketAddr;
 use std::{io, process};
 
-pub(crate) fn initialise_log(args: &[String]) {
+pub(super) fn initialise_log(args: &[String]) {
     let mut log_level = LevelFilter::Info;
     if args.len() > 1 && args[1] == "--debug" {
         println!("Debug logging enabled.");
@@ -41,7 +41,7 @@ pub(crate) fn initialise_log(args: &[String]) {
     });
 }
 
-pub(crate) fn get_server_addr() -> String {
+pub(super) fn get_server_addr() -> String {
     println!("--Rustyhack MMO Server Setup--");
 
     let mut server_addr;

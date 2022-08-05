@@ -81,7 +81,7 @@ fn process_map_data(data: &str) -> Vec<Vec<Tile>> {
     processed_data
 }
 
-pub fn entity_is_colliding_with_tile(tile: Tile) -> bool {
+pub(crate) fn entity_is_colliding_with_tile(tile: Tile) -> bool {
     match tile {
         Tile::Door(door) => door.collidable == Collidable::True,
         Tile::Wall(wall) => wall.collidable == Collidable::True,

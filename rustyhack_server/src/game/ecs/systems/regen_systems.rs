@@ -7,7 +7,7 @@ use legion::Query;
 use rustyhack_lib::ecs::components::Stats;
 
 #[system]
-pub(crate) fn apply_health_regen(world: &mut SubWorld, query: &mut Query<&mut Stats>) {
+pub(super) fn apply_health_regen(world: &mut SubWorld, query: &mut Query<&mut Stats>) {
     for stats in query.iter_mut(world) {
         //only apply health regen if out of combat
         if !stats.in_combat {

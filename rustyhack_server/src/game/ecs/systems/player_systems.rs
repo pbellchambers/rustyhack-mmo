@@ -1,5 +1,5 @@
 use crate::consts::{BASE_HP_TABLE, CUMULATIVE_EXP_TABLE, EXP_LOSS_ON_DEATH_PERCENTAGE};
-use crate::game::ecs::queries::players::PlayersPositions;
+use crate::game::players::PlayersPositions;
 use crate::network_messages::send_message_to_player;
 use crossbeam_channel::Sender;
 use crossterm::style::Color;
@@ -9,7 +9,7 @@ use legion::{system, Query};
 use rustyhack_lib::ecs::components::{PlayerDetails, Position, Stats};
 
 #[system]
-pub(crate) fn resolve_player_deaths(
+pub(super) fn resolve_player_deaths(
     world: &mut SubWorld,
     query: &mut Query<(&PlayerDetails, &mut Position, &mut Stats)>,
     #[resource] sender: &Sender<Packet>,
@@ -49,7 +49,7 @@ pub(crate) fn resolve_player_deaths(
 }
 
 #[system]
-pub(crate) fn update_player_positions_resource(
+pub(super) fn update_player_positions_resource(
     world: &mut SubWorld,
     query: &mut Query<(&PlayerDetails, &Position)>,
     #[resource] players_positions: &mut PlayersPositions,
@@ -63,7 +63,7 @@ pub(crate) fn update_player_positions_resource(
 }
 
 #[system]
-pub(crate) fn level_up(
+pub(super) fn level_up(
     world: &mut SubWorld,
     query: &mut Query<(&mut Stats, Option<&PlayerDetails>)>,
     #[resource] sender: &Sender<Packet>,

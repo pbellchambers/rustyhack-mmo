@@ -18,7 +18,7 @@ pub(crate) fn send_combat_updates_to_players(
     send_gold_messages_to_players(defender, attacker, current_hp, gold_gain, sender);
 }
 
-pub(crate) fn send_gold_messages_to_players(
+fn send_gold_messages_to_players(
     defender: &Defender,
     attacker: &Attacker,
     current_hp: f32,
@@ -59,7 +59,7 @@ pub(crate) fn send_gold_messages_to_players(
     }
 }
 
-pub(crate) fn send_exp_messages_to_players(
+fn send_exp_messages_to_players(
     defender: &Defender,
     attacker: &Attacker,
     current_hp: f32,
@@ -86,7 +86,7 @@ pub(crate) fn send_exp_messages_to_players(
     }
 }
 
-pub(crate) fn send_combat_messages_to_players(
+fn send_combat_messages_to_players(
     defender: &Defender,
     attacker: &Attacker,
     damage: f32,

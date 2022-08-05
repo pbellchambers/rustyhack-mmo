@@ -7,22 +7,22 @@ use std::io::BufReader;
 use std::path::Path;
 use std::process;
 
-pub type AllSpawnsMap = HashMap<String, Spawns>;
-pub type AllSpawnCounts = HashMap<String, HashMap<String, u32>>;
+pub(crate) type AllSpawnsMap = HashMap<String, Spawns>;
+pub(crate) type AllSpawnCounts = HashMap<String, HashMap<String, u32>>;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Spawns {
+pub(crate) struct Spawns {
     pub monsters: Vec<MonsterSpawnPositions>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct MonsterSpawnPositions {
+pub(crate) struct MonsterSpawnPositions {
     pub monster_type: String,
     pub spawn_positions: Vec<PositionWithoutMap>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-pub struct PositionWithoutMap {
+pub(crate) struct PositionWithoutMap {
     pub x: u32,
     pub y: u32,
 }

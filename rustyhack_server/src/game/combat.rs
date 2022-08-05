@@ -26,8 +26,8 @@ Accuracy% = Base accuracy + ((100 - base accuracy) * (Attacker's Dex / 100)) - (
 
 */
 
-pub(crate) type CombatParties = HashMap<Attacker, Defender>;
-pub(crate) type CombatAttackerStats = HashMap<Uuid, (Stats, Inventory)>;
+pub(super) type CombatParties = HashMap<Attacker, Defender>;
+pub(super) type CombatAttackerStats = HashMap<Uuid, (Stats, Inventory)>;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq, Hash)]
 pub(crate) struct Attacker {
@@ -59,7 +59,7 @@ impl Default for Defender {
     }
 }
 
-pub(crate) fn resolve_combat(
+pub(super) fn resolve_combat(
     attacker_stats: &Stats,
     attacker_inventory: &Inventory,
     defender_stats: &Stats,

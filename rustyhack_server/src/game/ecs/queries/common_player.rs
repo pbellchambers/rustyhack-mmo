@@ -1,10 +1,6 @@
 use legion::{IntoQuery, World};
 use rustyhack_lib::ecs::components::{PlayerDetails, Position};
 use rustyhack_lib::network::packets::PositionMessage;
-use std::collections::HashMap;
-use uuid::Uuid;
-
-pub(crate) type PlayersPositions = HashMap<Uuid, Position>;
 
 pub(crate) fn logout_all_players(world: &mut World) {
     let mut query = <&mut PlayerDetails>::query();
@@ -15,7 +11,7 @@ pub(crate) fn logout_all_players(world: &mut World) {
     info!("Marked all players logged out.");
 }
 
-pub fn set_player_velocity(world: &mut World, position_message: &PositionMessage) {
+pub(crate) fn set_player_velocity(world: &mut World, position_message: &PositionMessage) {
     let mut query = <(&mut PlayerDetails, &mut Position)>::query();
     for (player_details, position) in query.iter_mut(world) {
         if player_details.player_name == position_message.player_name {

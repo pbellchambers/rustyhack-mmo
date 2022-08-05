@@ -1,3 +1,4 @@
+use crate::game::players;
 use bincode::serialize;
 use crossbeam_channel::Sender;
 use laminar::Packet;
@@ -8,7 +9,12 @@ use rustyhack_lib::network::packets::ServerMessage;
 use std::process;
 use uuid::Uuid;
 
-pub fn join_player(world: &mut World, name: &str, client_addr: String, sender: &Sender<Packet>) {
+pub(crate) fn join_player(
+    world: &mut World,
+    name: &str,
+    client_addr: String,
+    sender: &Sender<Packet>,
+) {
     let mut query = <(
         &mut PlayerDetails,
         &mut DisplayDetails,
@@ -34,7 +40,7 @@ pub fn join_player(world: &mut World, name: &str, client_addr: String, sender: &
                 stats: *stats,
                 inventory: inventory.clone(),
             };
-            send_player_joined_response(&player, sender);
+            players::send_player_joined_response(&player, sender);
             should_create_new_player = false;
             break;
         } else if player_details.player_name == name && player_details.currently_online {
@@ -80,23 +86,5 @@ fn create_player(world: &mut World, name: &str, client_addr: String, sender: &Se
         player.inventory.clone(),
     ));
     info!("New player \"{}\" created: {:?}", name, player_entity);
-    send_player_joined_response(&player, sender);
-}
-
-fn send_player_joined_response(player: &Player, sender: &Sender<Packet>) {
-    let response = serialize(&ServerMessage::PlayerJoined(player.clone())).unwrap_or_else(|err| {
-        error!(
-            "Failed to serialize player created response, error: {}",
-            err
-        );
-        process::exit(1);
-    });
-    rustyhack_lib::network::send_packet(
-        Packet::reliable_ordered(
-            player.player_details.client_addr.parse().unwrap(),
-            response,
-            Some(11),
-        ),
-        sender,
-    );
+    players::send_player_joined_response(&player, sender);
 }

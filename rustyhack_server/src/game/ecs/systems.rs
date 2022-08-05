@@ -2,7 +2,7 @@ mod combat_systems;
 mod map_state_systems;
 mod monster_systems;
 mod network_messages_systems;
-pub(crate) mod player_systems;
+mod player_systems;
 mod position_systems;
 mod regen_systems;
 

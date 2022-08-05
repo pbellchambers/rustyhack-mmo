@@ -1,3 +1,7 @@
+pub(super) mod combat_updates;
+mod map_sender;
+pub(super) mod packet_receiver;
+
 use bincode::serialize;
 use crossbeam_channel::{Receiver, Sender};
 use crossterm::style::Color;
@@ -6,11 +10,7 @@ use rustyhack_lib::network::packets::{ServerMessage, SystemMessage};
 use std::time::Duration;
 use std::{process, thread};
 
-pub(crate) mod combat_updates;
-mod map_sender;
-pub(crate) mod packet_receiver;
-
-pub(crate) fn bind_to_socket(server_addr: &str) -> (Sender<Packet>, Receiver<SocketEvent>) {
+pub(super) fn bind_to_socket(server_addr: &str) -> (Sender<Packet>, Receiver<SocketEvent>) {
     info!("Attempting to bind socket to: {}", &server_addr);
     let mut socket =
         Socket::bind_with_config(&server_addr, get_laminar_config()).unwrap_or_else(|err| {
@@ -35,7 +35,7 @@ fn get_laminar_config() -> laminar::Config {
     }
 }
 
-pub(crate) fn send_message_to_player(
+pub(super) fn send_message_to_player(
     player_name: &String,
     client_addr: &String,
     currently_online: bool,

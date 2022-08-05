@@ -1,7 +1,7 @@
-use crate::game::ecs::queries::players::PlayersPositions;
 use crate::game::map::spawns::{AllSpawnCounts, AllSpawnsMap};
 use crate::game::map::state::EntityPositionMap;
 use crate::game::monsters::{movement, spawning};
+use crate::game::players::PlayersPositions;
 use legion::systems::CommandBuffer;
 use legion::world::SubWorld;
 use legion::{system, Entity, Query};
@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use uuid::Uuid;
 
 #[system]
-pub(crate) fn resolve_monster_deaths(
+pub(super) fn resolve_monster_deaths(
     world: &mut SubWorld,
     query: &mut Query<(Entity, &MonsterDetails, &Stats, &Position, &Inventory)>,
     commands: &mut CommandBuffer,
@@ -76,7 +76,7 @@ pub(crate) fn resolve_monster_deaths(
 }
 
 #[system]
-pub(crate) fn update_monster_velocities(
+pub(super) fn update_monster_velocities(
     world: &mut SubWorld,
     query: &mut Query<(&mut MonsterDetails, &mut Position)>,
     #[resource] players_positions: &PlayersPositions,
@@ -123,7 +123,7 @@ pub(crate) fn update_monster_velocities(
 }
 
 #[system]
-pub(crate) fn spawn_monsters(
+pub(super) fn spawn_monsters(
     world: &mut SubWorld,
     query: &mut Query<(&mut MonsterDetails, &mut Position)>,
     commands: &mut CommandBuffer,

@@ -1,73 +1,12 @@
 use crate::consts::MONSTER_DISTANCE_ACTIVATION;
-use crate::game::ecs::queries::players::PlayersPositions;
+use crate::game::players::PlayersPositions;
 use rand::Rng;
 use rustyhack_lib::ecs::components::Position;
 use rustyhack_lib::utils::math::i32_from;
 use std::collections::HashMap;
 use uuid::Uuid;
 
-pub fn get_nearest_target(
-    nearby_players: &HashMap<Uuid, Position>,
-    monster_position: &Position,
-) -> Uuid {
-    let mut closest_distance: u32 = u32::MAX;
-    let mut closest_uuid = Uuid::new_v4();
-    for (uuid, target_position) in nearby_players {
-        let diff_x: u32 =
-            (i32_from(monster_position.pos_x) - i32_from(target_position.pos_x)).unsigned_abs();
-        let diff_y: u32 =
-            (i32_from(monster_position.pos_y) - i32_from(target_position.pos_y)).unsigned_abs();
-        if diff_x < closest_distance {
-            closest_distance = diff_x;
-            closest_uuid = *uuid;
-        }
-        if diff_y < closest_distance {
-            closest_distance = diff_y;
-            closest_uuid = *uuid;
-        }
-    }
-    closest_uuid
-}
-
-pub fn check_if_outside_spawn_range(
-    spawn_position: &Position,
-    current_position: &Position,
-) -> bool {
-    let diff_x: i32 = i32_from(current_position.pos_x) - i32_from(spawn_position.pos_x);
-    let diff_y: i32 = i32_from(current_position.pos_y) - i32_from(spawn_position.pos_y);
-
-    diff_x.abs() > MONSTER_DISTANCE_ACTIVATION || diff_y.abs() > MONSTER_DISTANCE_ACTIVATION
-}
-
-pub fn move_towards(diff: i32, position: i32) -> i32 {
-    if diff.is_positive() {
-        position - 1
-    } else {
-        position + 1
-    }
-}
-
-pub fn move_randomly(monster_position: &mut Position) {
-    let mut velocity_x = 0;
-    let mut velocity_y = 0;
-    let mut rng = rand::thread_rng();
-    let random_pick: u8 = rng.gen_range(1..=4);
-
-    if random_pick == 1 {
-        velocity_x = 1;
-    } else if random_pick == 2 {
-        velocity_x = -1;
-    } else if random_pick == 3 {
-        velocity_y = 1;
-    } else if random_pick == 4 {
-        velocity_y = -1;
-    }
-
-    monster_position.velocity_x = velocity_x;
-    monster_position.velocity_y = velocity_y;
-}
-
-pub fn move_towards_target(monster_position: &mut Position, target_position: &Position) {
+pub(crate) fn move_towards_target(monster_position: &mut Position, target_position: &Position) {
     let monster_position_x = i32_from(monster_position.pos_x);
     let monster_position_y = i32_from(monster_position.pos_y);
     let diff_x: i32 = monster_position_x - i32_from(target_position.pos_x);
@@ -115,8 +54,69 @@ pub fn move_towards_target(monster_position: &mut Position, target_position: &Po
     monster_position.velocity_y = new_pos_y - monster_position_y;
 }
 
+pub(crate) fn get_nearest_target(
+    nearby_players: &HashMap<Uuid, Position>,
+    monster_position: &Position,
+) -> Uuid {
+    let mut closest_distance: u32 = u32::MAX;
+    let mut closest_uuid = Uuid::new_v4();
+    for (uuid, target_position) in nearby_players {
+        let diff_x: u32 =
+            (i32_from(monster_position.pos_x) - i32_from(target_position.pos_x)).unsigned_abs();
+        let diff_y: u32 =
+            (i32_from(monster_position.pos_y) - i32_from(target_position.pos_y)).unsigned_abs();
+        if diff_x < closest_distance {
+            closest_distance = diff_x;
+            closest_uuid = *uuid;
+        }
+        if diff_y < closest_distance {
+            closest_distance = diff_y;
+            closest_uuid = *uuid;
+        }
+    }
+    closest_uuid
+}
+
+pub(crate) fn check_if_outside_spawn_range(
+    spawn_position: &Position,
+    current_position: &Position,
+) -> bool {
+    let diff_x: i32 = i32_from(current_position.pos_x) - i32_from(spawn_position.pos_x);
+    let diff_y: i32 = i32_from(current_position.pos_y) - i32_from(spawn_position.pos_y);
+
+    diff_x.abs() > MONSTER_DISTANCE_ACTIVATION || diff_y.abs() > MONSTER_DISTANCE_ACTIVATION
+}
+
+fn move_towards(diff: i32, position: i32) -> i32 {
+    if diff.is_positive() {
+        position - 1
+    } else {
+        position + 1
+    }
+}
+
+pub(crate) fn move_randomly(monster_position: &mut Position) {
+    let mut velocity_x = 0;
+    let mut velocity_y = 0;
+    let mut rng = rand::thread_rng();
+    let random_pick: u8 = rng.gen_range(1..=4);
+
+    if random_pick == 1 {
+        velocity_x = 1;
+    } else if random_pick == 2 {
+        velocity_x = -1;
+    } else if random_pick == 3 {
+        velocity_y = 1;
+    } else if random_pick == 4 {
+        velocity_y = -1;
+    }
+
+    monster_position.velocity_x = velocity_x;
+    monster_position.velocity_y = velocity_y;
+}
+
 #[allow(clippy::similar_names)]
-pub fn get_all_players_nearby(
+pub(crate) fn get_all_players_nearby(
     player_positions: &PlayersPositions,
     monster_position: &Position,
 ) -> HashMap<Uuid, Position> {

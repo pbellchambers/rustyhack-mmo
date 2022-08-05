@@ -16,7 +16,7 @@ pub(crate) fn spawn_packet_receiver_thread(
     thread::spawn(move || run(&sender, &receiver, &all_maps, &channel_sender));
 }
 
-pub(crate) fn run(
+fn run(
     sender: &Sender<Packet>,
     receiver: &Receiver<SocketEvent>,
     all_maps: &AllMaps,

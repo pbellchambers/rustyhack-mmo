@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 pub(crate) type MapState = Vec<Vec<Vec<EntityType>>>;
 pub(crate) type AllMapStates = HashMap<String, MapState>;
-pub type EntityPositionMap = HashMap<Uuid, (Position, DisplayDetails, String)>;
+pub(crate) type EntityPositionMap = HashMap<Uuid, (Position, DisplayDetails, String)>;
 
 pub(crate) fn initialise_all_map_states(all_maps: &AllMaps) -> AllMapStates {
     info!("About to initialise empty map state for all maps");
@@ -94,7 +94,7 @@ pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> 
     }
 }
 
-pub fn get_current_map<'a>(all_maps: &'a AllMaps, map: &String) -> &'a BackgroundMap {
+pub(crate) fn get_current_map<'a>(all_maps: &'a AllMaps, map: &String) -> &'a BackgroundMap {
     all_maps.get(map).unwrap_or_else(|| {
         error!("Entity is located on a map that does not exist: {}", &map);
         warn!("Will return the default map, but this may cause problems.");
@@ -102,7 +102,7 @@ pub fn get_current_map<'a>(all_maps: &'a AllMaps, map: &String) -> &'a Backgroun
     })
 }
 
-pub fn get_current_map_states<'a>(
+pub(crate) fn get_current_map_states<'a>(
     all_map_states: &'a mut AllMapStates,
     map: &String,
 ) -> &'a mut MapState {

@@ -1,5 +1,5 @@
 use crate::game::ecs::queries;
-use crate::game::ecs::queries::{player_joined, player_left, players};
+use crate::game::ecs::queries::{common_player, player_joined, player_left};
 use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
 use legion::World;
@@ -7,7 +7,7 @@ use rustyhack_lib::network::packets::PlayerRequest;
 
 //todo resolve this clippy warning
 #[allow(clippy::too_many_lines)]
-pub(crate) fn process_player_messages(
+pub(super) fn process_player_messages(
     world: &mut World,
     channel_receiver: &Receiver<PlayerRequest>,
     sender: &Sender<Packet>,
@@ -35,7 +35,7 @@ pub(crate) fn process_player_messages(
                         "Velocity update received for {}",
                         &position_message.player_name
                     );
-                    players::set_player_velocity(world, &position_message);
+                    common_player::set_player_velocity(world, &position_message);
                     debug!("Processed velocity update.");
                 }
                 PlayerRequest::PickupItem(position_message) => {

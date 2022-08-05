@@ -1,7 +1,7 @@
+pub mod packets;
+
 use crossbeam_channel::Sender;
 use laminar::Packet;
-
-pub mod packets;
 
 pub fn send_packet(packet: Packet, sender: &Sender<Packet>) {
     let send_result = sender.send(packet);

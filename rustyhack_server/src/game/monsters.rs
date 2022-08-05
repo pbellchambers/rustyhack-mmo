@@ -1,5 +1,5 @@
-pub(crate) mod movement;
-pub(crate) mod spawning;
+pub(super) mod movement;
+pub(super) mod spawning;
 
 use crate::consts;
 use rustyhack_lib::ecs::monster::{AllMonsterDefinitions, Monster};
@@ -10,7 +10,7 @@ use std::io::BufReader;
 use std::path::Path;
 use std::process;
 
-pub(crate) fn initialise_all_monster_definitions() -> AllMonsterDefinitions {
+pub(super) fn initialise_all_monster_definitions() -> AllMonsterDefinitions {
     info!("About to initialise all monster definitions");
     let mut all_monster_definitions: AllMonsterDefinitions = HashMap::new();
     let mut file_location = file::current_exe_location();

@@ -1,5 +1,6 @@
 pub mod door;
 pub mod wall;
+
 use crate::background_map::tiles::door::Door;
 use crate::background_map::tiles::wall::Wall;
 use serde::{Deserialize, Serialize};

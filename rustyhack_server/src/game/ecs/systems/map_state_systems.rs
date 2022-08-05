@@ -8,13 +8,13 @@ use rustyhack_lib::ecs::monster::Monster;
 use rustyhack_lib::ecs::player::Player;
 
 #[system]
-pub(crate) fn reset_map_state(#[resource] all_map_states: &mut AllMapStates) {
+pub(super) fn reset_map_state(#[resource] all_map_states: &mut AllMapStates) {
     debug!("Clearing map state.");
     state::clear_all_entities(all_map_states);
 }
 
 #[system(for_each)]
-pub(crate) fn add_entities_to_map_state(
+pub(super) fn add_entities_to_map_state(
     position: &Position,
     display_details: &DisplayDetails,
     monster_details_option: Option<&MonsterDetails>,

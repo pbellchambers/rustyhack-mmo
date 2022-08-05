@@ -19,7 +19,7 @@ use std::ops::Range;
 use std::path::Path;
 use uuid::Uuid;
 
-pub(crate) fn create_world_registry() -> Registry<String> {
+pub(super) fn create_world_registry() -> Registry<String> {
     let mut registry = Registry::<String>::default();
     registry.register::<DisplayDetails>("display_details".to_string());
     registry.register::<PlayerDetails>("player_details".to_string());
@@ -47,7 +47,7 @@ pub(crate) fn create_world_registry() -> Registry<String> {
     registry
 }
 
-pub(crate) fn do_world_backup(registry: &Registry<String>, world: &World) {
+pub(super) fn do_world_backup(registry: &Registry<String>, world: &World) {
     info!("World backup starting...");
     let filter = legion::any();
     let entity_serializer = Canon::default();
@@ -66,7 +66,7 @@ pub(crate) fn do_world_backup(registry: &Registry<String>, world: &World) {
     info!("World backup done.");
 }
 
-pub(crate) fn load_world(
+pub(super) fn load_world(
     registry: &Registry<String>,
     all_monster_definitions: &AllMonsterDefinitions,
     all_spawns_map: &AllSpawnsMap,
