@@ -1,6 +1,7 @@
 use crate::client_consts::DEFAULT_FG_COLOUR;
 use chrono::{DateTime, Local};
 use crossterm::style::Color;
+use rayon::prelude::*;
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::network::packets::EntityPositionBroadcast;
@@ -80,29 +81,33 @@ pub(crate) fn get_what_player_sees(
 }
 
 pub(super) fn return_visible_entity_at(
-    mut entity_name: String,
+    entity_name: String,
     entity_position_map: &EntityPositionBroadcast,
     player: &Player,
     x: u32,
     y: u32,
 ) -> String {
-    for (
-        entity_position_x,
-        entity_position_y,
-        entity_current_map,
-        _entity_icon,
-        _entity_icon_colour,
-        entity_name_or_type,
-    ) in entity_position_map.values()
-    {
-        if *entity_name_or_type != player.player_details.player_name
-            && *entity_current_map == player.position.current_map
-            && *entity_position_x == x
-            && *entity_position_y == y
-        {
-            entity_name = entity_name_or_type.clone();
-            break;
-        }
+    let entity = entity_position_map.par_iter().find_any(
+        |(
+            _uuid,
+            (
+                entity_position_x,
+                entity_position_y,
+                entity_current_map,
+                _entity_icon,
+                _entity_icon_colour,
+                entity_name_or_type,
+            ),
+        )| {
+            *entity_name_or_type != player.player_details.player_name
+                && *entity_current_map == player.position.current_map
+                && *entity_position_x == x
+                && *entity_position_y == y
+        },
+    );
+
+    match entity {
+        None => entity_name,
+        Some(entity) => entity.1 .5.clone(),
     }
-    entity_name
 }

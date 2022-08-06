@@ -12,8 +12,12 @@ pub(super) fn draw(
 ) -> Screen {
     let mut screen = Screen::new(viewport_width, console.get_height() - viewport_height);
     if !system_messages.is_empty() {
-        for (count, message) in system_messages.iter().rev().enumerate() {
-            if (count) < screen.get_height() as usize {
+        system_messages
+            .iter()
+            .rev()
+            .take((screen.get_height() - 1) as usize)
+            .enumerate()
+            .for_each(|(count, message)| {
                 screen.print_fbg(
                     0,
                     i32_from_usize((screen.get_height() as usize) - 1 - count),
@@ -21,10 +25,7 @@ pub(super) fn draw(
                     message.1,
                     DEFAULT_BG_COLOUR,
                 );
-            } else {
-                break;
-            }
-        }
+            });
     }
     screen
 }

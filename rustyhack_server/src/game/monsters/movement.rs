@@ -1,6 +1,7 @@
 use crate::consts::MONSTER_DISTANCE_ACTIVATION;
 use crate::game::players::PlayersPositions;
 use rand::Rng;
+use rayon::prelude::*;
 use rustyhack_lib::ecs::components::Position;
 use rustyhack_lib::utils::math::i32_from;
 use std::collections::HashMap;
@@ -128,14 +129,18 @@ pub(crate) fn get_all_players_nearby(
     let monster_y_range = (monster_position_y - MONSTER_DISTANCE_ACTIVATION)
         ..(monster_position_y + MONSTER_DISTANCE_ACTIVATION);
 
-    for (player_id, position) in player_positions {
-        if monster_position.current_map == position.current_map
-            && monster_x_range.contains(&(i32_from(position.pos_x)))
-            && monster_y_range.contains(&(i32_from(position.pos_y)))
-        {
-            debug!("There is a player near a monster");
-            nearby_players.insert(*player_id, position.clone());
-        }
+    let identified_players = player_positions
+        .par_iter()
+        .filter(|(_player_id, position)| {
+            monster_position.current_map == position.current_map
+                && monster_x_range.contains(&(i32_from(position.pos_x)))
+                && monster_y_range.contains(&(i32_from(position.pos_y)))
+        })
+        .collect::<HashMap<&Uuid, &Position>>();
+
+    for (player_id, position) in &identified_players {
+        debug!("There is a player near a monster");
+        nearby_players.insert(**player_id, (*position).clone());
     }
     nearby_players
 }
