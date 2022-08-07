@@ -1,11 +1,10 @@
 use crate::client_consts::NON_COLLIDABLE_OBJECTS;
 use console_engine::pixel;
 use console_engine::screen::Screen;
-use rustyhack_lib::background_map::tiles::Tile;
 use rustyhack_lib::background_map::BackgroundMap;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::network::packets::EntityPositionBroadcast;
-use rustyhack_lib::utils::math::{i32_from, usize_from_i32};
+use rustyhack_lib::utils::math::{i32_from, u32_from, usize_from_i32};
 
 struct Viewport {
     width: u32,
@@ -121,23 +120,17 @@ fn draw_viewable_map(screen: &mut Screen, world_map: &BackgroundMap, viewport: &
             };
             if (current_map_print_loc.x >= 0)
                 && (current_map_print_loc.y >= 0)
-                && (usize_from_i32(current_map_print_loc.x))
-                    < world_map
-                        .data()
-                        .get(usize_from_i32(current_map_print_loc.y))
-                        .unwrap_or(&vec![Tile::EmptySpace])
-                        .len()
-                && (usize_from_i32(current_map_print_loc.y) < world_map.data().len())
+                && (usize_from_i32(current_map_print_loc.x)) < world_map.data().ncols()
+                && (usize_from_i32(current_map_print_loc.y) < world_map.data().nrows())
             {
                 screen.print(
                     viewport_print_x_loc,
                     viewport_print_y_loc,
                     &world_map
-                        .data()
-                        .get(usize_from_i32(current_map_print_loc.y))
-                        .unwrap_or(&vec![Tile::EmptySpace])
-                        .get(usize_from_i32(current_map_print_loc.x))
-                        .unwrap_or(&Tile::EmptySpace)
+                        .get_tile_at(
+                            u32_from(current_map_print_loc.y),
+                            u32_from(current_map_print_loc.x),
+                        )
                         .character()
                         .to_string(),
                 );

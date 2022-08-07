@@ -16,20 +16,20 @@ pub(crate) fn get_what_player_sees(
     let time = date_time.format("[%H:%M:%S] ").to_string();
     let current_map = all_maps.get(&player.position.current_map).unwrap();
 
-    let mut underneath = current_map.data[player.position.pos_y as usize]
-        [player.position.pos_x as usize]
+    let mut underneath = current_map
+        .get_tile_at(player.position.pos_y, player.position.pos_x)
         .to_string();
-    let mut north = current_map.data[(player.position.pos_y - 1) as usize]
-        [player.position.pos_x as usize]
+    let mut north = current_map
+        .get_tile_at(player.position.pos_y - 1, player.position.pos_x)
         .to_string();
-    let mut south = current_map.data[(player.position.pos_y + 1) as usize]
-        [player.position.pos_x as usize]
+    let mut south = current_map
+        .get_tile_at(player.position.pos_y + 1, player.position.pos_x)
         .to_string();
-    let mut east = current_map.data[player.position.pos_y as usize]
-        [(player.position.pos_x + 1) as usize]
+    let mut east = current_map
+        .get_tile_at(player.position.pos_y, player.position.pos_x + 1)
         .to_string();
-    let mut west = current_map.data[player.position.pos_y as usize]
-        [(player.position.pos_x - 1) as usize]
+    let mut west = current_map
+        .get_tile_at(player.position.pos_y, player.position.pos_x - 1)
         .to_string();
 
     underneath = return_visible_entity_at(

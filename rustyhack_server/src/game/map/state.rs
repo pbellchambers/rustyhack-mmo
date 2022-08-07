@@ -1,4 +1,5 @@
 use crate::game::combat::Defender;
+use ndarray::Array2;
 use rayon::prelude::*;
 use rustyhack_lib::background_map::{AllMaps, BackgroundMap};
 use rustyhack_lib::consts::DEFAULT_MAP;
@@ -6,7 +7,7 @@ use rustyhack_lib::ecs::components::{DisplayDetails, EntityType, Position};
 use std::collections::HashMap;
 use uuid::Uuid;
 
-pub(crate) type MapState = Vec<Vec<Vec<EntityType>>>;
+pub(crate) type MapState = Array2<Vec<EntityType>>;
 pub(crate) type AllMapStates = HashMap<String, MapState>;
 pub(crate) type EntityPositionMap = HashMap<Uuid, (Position, DisplayDetails, String)>;
 
@@ -14,16 +15,16 @@ pub(crate) fn initialise_all_map_states(all_maps: &AllMaps) -> AllMapStates {
     info!("About to initialise empty map state for all maps");
     let mut all_map_states: AllMapStates = HashMap::new();
     for (map_name, background_map) in all_maps {
-        let mut map_state: MapState = vec![vec![vec![]]];
-        for row in &background_map.data {
-            let mut row_vec: Vec<Vec<EntityType>> = vec![vec![]];
-            for _tile in row.iter() {
-                //push an empty map state vector for each tile
-                row_vec.push(vec![]);
-            }
-            map_state.push(row_vec);
-        }
-        info!("Initialised map state for {} map.", &map_name);
+        let map_state = Array2::from_elem(
+            (background_map.data.nrows(), background_map.data.ncols()),
+            vec![],
+        );
+        info!(
+            "Initialised map state for {} map, total rows {}, total cols {}",
+            &map_name,
+            &map_state.nrows(),
+            &map_state.ncols()
+        );
         all_map_states.insert(map_name.clone(), map_state);
     }
     info!("Finished initialising all map states.");
@@ -31,11 +32,23 @@ pub(crate) fn initialise_all_map_states(all_maps: &AllMaps) -> AllMapStates {
 }
 
 pub(crate) fn insert_entity_at(map: &mut MapState, entity: EntityType, x: u32, y: u32) {
-    map[y as usize][x as usize].push(entity);
+    match map.get_mut((y as usize, x as usize)) {
+        None => {
+            warn!(
+                "Tried to insert entity at invalid position, x: {}, y: {}, will try to continue.",
+                x, y
+            );
+        }
+        Some(entity_vec) => {
+            entity_vec.push(entity);
+        }
+    }
 }
 
 pub(crate) fn remove_entity_at(map: &mut MapState, entity: &EntityType, x: u32, y: u32) {
-    let entity_index = map[y as usize][x as usize]
+    let entity_index = map
+        .get((y as usize, x as usize))
+        .expect("Tried to remove entity at invalid position")
         .par_iter()
         .enumerate()
         .find_any(|(_index, map_state_entity)| *map_state_entity == entity);
@@ -43,9 +56,14 @@ pub(crate) fn remove_entity_at(map: &mut MapState, entity: &EntityType, x: u32, 
         None => {
             //do nothing
         }
-        Some((index, _entity_type)) => {
-            map[y as usize][x as usize].remove(index);
-        }
+        Some((index, _entity_type)) => match map.get_mut((y as usize, x as usize)) {
+            None => {
+                warn!("Tried to remove entity at invalid position, x: {}, y: {}, will try to continue.", x, y);
+            }
+            Some(entity_vec) => {
+                entity_vec.remove(index);
+            }
+        },
     }
 }
 
@@ -53,11 +71,7 @@ pub(crate) fn clear_all_entities(map_states: &mut AllMapStates) -> &mut AllMapSt
     map_states
         .par_iter_mut()
         .for_each(|(_map_name, map_state)| {
-            map_state.par_iter_mut().for_each(|map_row| {
-                map_row.par_iter_mut().for_each(|map_tile| {
-                    map_tile.clear();
-                });
-            });
+            map_state.par_map_inplace(Vec::clear);
         });
     map_states
 }
@@ -69,18 +83,21 @@ pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> 
         //don't bother checking for collisions at y == 0 as map_state overflows
         (colliding, defender)
     } else {
-        let defending_entity =
-            &map_state[y as usize][x as usize]
-                .par_iter()
-                .find_any(|entity_type| {
-                    if let EntityType::Player(player) = entity_type {
-                        player.player_details.currently_online && player.display_details.collidable
-                    } else if let EntityType::Monster(monster) = entity_type {
-                        monster.display_details.collidable
-                    } else {
-                        false
-                    }
-                });
+        let defending_entity = match &map_state.get((y as usize, x as usize)) {
+            None => {
+                warn!("Tried to check for entity collision at invalid position, x: {}, y: {}, will try to continue.", x, y);
+                None
+            }
+            Some(entity_vec) => entity_vec.par_iter().find_any(|entity_type| {
+                if let EntityType::Player(player) = entity_type {
+                    player.player_details.currently_online && player.display_details.collidable
+                } else if let EntityType::Monster(monster) = entity_type {
+                    monster.display_details.collidable
+                } else {
+                    false
+                }
+            }),
+        };
 
         match defending_entity {
             None => {}

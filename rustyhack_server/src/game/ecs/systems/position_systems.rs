@@ -20,7 +20,7 @@ pub(super) fn check_for_tile_collision(position: &mut Position, #[resource] all_
         let potential_pos_y = u32_from(i32_from(position.pos_y) + position.velocity_y);
 
         if tiles::entity_is_colliding_with_tile(
-            current_map.get_tile_at(potential_pos_x, potential_pos_y),
+            current_map.get_tile_at(potential_pos_y, potential_pos_x),
         ) {
             debug!("Entity colliding with tile, setting velocity to 0.");
             position.velocity_x = 0;

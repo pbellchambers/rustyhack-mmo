@@ -1,4 +1,6 @@
 use crate::consts;
+use crate::game::map::array_utils;
+use ndarray::Array2;
 use rustyhack_lib::background_map::tiles::{Collidable, Tile};
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::background_map::{character_map, BackgroundMap};
@@ -51,11 +53,12 @@ fn load_map_data_from_file(path: &Path) -> String {
     })
 }
 
-fn process_map_data(data: &str) -> Vec<Vec<Tile>> {
+fn process_map_data(data: &str) -> Array2<Tile> {
     let mut processed_data: Vec<Vec<Tile>> = Vec::new();
     let mut row_data: Vec<Tile> = Vec::new();
     let mut entity: Tile;
     let mut current_x = 0;
+    let mut max_x_len = 0;
     let mut current_y = 0;
     debug!("Beginning to process map data into Vec.");
     for character in data.chars() {
@@ -63,6 +66,9 @@ fn process_map_data(data: &str) -> Vec<Vec<Tile>> {
         match entity {
             Tile::NewLine => {
                 processed_data.push(row_data.clone());
+                if row_data.len() > max_x_len {
+                    max_x_len = row_data.len();
+                }
                 row_data.clear();
                 current_x = 0;
                 current_y += 1;
@@ -70,18 +76,24 @@ fn process_map_data(data: &str) -> Vec<Vec<Tile>> {
             Tile::CarriageReturn => {
                 //do nothing - handles builds on windows
             }
-            Tile::EndOfFile => processed_data.push(row_data.clone()),
+            Tile::EndOfFile => {
+                processed_data.push(row_data.clone());
+                if row_data.len() > max_x_len {
+                    max_x_len = row_data.len();
+                }
+            }
             _ => {
                 row_data.push(entity);
                 current_x += 1;
             }
         }
     }
-    debug!("Finished processing map data into Vec.");
-    processed_data
+    array_utils::pad_all_rows(&mut processed_data, max_x_len, Tile::EmptySpace);
+    debug!("Finished processing map data into Array2.");
+    array_utils::vec_to_array(&processed_data)
 }
 
-pub(crate) fn entity_is_colliding_with_tile(tile: Tile) -> bool {
+pub(crate) fn entity_is_colliding_with_tile(tile: &Tile) -> bool {
     match tile {
         Tile::Door(door) => door.collidable == Collidable::True,
         Tile::Wall(wall) => wall.collidable == Collidable::True,
