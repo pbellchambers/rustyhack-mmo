@@ -49,7 +49,6 @@ pub(super) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     packet_receiver::spawn_packet_receiver_thread(sender, receiver, all_maps, channel_sender);
 
     //load resources into world
-    //todo are all of these needed here, can they be handled dynamically
     let mut resources = Resources::default();
     resources.insert(all_maps_resource);
     resources.insert(all_map_states);
