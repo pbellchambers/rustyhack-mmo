@@ -8,12 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 🚀 Features and Improvements
 - server now backs up the world every 60 seconds
 - server will try to load from backup on start, else create a new world
-- server tick ecs systems now more efficient
 - player can now choose which item to drop
 - player can now choose which stats to increase on level up
 - added messages for picking up and dropping items
 - monster collision checking with other monsters now exists
-- collision detection now more efficient
 - improved monster movement, wandering, and return to spawn behaviour
 - monsters now change target if attacked
 - entities can now be attacked by multiple entities in the same tick
@@ -31,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🧰 Maintenance
 - updated dependencies
+- code tidying and more sensible module names
+- server tick ecs systems streamlined for efficiency
+- collision detection more efficient
+- ecs systems and various iterators now run multithreaded where possible
+- converted all nested vecs to ndimensional arrays for better performance
 
 ## [v0.3.0]
 The combat, stats, levelling, and inventory update!

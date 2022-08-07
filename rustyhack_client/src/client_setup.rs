@@ -1,19 +1,19 @@
 use crate::client_consts::{LOG_NAME, VALID_NAME_REGEX};
 use regex::Regex;
-use rustyhack_lib::file_utils;
+use rustyhack_lib::utils::file;
 use simplelog::{ColorChoice, CombinedLogger, LevelFilter, TermLogger, TerminalMode, WriteLogger};
 use std::fs::File;
 use std::net::SocketAddr;
 use std::{io, process};
 
-pub(crate) fn initialise_log(args: &[String]) {
+pub(super) fn initialise_log(args: &[String]) {
     let mut log_level = LevelFilter::Info;
     if args.len() > 1 && args[1] == "--debug" {
         println!("Debug logging enabled.");
         log_level = LevelFilter::Debug;
     }
 
-    let mut file_location = file_utils::current_exe_location();
+    let mut file_location = file::current_exe_location();
     file_location.pop();
     file_location.push(LOG_NAME);
     CombinedLogger::init(vec![
@@ -41,7 +41,7 @@ pub(crate) fn initialise_log(args: &[String]) {
     });
 }
 
-pub(crate) fn get_player_setup_details() -> (String, String, String) {
+pub(super) fn get_player_setup_details() -> (String, String, String) {
     let (server_addr, client_addr) = get_server_addr();
     let player_name = get_player_name();
     (server_addr, client_addr, player_name)

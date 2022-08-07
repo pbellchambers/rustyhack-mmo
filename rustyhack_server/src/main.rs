@@ -3,13 +3,12 @@
 #![warn(clippy::pedantic)]
 #![allow(clippy::unreadable_literal)]
 
-use std::env;
-
 mod consts;
 mod game;
-mod networking;
+mod network_messages;
 mod setup;
-mod world_backup;
+
+use std::env;
 
 #[macro_use]
 extern crate log;
@@ -26,7 +25,7 @@ fn main() {
         std::process::exit(1);
     }));
 
-    let (sender, receiver) = networking::bind_to_socket(&setup::get_server_addr());
+    let (sender, receiver) = network_messages::bind_to_socket(&setup::get_server_addr());
 
     game::run(sender, receiver);
 
