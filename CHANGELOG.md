@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - entities can now be attacked by multiple entities in the same tick
 - system messages now have colours
 - health regen now only applies when out of combat
+- ecs systems and various iterators now run multithreaded where possible
 
 ### 🐛 Bug Fixes
 - don't send drop item request to server if player inventory empty
@@ -31,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🧰 Maintenance
 - updated dependencies
+- code tidying and more sensible module names
 
 ## [v0.3.0]
 The combat, stats, levelling, and inventory update!
