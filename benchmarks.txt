@@ -55,3 +55,33 @@ tot without backup: 8235872 (8.24ms)
 49393    rolling_bench_network_2
 tot:                51606858 (51.60ms)
 tot without backup: 1618208 (1.62ms)
+
+
+---------------------------------------------------
+after ndarrays:
+
+[debug]
+100201550 rolling_bench_backup
+3309021   rolling_bench_tick
+2336521   rolling_bench_map_2
+2090023   rolling_bench_map_1
+1337229   rolling_bench_broadcast
+1069407   rolling_bench_player
+438124    rolling_bench_network_2
+410756    rolling_bench_network_1
+220410    rolling_bench_regen
+tot:                111413041 (111.41ms)
+tot without backup: 11211491 (11.21ms)
+
+[release]
+68440550 rolling_bench_backup
+737098   rolling_bench_tick
+222791   rolling_bench_map_2
+215813   rolling_bench_broadcast
+164335   rolling_bench_player
+164121   rolling_bench_map_1
+51910    rolling_bench_network_2
+51240    rolling_bench_network_1
+40301    rolling_bench_regen
+tot:                70088159 (70.09ms)
+tot without backup: 1647609 (1.65ms)
