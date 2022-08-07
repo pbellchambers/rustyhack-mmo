@@ -37,8 +37,13 @@ pub(super) fn run(
     );
 
     //get basic data from server needed to start client_game
-    let all_maps =
-        map_downloader::request_all_maps_data(sender, server_addr, &player_update_receiver);
+    //todo fix properly - repeating the request when it fails is a temporary fix
+    let mut all_maps_option = None;
+    while all_maps_option.is_none() {
+        all_maps_option =
+            map_downloader::request_all_maps_data(sender, server_addr, &player_update_receiver);
+    }
+    let all_maps = all_maps_option.unwrap();
 
     //create player
     let mut player = new_player::send_new_player_request(

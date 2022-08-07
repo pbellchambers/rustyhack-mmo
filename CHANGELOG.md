@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix players not disappearing when disconnecting
 - combat can no longer occur after player has moved away from target
 - fix potential server crash when calculating loop sleep duration
+- temporary fix - retry mechanism for client map download from server on unreliable connections
 
 ### 🧰 Maintenance
 - updated dependencies

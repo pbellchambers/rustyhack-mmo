@@ -2,7 +2,7 @@ use bincode::{deserialize, serialize};
 use crossbeam_channel::{Receiver, Sender};
 use itertools::Itertools;
 use laminar::Packet;
-use rustyhack_lib::background_map::{AllMaps, BackgroundMap};
+use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::network::packets::{PlayerRequest, ServerMessage};
 use std::collections::HashMap;
 use std::thread;
@@ -12,7 +12,7 @@ pub(crate) fn request_all_maps_data(
     sender: &Sender<Packet>,
     server_addr: &str,
     channel_receiver: &Receiver<ServerMessage>,
-) -> AllMaps {
+) -> Option<AllMaps> {
     let get_all_maps_request_packet = Packet::reliable_ordered(
         server_addr
             .parse()
@@ -26,9 +26,9 @@ pub(crate) fn request_all_maps_data(
     wait_for_all_maps_response(channel_receiver)
 }
 
-fn wait_for_all_maps_response(channel_receiver: &Receiver<ServerMessage>) -> AllMaps {
+fn wait_for_all_maps_response(channel_receiver: &Receiver<ServerMessage>) -> Option<AllMaps> {
     let mut all_maps_downloaded = false;
-    let mut all_maps = HashMap::new();
+    let mut all_maps = None;
     let mut all_maps_chunks = HashMap::new();
     loop {
         let received = channel_receiver.recv();
@@ -61,9 +61,7 @@ fn wait_for_all_maps_response(channel_receiver: &Receiver<ServerMessage>) -> All
     all_maps
 }
 
-fn combine_all_maps_chunks(
-    all_maps_chunks: &HashMap<usize, Vec<u8>>,
-) -> HashMap<String, BackgroundMap> {
+fn combine_all_maps_chunks(all_maps_chunks: &HashMap<usize, Vec<u8>>) -> Option<AllMaps> {
     deserialize_all_maps_reply(&combine_chunks(all_maps_chunks))
 }
 
@@ -79,12 +77,23 @@ fn combine_chunks(all_maps_chunks: &HashMap<usize, Vec<u8>>) -> Vec<u8> {
     combined_all_maps_chunks
 }
 
-fn deserialize_all_maps_reply(combined_chunks: &[u8]) -> HashMap<String, BackgroundMap> {
-    let deserialized_chunks = deserialize::<ServerMessage>(combined_chunks)
-        .expect("Error deserializing combined all maps chunks.");
-    return if let ServerMessage::AllMaps(message) = deserialized_chunks {
-        message
-    } else {
-        panic!("Combined all maps chunks did not make a valid PlayerReply::AllMaps message");
-    };
+fn deserialize_all_maps_reply(combined_chunks: &[u8]) -> Option<AllMaps> {
+    let deserialized_chunks = deserialize::<ServerMessage>(combined_chunks);
+    match deserialized_chunks {
+        Ok(deserialized) => {
+            if let ServerMessage::AllMaps(all_maps) = deserialized {
+                Some(all_maps)
+            } else {
+                warn!("Deserialized message from server was not all maps, will request again.");
+                None
+            }
+        }
+        Err(error) => {
+            warn!(
+                "Error deserializing all maps from server, will request again. {}",
+                error.to_string()
+            );
+            None
+        }
+    }
 }
