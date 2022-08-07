@@ -1,15 +1,29 @@
-use legion::{IntoQuery, World};
-use rustyhack_lib::ecs::components::{PlayerDetails, Position};
+use bincode::serialize;
+use crossbeam_channel::Sender;
+use laminar::Packet;
+use rustyhack_lib::ecs::components::Position;
+use rustyhack_lib::ecs::player::Player;
+use rustyhack_lib::network::packets::ServerMessage;
 use std::collections::HashMap;
+use std::process;
 use uuid::Uuid;
 
-pub(crate) type PlayersPositions = HashMap<Uuid, Position>;
+pub(super) type PlayersPositions = HashMap<Uuid, Position>;
 
-pub(crate) fn logout_all_players(world: &mut World) {
-    let mut query = <&mut PlayerDetails>::query();
-    query.par_for_each_mut(world, |player_details| {
-        player_details.currently_online = false;
-        player_details.client_addr = "".to_string();
+pub(super) fn send_player_joined_response(player: &Player, sender: &Sender<Packet>) {
+    let response = serialize(&ServerMessage::PlayerJoined(player.clone())).unwrap_or_else(|err| {
+        error!(
+            "Failed to serialize player created response, error: {}",
+            err
+        );
+        process::exit(1);
     });
-    info!("Marked all players logged out.");
+    rustyhack_lib::network::send_packet(
+        Packet::reliable_ordered(
+            player.player_details.client_addr.parse().unwrap(),
+            response,
+            Some(11),
+        ),
+        sender,
+    );
 }

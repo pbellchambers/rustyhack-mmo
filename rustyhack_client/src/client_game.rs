@@ -1,8 +1,12 @@
+mod client_updates_handler;
+mod input;
+mod screens;
+
 use console_engine::{ConsoleEngine, KeyCode, KeyModifiers};
 use crossbeam_channel::{Receiver, Sender};
 use crossterm::style::Color;
 use laminar::{Packet, SocketEvent};
-use rustyhack_lib::message_handler::messages::EntityPositionBroadcast;
+use rustyhack_lib::network::packets::EntityPositionBroadcast;
 use std::collections::HashMap;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -10,19 +14,14 @@ use std::time::{Duration, Instant};
 use crate::client_consts::{
     CLIENT_CLEANUP_TICK, GAME_TITLE, INITIAL_CONSOLE_HEIGHT, INITIAL_CONSOLE_WIDTH, TARGET_FPS,
 };
-use crate::client_game::commands::movement;
+use crate::client_game::screens::{draw_screens, SidebarState};
+use input::commands::movement;
 
-use crate::networking::client_message_handler;
-use crate::screens::{draw_screens, SidebarState};
+use crate::client_network_messages::{
+    client_network_packet_receiver, map_downloader, new_player, player_logout,
+};
 
-mod client_input_handler;
-mod client_logout;
-mod client_map_handler;
-mod client_updates_handler;
-mod commands;
-mod new_player;
-
-pub(crate) fn run(
+pub(super) fn run(
     sender: &Sender<Packet>,
     receiver: Receiver<SocketEvent>,
     server_addr: &str,
@@ -32,11 +31,14 @@ pub(crate) fn run(
     //setup message handling threads
     let (player_update_sender, player_update_receiver) = crossbeam_channel::unbounded();
     debug!("Spawned thread channels.");
-    client_message_handler::spawn_message_handler_thread(receiver, player_update_sender);
+    client_network_packet_receiver::spawn_network_packet_receiver_thread(
+        receiver,
+        player_update_sender,
+    );
 
     //get basic data from server needed to start client_game
     let all_maps =
-        client_map_handler::request_all_maps_data(sender, server_addr, &player_update_receiver);
+        map_downloader::request_all_maps_data(sender, server_addr, &player_update_receiver);
 
     //create player
     let mut player = new_player::send_new_player_request(
@@ -67,7 +69,7 @@ pub(crate) fn run(
         movement::send_player_updates(sender, &console, &mut player, server_addr);
 
         debug!("About to wait for entity updates from server.");
-        client_updates_handler::check_for_received_server_messages(
+        client_updates_handler::handle_received_server_messages(
             &player_update_receiver,
             &mut player,
             &mut entity_position_map,
@@ -75,12 +77,15 @@ pub(crate) fn run(
         );
 
         if client_cleanup_tick_time.elapsed() > CLIENT_CLEANUP_TICK {
-            //no need to do this often, dead entities are already not displayed
-            client_updates_handler::cleanup_dead_entities(&player, &mut entity_position_map);
+            //no need to do this often, entities on other maps already not displayed
+            client_updates_handler::cleanup_entities_on_other_maps(
+                &player,
+                &mut entity_position_map,
+            );
             client_cleanup_tick_time = Instant::now();
         }
 
-        sidebar_state = client_input_handler::handle_other_input(
+        sidebar_state = input::handle_other_input(
             sender,
             &mut console,
             &mut system_messages,
@@ -104,7 +109,7 @@ pub(crate) fn run(
         //check if we should quit
         if should_quit(&console) {
             info!("Ctrl-q detected - quitting app.");
-            client_logout::send_logout_notification(sender, player, server_addr);
+            player_logout::send_logout_notification(sender, player, server_addr);
             //sleep for a reasonable delay to make sure the logout notification is sent
             thread::sleep(Duration::from_millis(250));
             break;

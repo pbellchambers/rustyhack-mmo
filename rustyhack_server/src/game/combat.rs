@@ -1,7 +1,3 @@
-use crate::game::player_updates::send_message_to_player;
-use crossbeam_channel::Sender;
-use crossterm::style::Color;
-use laminar::Packet;
 use rand::Rng;
 use rustyhack_lib::ecs::components::{Inventory, Stats};
 use serde::{Deserialize, Serialize};
@@ -30,25 +26,25 @@ Accuracy% = Base accuracy + ((100 - base accuracy) * (Attacker's Dex / 100)) - (
 
 */
 
-pub(crate) type CombatParties = HashMap<Attacker, Defender>;
-pub(crate) type CombatAttackerStats = HashMap<Uuid, (Stats, Inventory)>;
+pub(super) type CombatParties = HashMap<Attacker, Defender>;
+pub(super) type CombatAttackerStats = HashMap<Uuid, (Stats, Inventory)>;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq, Hash)]
 pub(crate) struct Attacker {
-    pub id: Uuid,
-    pub name: String,
-    pub client_addr: String,
-    pub currently_online: bool,
-    pub is_player: bool,
+    pub(crate) id: Uuid,
+    pub(crate) name: String,
+    pub(crate) client_addr: String,
+    pub(crate) currently_online: bool,
+    pub(crate) is_player: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Eq, Hash)]
 pub(crate) struct Defender {
-    pub id: Uuid,
-    pub name: String,
-    pub client_addr: String,
-    pub currently_online: bool,
-    pub is_player: bool,
+    pub(crate) id: Uuid,
+    pub(crate) name: String,
+    pub(crate) client_addr: String,
+    pub(crate) currently_online: bool,
+    pub(crate) is_player: bool,
 }
 
 impl Default for Defender {
@@ -63,7 +59,7 @@ impl Default for Defender {
     }
 }
 
-pub(crate) fn resolve_combat(
+pub(super) fn resolve_combat(
     attacker_stats: &Stats,
     attacker_inventory: &Inventory,
     defender_stats: &Stats,
@@ -118,152 +114,4 @@ fn check_attack_success(
         + ((100.0 - attacker_weapon_accuracy) * (attacker_dex / 100.0))
         - ((100.0 - attacker_weapon_accuracy) * (defender_dex / 100.0));
     combat_accuracy >= rng.gen_range(0.0..=100.0)
-}
-
-pub(crate) fn send_combat_updates_to_players(
-    defender: &Defender,
-    attacker: &Attacker,
-    damage: f32,
-    current_hp: f32,
-    exp_gain: u32,
-    gold_gain: u32,
-    sender: &Sender<Packet>,
-) {
-    send_combat_messages_to_players(defender, attacker, damage, current_hp, sender);
-    send_exp_messages_to_players(defender, attacker, current_hp, exp_gain, sender);
-    send_gold_messages_to_players(defender, attacker, current_hp, gold_gain, sender);
-}
-
-fn send_gold_messages_to_players(
-    defender: &Defender,
-    attacker: &Attacker,
-    current_hp: f32,
-    gold_gain: u32,
-    sender: &Sender<Packet>,
-) {
-    debug!(
-        "Sending gold gain message to players: {:?}, {}",
-        attacker, gold_gain
-    );
-    if current_hp <= 0.0 && gold_gain > 0 {
-        if defender.is_player {
-            send_message_to_player(
-                &defender.name,
-                &defender.client_addr,
-                defender.currently_online,
-                &("You lost ".to_string()
-                    + &gold_gain.to_string()
-                    + " gold to "
-                    + &attacker.name
-                    + "."),
-                Some(Color::DarkYellow),
-                sender,
-            );
-        }
-        send_message_to_player(
-            &attacker.name,
-            &attacker.client_addr,
-            attacker.currently_online,
-            &("You gained ".to_string()
-                + &gold_gain.to_string()
-                + " gold from killing "
-                + &defender.name
-                + "!"),
-            Some(Color::DarkYellow),
-            sender,
-        );
-    }
-}
-
-fn send_exp_messages_to_players(
-    defender: &Defender,
-    attacker: &Attacker,
-    current_hp: f32,
-    exp_gain: u32,
-    sender: &Sender<Packet>,
-) {
-    debug!(
-        "Sending exp gain message to players: {:?}, {}",
-        attacker, exp_gain
-    );
-    if current_hp <= 0.0 && exp_gain > 0 {
-        send_message_to_player(
-            &attacker.name,
-            &attacker.client_addr,
-            attacker.currently_online,
-            &("You gained ".to_string()
-                + &exp_gain.to_string()
-                + " exp from killing "
-                + &defender.name
-                + "!"),
-            Some(Color::DarkYellow),
-            sender,
-        );
-    }
-}
-
-fn send_combat_messages_to_players(
-    defender: &Defender,
-    attacker: &Attacker,
-    damage: f32,
-    current_hp: f32,
-    sender: &Sender<Packet>,
-) {
-    debug!(
-        "Sending combat message to players: {:?}, {:?}, {}",
-        defender, attacker, damage
-    );
-    if damage > 0.0 {
-        send_message_to_player(
-            &defender.name,
-            &defender.client_addr,
-            defender.currently_online,
-            &(attacker.name.to_string() + " hit you for " + &damage.to_string() + " damage."),
-            Some(Color::DarkRed),
-            sender,
-        );
-        send_message_to_player(
-            &attacker.name,
-            &attacker.client_addr,
-            attacker.currently_online,
-            &("You hit ".to_string() + &defender.name + " for " + &damage.to_string() + " damage."),
-            Some(Color::DarkGreen),
-            sender,
-        );
-    } else {
-        send_message_to_player(
-            &defender.name,
-            &defender.client_addr,
-            defender.currently_online,
-            &(attacker.name.to_string() + " attacks you, but missed."),
-            Some(Color::Grey),
-            sender,
-        );
-        send_message_to_player(
-            &attacker.name,
-            &attacker.client_addr,
-            attacker.currently_online,
-            &("You missed your attack against ".to_string() + &defender.name + "."),
-            Some(Color::Grey),
-            sender,
-        );
-    }
-    if current_hp <= 0.0 {
-        send_message_to_player(
-            &defender.name,
-            &defender.client_addr,
-            defender.currently_online,
-            &(attacker.name.to_string() + " killed you."),
-            Some(Color::DarkRed),
-            sender,
-        );
-        send_message_to_player(
-            &attacker.name,
-            &attacker.client_addr,
-            attacker.currently_online,
-            &("You killed ".to_string() + &defender.name + "."),
-            Some(Color::DarkGreen),
-            sender,
-        );
-    }
 }

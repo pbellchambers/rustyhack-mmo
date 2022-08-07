@@ -17,10 +17,6 @@ pub enum EntityType {
     Item(Item),
 }
 
-pub trait Dead: Sized {
-    fn dead() -> Self;
-}
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Position {
     pub update_available: bool,
@@ -42,6 +38,10 @@ impl Default for Position {
             velocity_y: 0,
         }
     }
+}
+
+pub trait Dead: Sized {
+    fn dead() -> Self;
 }
 
 impl Dead for Position {

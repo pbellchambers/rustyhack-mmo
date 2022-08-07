@@ -3,13 +3,12 @@
 #![warn(clippy::pedantic)]
 #![allow(clippy::unreadable_literal)]
 
-use std::env;
-
 mod client_consts;
 mod client_game;
+mod client_network_messages;
 mod client_setup;
-mod networking;
-mod screens;
+
+use std::env;
 
 #[macro_use]
 extern crate log;
@@ -27,7 +26,7 @@ fn main() {
     }));
 
     let (server_addr, client_addr, player_name) = client_setup::get_player_setup_details();
-    let (sender, receiver) = networking::bind_to_socket(&client_addr);
+    let (sender, receiver) = client_network_messages::bind_to_socket(&client_addr);
 
     client_game::run(&sender, receiver, &server_addr, &client_addr, &player_name);
 
