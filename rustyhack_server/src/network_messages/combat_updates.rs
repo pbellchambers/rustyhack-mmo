@@ -30,7 +30,7 @@ fn send_gold_messages_to_players(
         attacker, gold_gain
     );
     if current_hp <= 0.0 && gold_gain > 0 {
-        if defender.is_player {
+        if defender.is_player && attacker.is_player {
             send_message_to_player(
                 &defender.name,
                 &defender.client_addr,
@@ -44,18 +44,20 @@ fn send_gold_messages_to_players(
                 sender,
             );
         }
-        send_message_to_player(
-            &attacker.name,
-            &attacker.client_addr,
-            attacker.currently_online,
-            &("You gained ".to_string()
-                + &gold_gain.to_string()
-                + " gold from killing "
-                + &defender.name
-                + "!"),
-            Some(Color::DarkYellow),
-            sender,
-        );
+        if attacker.is_player {
+            send_message_to_player(
+                &attacker.name,
+                &attacker.client_addr,
+                attacker.currently_online,
+                &("You gained ".to_string()
+                    + &gold_gain.to_string()
+                    + " gold from killing "
+                    + &defender.name
+                    + "!"),
+                Some(Color::DarkYellow),
+                sender,
+            );
+        }
     }
 }
 
@@ -70,7 +72,7 @@ fn send_exp_messages_to_players(
         "Sending exp gain message to players: {:?}, {}",
         attacker, exp_gain
     );
-    if current_hp <= 0.0 && exp_gain > 0 {
+    if attacker.is_player && current_hp <= 0.0 && exp_gain > 0 {
         send_message_to_player(
             &attacker.name,
             &attacker.client_addr,
@@ -98,56 +100,72 @@ fn send_combat_messages_to_players(
         defender, attacker, damage
     );
     if damage > 0.0 {
-        send_message_to_player(
-            &defender.name,
-            &defender.client_addr,
-            defender.currently_online,
-            &(attacker.name.to_string() + " hit you for " + &damage.to_string() + " damage."),
-            Some(Color::DarkRed),
-            sender,
-        );
-        send_message_to_player(
-            &attacker.name,
-            &attacker.client_addr,
-            attacker.currently_online,
-            &("You hit ".to_string() + &defender.name + " for " + &damage.to_string() + " damage."),
-            Some(Color::DarkGreen),
-            sender,
-        );
+        if defender.is_player {
+            send_message_to_player(
+                &defender.name,
+                &defender.client_addr,
+                defender.currently_online,
+                &(attacker.name.to_string() + " hit you for " + &damage.to_string() + " damage."),
+                Some(Color::DarkRed),
+                sender,
+            );
+        }
+        if attacker.is_player {
+            send_message_to_player(
+                &attacker.name,
+                &attacker.client_addr,
+                attacker.currently_online,
+                &("You hit ".to_string()
+                    + &defender.name
+                    + " for "
+                    + &damage.to_string()
+                    + " damage."),
+                Some(Color::DarkGreen),
+                sender,
+            );
+        }
     } else {
-        send_message_to_player(
-            &defender.name,
-            &defender.client_addr,
-            defender.currently_online,
-            &(attacker.name.to_string() + " attacks you, but missed."),
-            Some(Color::Grey),
-            sender,
-        );
-        send_message_to_player(
-            &attacker.name,
-            &attacker.client_addr,
-            attacker.currently_online,
-            &("You missed your attack against ".to_string() + &defender.name + "."),
-            Some(Color::Grey),
-            sender,
-        );
+        if defender.is_player {
+            send_message_to_player(
+                &defender.name,
+                &defender.client_addr,
+                defender.currently_online,
+                &(attacker.name.to_string() + " attacks you, but missed."),
+                Some(Color::Grey),
+                sender,
+            );
+        }
+        if attacker.is_player {
+            send_message_to_player(
+                &attacker.name,
+                &attacker.client_addr,
+                attacker.currently_online,
+                &("You missed your attack against ".to_string() + &defender.name + "."),
+                Some(Color::Grey),
+                sender,
+            );
+        }
     }
     if current_hp <= 0.0 {
-        send_message_to_player(
-            &defender.name,
-            &defender.client_addr,
-            defender.currently_online,
-            &(attacker.name.to_string() + " killed you."),
-            Some(Color::DarkRed),
-            sender,
-        );
-        send_message_to_player(
-            &attacker.name,
-            &attacker.client_addr,
-            attacker.currently_online,
-            &("You killed ".to_string() + &defender.name + "."),
-            Some(Color::DarkGreen),
-            sender,
-        );
+        if defender.is_player {
+            send_message_to_player(
+                &defender.name,
+                &defender.client_addr,
+                defender.currently_online,
+                &(attacker.name.to_string() + " killed you."),
+                Some(Color::DarkRed),
+                sender,
+            );
+        }
+        if attacker.is_player {
+            send_message_to_player(
+                &attacker.name,
+                &attacker.client_addr,
+                attacker.currently_online,
+                &("You killed ".to_string() + &defender.name + "."),
+                Some(Color::DarkGreen),
+                sender,
+            );
+        }
     }
 }

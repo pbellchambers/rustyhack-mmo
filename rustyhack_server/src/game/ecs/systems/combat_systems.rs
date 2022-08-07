@@ -13,7 +13,6 @@ use rustyhack_lib::ecs::components::{
 use rustyhack_lib::ecs::monster::Monster;
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::utils::math::{i32_from, u32_from};
-use uuid::Uuid;
 
 #[allow(clippy::too_many_arguments)]
 #[system(for_each)]
@@ -210,9 +209,9 @@ pub(super) fn resolve_combat(
                         .current_hp = defender_stats.current_hp;
                 }
                 let (exp_gain, gold_gain) = check_and_apply_gains(
+                    attacker,
                     defender_is_monster,
                     combat_attacker_stats,
-                    &attacker.id,
                     &mut attacker_stats,
                     &mut attacker_inventory,
                     defender_stats,
@@ -251,9 +250,9 @@ pub(super) fn clear_combat_parties(#[resource] combat_parties: &mut CombatPartie
 }
 
 fn check_and_apply_gains(
+    attacker: &Attacker,
     defender_is_monster: bool,
     combat_attacker_stats: &mut CombatAttackerStats,
-    attacker_id: &Uuid,
     attacker_stats: &mut Stats,
     attacker_inventory: &mut Inventory,
     defender_stats: &Stats,
@@ -271,7 +270,7 @@ fn check_and_apply_gains(
         let mut gold_gain = 0;
         if defender_is_monster {
             gold_gain = defender_inventory.gold;
-        } else if defender_inventory.gold > 100 {
+        } else if defender_inventory.gold > 100 && attacker.is_player {
             gold_gain = (defender_inventory.gold * GOLD_LOSS_ON_PVP_DEATH_PERCENTAGE) / 100;
             defender_inventory.gold -= gold_gain;
             defender_inventory.update_available = true;
@@ -280,7 +279,7 @@ fn check_and_apply_gains(
         if exp_gain > 0 || gold_gain > 0 {
             attacker_stats.update_available = true;
         }
-        combat_attacker_stats.insert(*attacker_id, (*attacker_stats, attacker_inventory.clone()));
+        combat_attacker_stats.insert(attacker.id, (*attacker_stats, attacker_inventory.clone()));
 
         return (exp_gain, gold_gain);
     }
