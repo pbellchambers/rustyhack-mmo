@@ -37,7 +37,6 @@ pub(crate) fn build_server_tick_update_schedule() -> Schedule {
         .add_system(combat_systems::check_for_combat_system())
         .add_system(combat_systems::resolve_combat_system())
         .add_system(combat_systems::clear_combat_parties_system())
-        .flush()
         .add_system(combat_systems::apply_combat_gains_system())
         .add_system(combat_systems::clear_combat_attacker_stats_system())
         .add_system(player_systems::level_up_system())
