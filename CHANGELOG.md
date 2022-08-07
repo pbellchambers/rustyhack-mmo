@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### 🚀 Features and Improvements
+- .
+
+### 🐛 Bug Fixes
+- .
+
+### 🧰 Maintenance
+- .
+
+## [v0.3.1]
+### 🚀 Features and Improvements
 - server now backs up the world every 60 seconds
 - server will try to load from backup on start, else create a new world
 - player can now choose which item to drop
@@ -131,7 +141,8 @@ The monsters update!
 ### 🚀 Features and Improvements
 - first version of working code
 
-[Unreleased]: https://github.com/pbellchambers/rustyhack-mmo/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/pbellchambers/rustyhack-mmo/compare/v0.3.1...HEAD
+[v0.3.1]: https://github.com/pbellchambers/rustyhack-mmo/compare/v0.3.0...v0.3.1
 [v0.3.0]: https://github.com/pbellchambers/rustyhack-mmo/compare/v0.2.2...v0.3.0
 [v0.2.2]: https://github.com/pbellchambers/rustyhack-mmo/compare/v0.2.1...v0.2.2
 [v0.2.1]: https://github.com/pbellchambers/rustyhack-mmo/compare/v0.2.0...v0.2.1
