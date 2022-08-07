@@ -40,9 +40,7 @@ fn send_drop_item_request(
     item_index: u8,
     item_page_index: u16,
 ) {
-    let item_index = (item_page_index.to_string() + &item_index.to_string())
-        .parse::<u16>()
-        .expect("Drop item request resulted in invalid u16 item index.");
+    let item_index = (item_page_index * 10) + u16::from(item_index);
     let packet = Packet::reliable_ordered(
         server_addr
             .parse()
