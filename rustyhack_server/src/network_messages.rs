@@ -36,8 +36,8 @@ fn get_laminar_config() -> laminar::Config {
 }
 
 pub(super) fn send_message_to_player(
-    player_name: &String,
-    client_addr: &String,
+    player_name: &str,
+    client_addr: &str,
     currently_online: bool,
     message: &str,
     colour: Option<Color>,

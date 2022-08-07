@@ -110,7 +110,7 @@ pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> 
     }
 }
 
-pub(crate) fn get_current_map<'a>(all_maps: &'a AllMaps, map: &String) -> &'a BackgroundMap {
+pub(crate) fn get_current_map<'a>(all_maps: &'a AllMaps, map: &str) -> &'a BackgroundMap {
     all_maps.get(map).unwrap_or_else(|| {
         error!("Entity is located on a map that does not exist: {}", &map);
         warn!("Will return the default map, but this may cause problems.");
@@ -120,7 +120,7 @@ pub(crate) fn get_current_map<'a>(all_maps: &'a AllMaps, map: &String) -> &'a Ba
 
 pub(crate) fn get_current_map_states<'a>(
     all_map_states: &'a mut AllMapStates,
-    map: &String,
+    map: &str,
 ) -> &'a mut MapState {
     return if all_map_states.contains_key(map) {
         all_map_states.get_mut(map).unwrap()

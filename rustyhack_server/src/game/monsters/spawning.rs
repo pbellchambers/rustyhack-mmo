@@ -144,8 +144,8 @@ pub(crate) fn spawn_initial_monsters(
 fn spawn_single_monster(
     all_monster_definitions: &AllMonsterDefinitions,
     all_spawns_map: &AllSpawnsMap,
-    map: &String,
-    monster_type: &String,
+    map: &str,
+    monster_type: &str,
     commands: &mut CommandBuffer,
 ) {
     info!("Spawning single monster.");
@@ -172,7 +172,7 @@ fn spawn_single_monster(
                 update_available: false,
                 pos_x: random_spawn_position.x,
                 pos_y: random_spawn_position.y,
-                current_map: map.clone(),
+                current_map: map.to_string(),
                 velocity_x: 0,
                 velocity_y: 0,
             };
