@@ -97,7 +97,7 @@ version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0cc435fa6b7c2f504e41294fcf7dce61b7e9225aaf090ba0897af0b9c6b54e13"
 dependencies = [
- "crossterm",
+ "crossterm 0.23.2",
  "unicode-width",
 ]
 
@@ -160,6 +160,22 @@ name = "crossterm"
 version = "0.23.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2102ea4f781910f8a5b98dd061f4c2023f479ce7bb1236330099ceb5a93cf17"
+dependencies = [
+ "bitflags",
+ "crossterm_winapi",
+ "libc",
+ "mio 0.8.4",
+ "parking_lot 0.12.1",
+ "signal-hook",
+ "signal-hook-mio",
+ "winapi",
+]
+
+[[package]]
+name = "crossterm"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab9f7409c70a38a56216480fba371ee460207dd8926ccf5b4160591759559170"
 dependencies = [
  "bitflags",
  "crossterm_winapi",
@@ -686,7 +702,7 @@ dependencies = [
  "chrono",
  "console_engine",
  "crossbeam-channel",
- "crossterm",
+ "crossterm 0.24.0",
  "laminar",
  "log",
  "message-io",
@@ -702,7 +718,7 @@ name = "rustyhack_lib"
 version = "0.3.1"
 dependencies = [
  "crossbeam-channel",
- "crossterm",
+ "crossterm 0.24.0",
  "laminar",
  "log",
  "ndarray",
@@ -719,7 +735,7 @@ version = "0.3.1"
 dependencies = [
  "bincode",
  "crossbeam-channel",
- "crossterm",
+ "crossterm 0.24.0",
  "laminar",
  "legion",
  "log",
