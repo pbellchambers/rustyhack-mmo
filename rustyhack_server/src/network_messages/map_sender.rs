@@ -1,72 +1,47 @@
+use crate::network_messages::packet_receiver::deserialize_player_request;
 use bincode::serialize;
-use crossbeam_channel::Sender;
-use laminar::Packet;
+use message_io::network::NetEvent;
+use message_io::node::{NodeHandler, NodeListener};
 use rustyhack_lib::background_map::AllMaps;
-use rustyhack_lib::network::packets::ServerMessage;
-use std::net::SocketAddr;
+use rustyhack_lib::network::packets::{PlayerRequest, ServerMessage};
+use std::thread;
 
-pub(super) fn serialize_all_maps(all_maps: AllMaps) -> Vec<u8> {
-    serialize(&ServerMessage::AllMaps(all_maps)).expect("Error serializing AllMaps data.")
+pub(crate) fn spawn_map_sender_thread(
+    tcp_handler: NodeHandler<()>,
+    tcp_listener: NodeListener<()>,
+    all_maps: AllMaps,
+) {
+    thread::spawn(move || run(tcp_handler, tcp_listener, &all_maps));
 }
 
-pub(super) fn send_all_maps_chunks(
-    all_maps_serialized: &[u8],
-    address: SocketAddr,
-    sender: &Sender<Packet>,
-) {
-    let all_maps_chunks = all_maps_serialized
-        .chunks(1450)
-        .map(std::convert::Into::into)
-        .enumerate();
-    let chunked_response_length = all_maps_chunks.size_hint();
-
-    let mut stream_id: u8 = 1;
-    for (chunk_count, chunk) in all_maps_chunks {
-        let chunk_packet = serialize(&ServerMessage::AllMapsChunk((chunk_count, chunk)))
-            .expect("Error serializing AllMapsChunk.");
-        if chunk_count == 0 {
-            info!(
-                "Sending first AllMapsChunk packet {} to: {}",
-                chunk_count, address
-            );
-            rustyhack_lib::network::send_packet(
-                Packet::reliable_ordered(address, chunk_packet, Some(stream_id)),
-                sender,
-            );
-        } else if chunk_count
-            == chunked_response_length
-                .1
-                .expect("Error: chunked all maps length is zero")
-                - 1
-        {
-            info!(
-                "Sending last AllMapsChunk packet {} to: {}",
-                chunk_count, address
-            );
-            rustyhack_lib::network::send_packet(
-                Packet::reliable_ordered(address, chunk_packet, Some(stream_id)),
-                sender,
-            );
-
-            let complete_response = serialize(&ServerMessage::AllMapsChunksComplete)
-                .expect("Error serializing AllMapsChunksComplete response.");
-            rustyhack_lib::network::send_packet(
-                Packet::reliable_ordered(address, complete_response, Some(stream_id + 1)),
-                sender,
-            );
-        } else {
-            debug!(
-                "Sending AllMapsChunk packet {} to: {}",
-                chunk_count, address
-            );
-            rustyhack_lib::network::send_packet(
-                Packet::reliable_ordered(address, chunk_packet, Some(stream_id)),
-                sender,
-            );
+fn run(tcp_handler: NodeHandler<()>, tcp_listener: NodeListener<()>, all_maps: &AllMaps) {
+    info!("Spawned tcp listener thread.");
+    tcp_listener.for_each(move |event| match event.network() {
+        NetEvent::Connected(_, _) => unreachable!(), // Used for explicit connections.
+        NetEvent::Accepted(endpoint, _listener) => {
+            info!("Client {} connected via tcp.", endpoint.addr());
         }
-        stream_id += 1;
-        if stream_id > (u8::MAX - 1) {
-            stream_id = 1;
+        NetEvent::Message(endpoint, data) => {
+            let deserialized_data = deserialize_player_request(data, endpoint.addr());
+            match deserialized_data {
+                PlayerRequest::GetAllMaps => {
+                    info!("Sending all_maps data to {}.", endpoint.addr());
+                    tcp_handler
+                        .network()
+                        .send(endpoint, &serialize_all_maps(all_maps.clone()));
+                }
+                _ => {
+                    warn!("Ignoring unexpected player request type on tcp connection.");
+                }
+            }
         }
-    }
+        NetEvent::Disconnected(endpoint) => info!(
+            "Client {} disconnected from tcp connection.",
+            endpoint.addr()
+        ),
+    });
+}
+
+fn serialize_all_maps(all_maps: AllMaps) -> Vec<u8> {
+    serialize(&ServerMessage::AllMaps(all_maps)).expect("Error serializing AllMaps data.")
 }

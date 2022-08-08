@@ -1,11 +1,14 @@
 pub(super) mod combat_updates;
-mod map_sender;
+pub(super) mod map_sender;
 pub(super) mod packet_receiver;
 
 use bincode::serialize;
 use crossbeam_channel::{Receiver, Sender};
 use crossterm::style::Color;
 use laminar::{Packet, Socket, SocketEvent};
+use message_io::network::Transport;
+use message_io::node;
+use message_io::node::{NodeHandler, NodeListener};
 use rustyhack_lib::network::packets::{ServerMessage, SystemMessage};
 use std::time::Duration;
 use std::{process, thread};
@@ -26,6 +29,25 @@ pub(super) fn bind_to_socket(server_addr: &str) -> (Sender<Packet>, Receiver<Soc
     info!("Spawned socket polling thread.");
 
     (sender, receiver)
+}
+
+pub(super) fn bind_to_tcp_socket(server_addr: &str) -> (NodeHandler<()>, NodeListener<()>) {
+    info!("Attempting to bind tcp socket to: {}", &server_addr);
+
+    let (handler, listener) = node::split::<()>();
+    handler
+        .network()
+        .listen(Transport::FramedTcp, server_addr)
+        .unwrap_or_else(|err| {
+            error!(
+                "Unable to bind tcp socket to {}, error: {}",
+                &server_addr, err
+            );
+            process::exit(1);
+        });
+    info!("Bound to socket successfully.");
+
+    (handler, listener)
 }
 
 fn get_laminar_config() -> laminar::Config {

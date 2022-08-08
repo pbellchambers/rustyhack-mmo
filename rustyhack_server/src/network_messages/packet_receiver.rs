@@ -1,27 +1,18 @@
-use crate::network_messages::map_sender::{send_all_maps_chunks, serialize_all_maps};
 use bincode::deserialize;
 use crossbeam_channel::{Receiver, Sender};
-use laminar::{Packet, SocketEvent};
-use rustyhack_lib::background_map::AllMaps;
+use laminar::SocketEvent;
 use rustyhack_lib::network::packets::PlayerRequest;
 use std::net::SocketAddr;
 use std::thread;
 
 pub(crate) fn spawn_packet_receiver_thread(
-    sender: Sender<Packet>,
     receiver: Receiver<SocketEvent>,
-    all_maps: AllMaps,
     channel_sender: Sender<PlayerRequest>,
 ) {
-    thread::spawn(move || run(&sender, &receiver, &all_maps, &channel_sender));
+    thread::spawn(move || run(&receiver, &channel_sender));
 }
 
-fn run(
-    sender: &Sender<Packet>,
-    receiver: &Receiver<SocketEvent>,
-    all_maps: &AllMaps,
-    channel_sender: &Sender<PlayerRequest>,
-) {
+fn run(receiver: &Receiver<SocketEvent>, channel_sender: &Sender<PlayerRequest>) {
     info!("Spawned message handler thread.");
     loop {
         debug!("Waiting for packet to be received.");
@@ -35,13 +26,7 @@ fn run(
                     let player_request = deserialize_player_request(msg, address);
                     debug!("Received {:?} from {:?}", player_request, address);
 
-                    handle_player_request(
-                        player_request,
-                        address,
-                        all_maps,
-                        sender,
-                        channel_sender,
-                    );
+                    handle_player_request(player_request, address, channel_sender);
                 }
                 SocketEvent::Connect(connect_event) => {
                     info!("Client connected from: {}", connect_event);
@@ -68,8 +53,6 @@ fn run(
 fn handle_player_request(
     player_request: PlayerRequest,
     address: SocketAddr,
-    all_maps: &AllMaps,
-    sender: &Sender<Packet>,
     channel_sender: &Sender<PlayerRequest>,
 ) {
     match player_request {
@@ -96,8 +79,8 @@ fn handle_player_request(
         PlayerRequest::StatUp(stat_up_details) => {
             send_channel_message(PlayerRequest::StatUp(stat_up_details), channel_sender);
         }
-        PlayerRequest::GetChunkedAllMaps => {
-            send_all_maps_chunks(&serialize_all_maps(all_maps.clone()), address, sender);
+        PlayerRequest::GetAllMaps => {
+            warn!("Ignoring unexpected GetAllMaps request on udp port.");
         }
         PlayerRequest::PlayerLogout(client_details) => {
             send_channel_message(PlayerRequest::PlayerLogout(client_details), channel_sender);
@@ -112,7 +95,7 @@ fn handle_player_request(
     }
 }
 
-fn deserialize_player_request(msg: &[u8], address: SocketAddr) -> PlayerRequest {
+pub(super) fn deserialize_player_request(msg: &[u8], address: SocketAddr) -> PlayerRequest {
     let player_request_result = deserialize::<PlayerRequest>(msg);
     match player_request_result {
         Ok(_) => player_request_result.unwrap(),

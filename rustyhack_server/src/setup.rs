@@ -47,13 +47,13 @@ pub(super) fn get_server_addr() -> String {
     let mut server_addr;
     loop {
         server_addr = String::new();
-        println!("1) What is the server listen port? (default: 50201)");
+        println!("1) What is the server udp listen port? (default: 50201)");
         io::stdin()
             .read_line(&mut server_addr)
             .expect("Failed to read line");
 
         if server_addr.trim() == "" {
-            println!("Using default server listen port.");
+            println!("Using default server udp listen port.");
             server_addr = String::from("0.0.0.0:50201");
             break;
         }
@@ -69,6 +69,34 @@ pub(super) fn get_server_addr() -> String {
         server_addr = server_socket_addr.to_string();
         break;
     }
-    info!("Server listen port is set to: {}", &server_addr);
     server_addr
+}
+
+pub(super) fn get_server_tcp_addr() -> String {
+    let mut server_tcp_addr;
+    loop {
+        server_tcp_addr = String::new();
+        println!("2) What is the server tcp listen port? (default: 50202)");
+        io::stdin()
+            .read_line(&mut server_tcp_addr)
+            .expect("Failed to read line");
+
+        if server_tcp_addr.trim() == "" {
+            println!("Using default server tcp listen port.");
+            server_tcp_addr = String::from("0.0.0.0:50202");
+            break;
+        }
+
+        server_tcp_addr = String::from("0.0.0.0:") + &*server_tcp_addr;
+        let server_socket_addr: SocketAddr = match server_tcp_addr.trim().parse() {
+            Ok(value) => value,
+            Err(err) => {
+                println!("Not a valid port (e.g. 50202 ): {}", err);
+                continue;
+            }
+        };
+        server_tcp_addr = server_socket_addr.to_string();
+        break;
+    }
+    server_tcp_addr
 }
