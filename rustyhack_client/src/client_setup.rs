@@ -41,10 +41,11 @@ pub(super) fn initialise_log(args: &[String]) {
     });
 }
 
-pub(super) fn get_player_setup_details() -> (String, String, String) {
+pub(super) fn get_player_setup_details() -> (String, String, String, String) {
     let (server_addr, client_addr) = get_server_addr();
+    let server_tcp_addr = get_server_tcp_addr();
     let player_name = get_player_name();
-    (server_addr, client_addr, player_name)
+    (server_addr, server_tcp_addr, client_addr, player_name)
 }
 
 fn get_server_addr() -> (String, String) {
@@ -53,7 +54,7 @@ fn get_server_addr() -> (String, String) {
     let mut server_addr;
     loop {
         server_addr = String::new();
-        println!("1) Connect to which server? (default: 127.0.0.1:50201)");
+        println!("1) What is the server UDP address? (default: 127.0.0.1:50201)");
         io::stdin()
             .read_line(&mut server_addr)
             .expect("Failed to read input");
@@ -86,6 +87,40 @@ fn get_server_addr() -> (String, String) {
     info!("Server address is set to: {}", &server_addr);
     info!("Client listen address is set to: {}", &client_addr);
     (server_addr, client_addr)
+}
+
+fn get_server_tcp_addr() -> String {
+    let mut server_tcp_addr;
+    loop {
+        server_tcp_addr = String::new();
+        println!("2) What is the server TCP address? (default: 127.0.0.1:50202)");
+        io::stdin()
+            .read_line(&mut server_tcp_addr)
+            .expect("Failed to read input");
+
+        if server_tcp_addr.trim() == "" {
+            println!("Using default server tcp address.");
+            println!();
+            server_tcp_addr = String::from("127.0.0.1:50202");
+            break;
+        }
+
+        let server_socket_addr: SocketAddr = match server_tcp_addr.trim().parse() {
+            Ok(value) => value,
+            Err(err) => {
+                println!(
+                    "Not a valid socket address (e.g. 127.0.0.1:50202 ): {}",
+                    err
+                );
+                continue;
+            }
+        };
+        server_tcp_addr = server_socket_addr.to_string();
+        break;
+    }
+
+    info!("Server tcp address is set to: {}", &server_tcp_addr);
+    server_tcp_addr
 }
 
 fn get_player_name() -> String {

@@ -25,9 +25,15 @@ fn main() {
         std::process::exit(1);
     }));
 
-    let (sender, receiver) = network_messages::bind_to_socket(&setup::get_server_addr());
+    let udp_socket_addr = setup::get_server_addr();
+    let tcp_socket_addr = setup::get_server_tcp_addr();
+    info!("Server udp listen port is set to: {}", &udp_socket_addr);
+    info!("Server tcp listen port is set to: {}", &tcp_socket_addr);
 
-    game::run(sender, receiver);
+    let (sender, receiver) = network_messages::bind_to_socket(&udp_socket_addr);
+    let (tcp_handler, tcp_listener) = network_messages::bind_to_tcp_socket(&tcp_socket_addr);
+
+    game::run(&sender, receiver, tcp_handler, tcp_listener);
 
     info!("Program terminated.");
 }

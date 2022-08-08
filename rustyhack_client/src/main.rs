@@ -25,10 +25,18 @@ fn main() {
         std::process::exit(1);
     }));
 
-    let (server_addr, client_addr, player_name) = client_setup::get_player_setup_details();
+    let (server_udp_addr, server_tcp_addr, client_addr, player_name) =
+        client_setup::get_player_setup_details();
     let (sender, receiver) = client_network_messages::bind_to_socket(&client_addr);
 
-    client_game::run(&sender, receiver, &server_addr, &client_addr, &player_name);
+    client_game::run(
+        &sender,
+        receiver,
+        &server_udp_addr,
+        &server_tcp_addr,
+        &client_addr,
+        &player_name,
+    );
 
     info!("Program terminated.");
 }

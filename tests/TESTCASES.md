@@ -12,11 +12,12 @@ This file contains a bulleted list of functionality. In the absence of any autom
 * Client should gracefully log out when using ctrl-q
 
 ### Server Initialisation
+* Input validation on server address:port
 * Server should load existing world backup
 * Server should initialise new world when existing world backup doesn't exist
 
 ### Client General
-* Client should only allow text in player name
+* Input validation on player name, server address:port
 * Client window should be able to be dynamically resized
 * Client sidebar should display correct values
 * Client top-bar should display correct player position

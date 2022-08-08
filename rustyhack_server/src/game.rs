@@ -15,15 +15,21 @@ use ecs::queries::common_player;
 use ecs::systems;
 use laminar::{Packet, SocketEvent};
 use legion::Resources;
+use message_io::node::{NodeHandler, NodeListener};
 
 use crate::consts;
 use crate::game::combat::{CombatAttackerStats, CombatParties};
-use crate::network_messages::packet_receiver;
+use crate::network_messages::{map_sender, packet_receiver};
 use map::state::EntityPositionMap;
 use map::{spawns, state, tiles};
 use players::PlayersPositions;
 
-pub(super) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
+pub(super) fn run(
+    sender: &Sender<Packet>,
+    receiver: Receiver<SocketEvent>,
+    tcp_handler: NodeHandler<()>,
+    tcp_listener: NodeListener<()>,
+) {
     //initialise all basic resources
     let all_maps = tiles::initialise_all_maps();
     let all_maps_resource = all_maps.clone();
@@ -45,8 +51,10 @@ pub(super) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     //initialise message handler thread
     let (channel_sender, channel_receiver) = crossbeam_channel::unbounded();
     info!("Created thread channel sender and receiver.");
-    let local_sender = sender.clone();
-    packet_receiver::spawn_packet_receiver_thread(sender, receiver, all_maps, channel_sender);
+    packet_receiver::spawn_packet_receiver_thread(receiver, channel_sender);
+
+    //initialise tcp map sender thread
+    map_sender::spawn_map_sender_thread(tcp_handler, tcp_listener, all_maps);
 
     //load resources into world
     let mut resources = Resources::default();
@@ -55,7 +63,7 @@ pub(super) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     resources.insert(combat_parties);
     resources.insert(combat_attacker_stats);
     resources.insert(players_positions);
-    resources.insert(local_sender.clone());
+    resources.insert(sender.clone());
     resources.insert(all_spawns_map.clone());
     resources.insert(default_spawn_counts);
     resources.insert(all_monster_definitions.clone());
@@ -81,11 +89,7 @@ pub(super) fn run(sender: Sender<Packet>, receiver: Receiver<SocketEvent>) {
     info!("Starting game loop");
     loop {
         //process player updates as soon as they are received
-        if player_message_handler::process_player_messages(
-            &mut world,
-            &channel_receiver,
-            &local_sender,
-        ) {
+        if player_message_handler::process_player_messages(&mut world, &channel_receiver, sender) {
             debug!("Executing player update schedule...");
             map_state_update_schedule.execute(&mut world, &mut resources);
             player_update_schedule.execute(&mut world, &mut resources);

@@ -18,7 +18,7 @@ pub enum PlayerRequest {
     PickupItem(PositionMessage),
     DropItem((u16, PositionMessage)),
     StatUp((String, String)),
-    GetChunkedAllMaps,
+    GetAllMaps,
     Timeout(String),
     Undefined,
 }

@@ -25,6 +25,7 @@ pub(super) fn run(
     sender: &Sender<Packet>,
     receiver: Receiver<SocketEvent>,
     server_addr: &str,
+    server_tcp_addr: &str,
     client_addr: &str,
     player_name: &str,
 ) {
@@ -37,13 +38,7 @@ pub(super) fn run(
     );
 
     //get basic data from server needed to start client_game
-    //todo fix properly - repeating the request when it fails is a temporary fix
-    let mut all_maps_option = None;
-    while all_maps_option.is_none() {
-        all_maps_option =
-            map_downloader::request_all_maps_data(sender, server_addr, &player_update_receiver);
-    }
-    let all_maps = all_maps_option.unwrap();
+    let all_maps = map_downloader::request_all_maps_data(server_tcp_addr);
 
     //create player
     let mut player = new_player::send_new_player_request(
