@@ -10,7 +10,7 @@ use crate::ecs::player::Player;
 
 pub type EntityPositionBroadcast = HashMap<Uuid, (u32, u32, String, char, Color, String)>;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum PlayerRequest {
     PlayerJoin(ClientDetails),
     PlayerLogout(ClientDetails),
@@ -37,19 +37,19 @@ pub enum ServerMessage {
     SystemMessage(SystemMessage),
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ClientDetails {
     pub client_addr: String,
     pub player_name: String,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct PositionMessage {
     pub player_name: String,
     pub position: Position,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct SystemMessage {
     pub message: String,
     pub colour: Option<Color>,
