@@ -17,7 +17,7 @@ pub enum EntityType {
     Item(Item),
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Position {
     pub update_available: bool,
     pub pos_x: u32,
@@ -57,7 +57,7 @@ impl Dead for Position {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct DisplayDetails {
     pub icon: char,
     pub colour: Color,
@@ -87,7 +87,7 @@ impl Dead for DisplayDetails {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct PlayerDetails {
     pub id: Uuid,
     pub player_name: String,
@@ -95,7 +95,7 @@ pub struct PlayerDetails {
     pub currently_online: bool,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct MonsterDetails {
     pub id: Uuid,
     pub monster_type: String,
@@ -103,7 +103,7 @@ pub struct MonsterDetails {
     pub current_target: Option<Uuid>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ItemDetails {
     pub id: Uuid,
     pub has_been_picked_up: bool,

@@ -39,7 +39,7 @@ impl Default for Armour {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Trinket {
     pub name: String,
 }
