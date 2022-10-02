@@ -15,13 +15,13 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-log = "0.4.17"
-simplelog = "0.12.0"
-serde = { version = "1.0.144", features = ["derive"] }
-crossterm = { version = "0.24.0", features = ["serde"] }
-laminar = "0.5.0"
-crossbeam-channel = "0.5.6"
-uuid = { version = "1.1.2", features = ["serde", "v4"] }
-strum_macros = "0.24.3"
-rayon = "1.5.3"
-ndarray = { version = "0.15.6", features = ["rayon", "serde"] }
+log.workspace = true
+simplelog.workspace = true
+serde.workspace = true
+crossterm.workspace = true
+laminar.workspace = true
+crossbeam-channel.workspace = true
+uuid.workspace = true
+strum_macros.workspace = true
+rayon.workspace = true
+ndarray.workspace = true

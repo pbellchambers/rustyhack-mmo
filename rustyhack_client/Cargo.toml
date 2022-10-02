@@ -16,15 +16,15 @@ publish = false
 
 [dependencies]
 rustyhack_lib = { path = "../rustyhack_lib" }
-log = "0.4.17"
-simplelog = "0.12.0"
-console_engine = "2.5.0"
-crossterm = { version = "0.24.0", features = ["serde"] }
-laminar = "0.5.0"
-crossbeam-channel = "0.5.6"
-serde = { version = "1.0.144", features = ["derive"] }
-bincode = "1.3.3"
-regex = "1.6.0"
-chrono = "0.4.22"
-rayon = "1.5.3"
-message-io = { version = "0.14.6", default-features = false, features = ["tcp"] }
+log.workspace = true
+simplelog.workspace = true
+console_engine.workspace = true
+crossterm.workspace = true
+laminar.workspace = true
+crossbeam-channel.workspace = true
+serde.workspace = true
+bincode.workspace = true
+regex.workspace = true
+chrono.workspace = true
+rayon.workspace = true
+message-io.workspace = true
