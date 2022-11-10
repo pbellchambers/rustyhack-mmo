@@ -6,7 +6,7 @@ pub(crate) fn logout_all_players(world: &mut World) {
     let mut query = <&mut PlayerDetails>::query();
     query.par_for_each_mut(world, |player_details| {
         player_details.currently_online = false;
-        player_details.client_addr = "".to_string();
+        player_details.client_addr = String::new();
     });
     info!("Marked all players logged out.");
 }

@@ -11,7 +11,7 @@ use std::{process, thread};
 pub(super) fn bind_to_socket(client_addr: &str) -> (Sender<Packet>, Receiver<SocketEvent>) {
     info!("Attempting to bind listen socket to: {}", &client_addr);
     let socket =
-        Socket::bind_with_config(&client_addr, get_laminar_config()).unwrap_or_else(|err| {
+        Socket::bind_with_config(client_addr, get_laminar_config()).unwrap_or_else(|err| {
             error!("Unable to bind socket to {}, error: {}", &client_addr, err);
             process::exit(1);
         });

@@ -116,7 +116,7 @@ pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> 
                     defender = Defender {
                         id: monster.monster_details.id,
                         name: monster.monster_details.monster_type.clone(),
-                        client_addr: "".to_string(),
+                        client_addr: String::new(),
                         currently_online: true,
                         is_player: false,
                     };

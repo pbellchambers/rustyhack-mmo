@@ -51,8 +51,8 @@ impl Default for Defender {
     fn default() -> Self {
         Defender {
             id: Uuid::new_v4(),
-            name: "".to_string(),
-            client_addr: "".to_string(),
+            name: String::new(),
+            client_addr: String::new(),
             currently_online: false,
             is_player: false,
         }

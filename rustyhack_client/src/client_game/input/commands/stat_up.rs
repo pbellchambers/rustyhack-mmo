@@ -55,7 +55,7 @@ fn check_for_stat_up(console: &ConsoleEngine, stats: Stats) -> Option<&str> {
         stat = None;
     }
 
-    if stat != None && stats.stat_points > 0 {
+    if stat.is_some() && stats.stat_points > 0 {
         stat
     } else {
         None

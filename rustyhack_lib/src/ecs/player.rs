@@ -17,8 +17,8 @@ impl Default for Player {
         Player {
             player_details: PlayerDetails {
                 id: Uuid::new_v4(),
-                player_name: "".to_string(),
-                client_addr: "".to_string(),
+                player_name: String::new(),
+                client_addr: String::new(),
                 currently_online: false,
             },
             display_details: DisplayDetails::default(),

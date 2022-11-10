@@ -134,7 +134,7 @@ fn get_attacker(
         Attacker {
             id: monster_details.id,
             name: monster_details.monster_type.clone(),
-            client_addr: "".to_string(),
+            client_addr: String::new(),
             currently_online: true,
             is_player: false,
         }
@@ -174,7 +174,7 @@ pub(super) fn resolve_combat(
             defender = Defender {
                 id: monster_details.id,
                 name: monster_details.monster_type.clone(),
-                client_addr: "".to_string(),
+                client_addr: String::new(),
                 currently_online: true,
                 is_player: false,
             };

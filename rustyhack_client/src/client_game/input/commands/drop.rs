@@ -101,7 +101,11 @@ fn check_for_drop_item_number(
         key_pressed = None;
     }
 
-    if key_pressed != None && player_carried_inventory.get(key_pressed.unwrap() as usize) != None {
+    if key_pressed.is_some()
+        && player_carried_inventory
+            .get(key_pressed.unwrap() as usize)
+            .is_some()
+    {
         key_pressed
     } else {
         None

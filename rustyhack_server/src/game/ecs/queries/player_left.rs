@@ -14,7 +14,7 @@ pub(crate) fn set_player_logged_out(
     originating_player_name: &str,
 ) -> (Uuid, String) {
     let mut logged_out_id = Uuid::new_v4();
-    let mut logged_out_map = "".to_string();
+    let mut logged_out_map = String::new();
     let mut query = <(&mut PlayerDetails, &mut DisplayDetails, &Position)>::query();
     for (player_details, display_details, position) in query.iter_mut(world) {
         if player_details.client_addr == address
@@ -25,7 +25,7 @@ pub(crate) fn set_player_logged_out(
             display_details.visible = false;
             display_details.collidable = false;
             player_details.currently_online = false;
-            player_details.client_addr = "".to_string();
+            player_details.client_addr = String::new();
 
             info!(
                 "Player {} at {} logged out successfully.",
@@ -39,7 +39,7 @@ pub(crate) fn set_player_logged_out(
 
 pub(crate) fn set_player_disconnected(world: &mut World, address: &str) -> (Uuid, String) {
     let mut logged_out_id = Uuid::new_v4();
-    let mut logged_out_map = "".to_string();
+    let mut logged_out_map = String::new();
     let mut query = <(&mut PlayerDetails, &mut DisplayDetails, &Position)>::query();
     for (player_details, display_details, position) in query.iter_mut(world) {
         if player_details.client_addr == address {
@@ -48,7 +48,7 @@ pub(crate) fn set_player_disconnected(world: &mut World, address: &str) -> (Uuid
             display_details.visible = false;
             display_details.collidable = false;
             player_details.currently_online = false;
-            player_details.client_addr = "".to_string();
+            player_details.client_addr = String::new();
 
             info!(
                 "Player {} at {} now marked as disconnected.",
