@@ -3,7 +3,7 @@
 # Rustyhack MMO
 A barebones cross between an ASCII "roguelike" and MMORPG / MUD written in Rust. Lacking a lot of basic features. It currently has a client & server console program that allows a player to be created, move around, fight other players/monsters, pick up and drop things, look at things, and level up.
 
-[![Build status](https://img.shields.io/github/workflow/status/pbellchambers/rustyhack-mmo/CI/main)](https://github.com/pbellchambers/rustyhack-mmo/actions)
+[![Build status](https://img.shields.io/github/actions/workflow/status/pbellchambers/rustyhack-mmo/main.yml?branch=main)](https://github.com/pbellchambers/rustyhack-mmo/actions)
 [![Downloads](https://img.shields.io/github/downloads/pbellchambers/rustyhack-mmo/total)](https://github.com/pbellchambers/rustyhack-mmo/releases)
 [![License](https://img.shields.io/github/license/pbellchambers/rustyhack-mmo)](https://github.com/pbellchambers/rustyhack-mmo/blob/main/LICENSE)
 
