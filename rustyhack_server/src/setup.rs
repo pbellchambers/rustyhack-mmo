@@ -27,7 +27,7 @@ pub(super) fn initialise_log(args: &[String]) {
             log_level,
             Config::default(),
             File::create(file_location.as_path()).unwrap_or_else(|err| {
-                eprintln!("Unable to create log file: {}", err);
+                eprintln!("Unable to create log file: {err}");
                 process::exit(1);
             }),
         ),
@@ -62,7 +62,7 @@ pub(super) fn get_server_addr() -> String {
         let server_socket_addr: SocketAddr = match server_addr.trim().parse() {
             Ok(value) => value,
             Err(err) => {
-                println!("Not a valid port (e.g. 50201 ): {}", err);
+                println!("Not a valid port (e.g. 50201 ): {err}");
                 continue;
             }
         };
@@ -91,7 +91,7 @@ pub(super) fn get_server_tcp_addr() -> String {
         let server_socket_addr: SocketAddr = match server_tcp_addr.trim().parse() {
             Ok(value) => value,
             Err(err) => {
-                println!("Not a valid port (e.g. 50202 ): {}", err);
+                println!("Not a valid port (e.g. 50202 ): {err}");
                 continue;
             }
         };

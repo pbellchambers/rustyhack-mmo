@@ -27,7 +27,7 @@ pub(super) fn initialise_log(args: &[String]) {
             log_level,
             simplelog::Config::default(),
             File::create(file_location.as_path()).unwrap_or_else(|err| {
-                eprintln!("Unable to create log file: {}", err);
+                eprintln!("Unable to create log file: {err}");
                 process::exit(1);
             }),
         ),
@@ -135,7 +135,7 @@ fn get_player_name() -> String {
         let parsed_player_name: String = match player_name.trim().parse() {
             Ok(value) => value,
             Err(err) => {
-                println!("Must be a valid String: {}", err);
+                println!("Must be a valid String: {err}");
                 println!();
                 continue;
             }
