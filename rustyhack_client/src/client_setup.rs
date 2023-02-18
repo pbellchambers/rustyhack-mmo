@@ -33,10 +33,7 @@ pub(super) fn initialise_log(args: &[String]) {
         ),
     ])
     .unwrap_or_else(|err| {
-        eprintln!(
-            "Something went wrong when initialising the logging system: {}",
-            err
-        );
+        eprintln!("Something went wrong when initialising the logging system: {err}");
         process::exit(1);
     });
 }
@@ -69,10 +66,7 @@ fn get_server_addr() -> (String, String) {
         let server_socket_addr: SocketAddr = match server_addr.trim().parse() {
             Ok(value) => value,
             Err(err) => {
-                println!(
-                    "Not a valid socket address (e.g. 127.0.0.1:50201 ): {}",
-                    err
-                );
+                println!("Not a valid socket address (e.g. 127.0.0.1:50201 ): {err}");
                 continue;
             }
         };
@@ -108,10 +102,7 @@ fn get_server_tcp_addr() -> String {
         let server_socket_addr: SocketAddr = match server_tcp_addr.trim().parse() {
             Ok(value) => value,
             Err(err) => {
-                println!(
-                    "Not a valid socket address (e.g. 127.0.0.1:50202 ): {}",
-                    err
-                );
+                println!("Not a valid socket address (e.g. 127.0.0.1:50202 ): {err}");
                 continue;
             }
         };

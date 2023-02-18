@@ -33,10 +33,7 @@ pub(super) fn initialise_log(args: &[String]) {
         ),
     ])
     .unwrap_or_else(|err| {
-        eprintln!(
-            "Something went wrong when initialising the logging system: {}",
-            err
-        );
+        eprintln!("Something went wrong when initialising the logging system: {err}");
         process::exit(1);
     });
 }
