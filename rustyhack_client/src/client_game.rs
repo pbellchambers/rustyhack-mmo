@@ -2,7 +2,7 @@ mod client_updates_handler;
 mod input;
 mod screens;
 
-use console_engine::{ConsoleEngine, KeyCode, KeyModifiers};
+use console_engine::{ConsoleEngine, KeyCode, KeyEventKind, KeyModifiers};
 use crossbeam_channel::{Receiver, Sender};
 use crossterm::style::Color;
 use laminar::{Packet, SocketEvent};
@@ -118,5 +118,9 @@ pub(super) fn run(
 }
 
 fn should_quit(console: &ConsoleEngine) -> bool {
-    console.is_key_pressed_with_modifier(KeyCode::Char('q'), KeyModifiers::CONTROL)
+    console.is_key_pressed_with_modifier(
+        KeyCode::Char('q'),
+        KeyModifiers::CONTROL,
+        KeyEventKind::Press,
+    )
 }
