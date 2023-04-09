@@ -115,7 +115,10 @@ pub(super) fn broadcast_entity_updates(
         for (entity_id, (entity_position, entity_display_details, entity_name_or_type)) in
             entity_position_map.clone()
         {
-            if entity_position.current_map == player_position.current_map {
+            //todo don't broadcast position updates to all players all the time, handle map changes better
+            if entity_display_details.icon == '@'
+                || entity_position.current_map == player_position.current_map
+            {
                 debug!("Sending entity update to: {}", &player_details.client_addr);
                 let response = serialize_entity_broadcast_packet(
                     entity_id,
