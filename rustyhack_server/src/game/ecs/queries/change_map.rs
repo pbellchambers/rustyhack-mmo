@@ -3,7 +3,7 @@ use crate::network_messages::send_message_to_player;
 use crossbeam_channel::Sender;
 use laminar::Packet;
 use legion::{IntoQuery, World};
-use rustyhack_lib::ecs::components::PlayerDetails;
+use rustyhack_lib::ecs::components::{PlayerDetails, Position};
 use rustyhack_lib::network::packets::PositionMessage;
 
 pub(crate) fn change_map_request(
@@ -18,8 +18,8 @@ pub(crate) fn change_map_request(
         .unwrap_or(&no_exits_vec);
     let mut changed_map = false;
 
-    let mut query = <&PlayerDetails>::query();
-    for player_details in query.iter_mut(world) {
+    let mut query = <(&PlayerDetails, &mut Position)>::query();
+    for (player_details, player_position) in query.iter_mut(world) {
         if player_details.player_name == position_message.player_name
             && player_details.currently_online
         {
@@ -27,7 +27,12 @@ pub(crate) fn change_map_request(
                 if position_message.position.pos_x == exit.x
                     && position_message.position.pos_y == exit.y
                 {
-                    //todo actually change map
+                    player_position.current_map = exit.new_map.clone();
+                    player_position.pos_x = exit.new_x;
+                    player_position.pos_y = exit.new_y;
+                    player_position.velocity_x = 0;
+                    player_position.velocity_y = 0;
+                    player_position.update_available = true;
                     changed_map = true;
                     break;
                 }
