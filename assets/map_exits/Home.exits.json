@@ -1,0 +1,18 @@
+{
+  "map_exits": [
+    {
+      "x": 5,
+      "y": 28,
+      "new_map": "Crypt",
+      "new_x": 12,
+      "new_y": 3
+    },
+    {
+      "x": 12,
+      "y": 5,
+      "new_map": "Sewer",
+      "new_x": 7,
+      "new_y": 2
+    }
+  ]
+}
