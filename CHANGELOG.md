@@ -9,10 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - .
 
 ### 🐛 Bug Fixes
-- .
+- graphical glitch showing caret after window resize resolved by dependency update
 
 ### 🧰 Maintenance
-- .
+- dependencies updated
 
 ## [v0.3.1]
 ### 🚀 Features and Improvements
