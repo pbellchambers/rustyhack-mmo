@@ -73,6 +73,9 @@ fn handle_player_request(
         PlayerRequest::PickupItem(position_message) => {
             send_channel_message(PlayerRequest::PickupItem(position_message), channel_sender);
         }
+        PlayerRequest::ChangeMap(position_message) => {
+            send_channel_message(PlayerRequest::ChangeMap(position_message), channel_sender);
+        }
         PlayerRequest::DropItem(drop_item_details) => {
             send_channel_message(PlayerRequest::DropItem(drop_item_details), channel_sender);
         }

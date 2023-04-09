@@ -1,3 +1,4 @@
+pub(super) mod change_map;
 pub(super) mod drop;
 pub(super) mod look;
 pub(crate) mod movement;

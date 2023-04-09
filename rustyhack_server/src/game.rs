@@ -19,6 +19,7 @@ use message_io::node::{NodeHandler, NodeListener};
 
 use crate::consts;
 use crate::game::combat::{CombatAttackerStats, CombatParties};
+use crate::game::map::exits;
 use crate::network_messages::{map_sender, packet_receiver};
 use map::state::EntityPositionMap;
 use map::{spawns, state, tiles};
@@ -40,6 +41,7 @@ pub(super) fn run(
     let entity_position_map: EntityPositionMap = HashMap::new();
     let all_monster_definitions = monsters::initialise_all_monster_definitions();
     let (default_spawn_counts, all_spawns_map) = spawns::initialise_all_spawn_definitions();
+    let all_map_exits = exits::initialise_all_map_exit_definitions();
     let registry = backup::create_world_registry();
     let mut player_update_schedule = systems::build_player_update_schedule();
     let mut server_tick_update_schedule = systems::build_server_tick_update_schedule();
@@ -89,7 +91,12 @@ pub(super) fn run(
     info!("Starting game loop");
     loop {
         //process player updates as soon as they are received
-        if player_message_handler::process_player_messages(&mut world, &channel_receiver, sender) {
+        if player_message_handler::process_player_messages(
+            &mut world,
+            &all_map_exits,
+            &channel_receiver,
+            sender,
+        ) {
             debug!("Executing player update schedule...");
             map_state_update_schedule.execute(&mut world, &mut resources);
             player_update_schedule.execute(&mut world, &mut resources);

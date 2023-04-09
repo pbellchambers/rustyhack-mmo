@@ -16,6 +16,7 @@ pub enum PlayerRequest {
     PlayerLogout(ClientDetails),
     UpdateVelocity(PositionMessage),
     PickupItem(PositionMessage),
+    ChangeMap(PositionMessage),
     DropItem((u16, PositionMessage)),
     StatUp((String, String)),
     GetAllMaps,

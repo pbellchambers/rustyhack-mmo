@@ -1,5 +1,6 @@
 use crate::game::ecs::queries;
 use crate::game::ecs::queries::{common_player, player_joined, player_left};
+use crate::game::map::exits::AllMapExits;
 use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
 use legion::World;
@@ -7,6 +8,7 @@ use rustyhack_lib::network::packets::PlayerRequest;
 
 pub(super) fn process_player_messages(
     world: &mut World,
+    all_map_exits: &AllMapExits,
     channel_receiver: &Receiver<PlayerRequest>,
     sender: &Sender<Packet>,
 ) -> bool {
@@ -15,7 +17,7 @@ pub(super) fn process_player_messages(
         debug!("Player messages are present.");
         let received = channel_receiver.try_recv();
         if let Ok(received_message) = received {
-            match_received_message(received_message, world, sender);
+            match_received_message(received_message, world, all_map_exits, sender);
             has_player_updates = true;
         } else {
             debug!("Player messages channel receiver is now empty.");
@@ -27,6 +29,7 @@ pub(super) fn process_player_messages(
 fn match_received_message(
     received_message: PlayerRequest,
     world: &mut World,
+    all_map_exits: &AllMapExits,
     sender: &Sender<Packet>,
 ) {
     match received_message {
@@ -50,6 +53,14 @@ fn match_received_message(
         }
         PlayerRequest::DropItem(drop_item_details) => {
             queries::drop_item::drop_item(world, drop_item_details.0, &drop_item_details.1, sender);
+        }
+        PlayerRequest::ChangeMap(position_message) => {
+            queries::change_map::change_map_request(
+                world,
+                all_map_exits,
+                &position_message,
+                sender,
+            );
         }
         PlayerRequest::StatUp(stat_up_details) => {
             queries::increase_stat::increase_stat(

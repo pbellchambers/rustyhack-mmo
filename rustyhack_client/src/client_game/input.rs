@@ -112,5 +112,8 @@ fn default_input_check(
             player,
             server_addr,
         );
+    } else if console.is_key_pressed(KeyCode::Char('m')) {
+        info!("Change map command pressed.");
+        commands::change_map::send_change_map_request(sender, player, server_addr);
     }
 }
