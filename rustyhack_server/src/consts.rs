@@ -10,6 +10,7 @@ pub(crate) const SERVER_BACKUP_TICK: Duration = Duration::from_secs(60);
 pub(crate) const MONSTER_DISTANCE_ACTIVATION: i32 = 10;
 pub(crate) const ASSETS_DIRECTORY: &str = "assets";
 pub(crate) const MAPS_DIRECTORY: &str = "maps";
+pub(crate) const MAP_EXITS_DIRECTORY: &str = "map_exits";
 pub(crate) const MONSTERS_DIRECTORY: &str = "monsters";
 pub(crate) const SPAWNS_DIRECTORY: &str = "spawns";
 pub(crate) const TICK_SPAWN_CHANCE_PERCENTAGE: u32 = 5;

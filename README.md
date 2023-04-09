@@ -24,6 +24,7 @@ A barebones cross between an ASCII "roguelike" and MMORPG / MUD written in Rust.
   - P - Pick up item underneath you
   - D - Drop item
   - U - increase stat points after level up
+  - M - change map when standing on map exit location
 - Quit: Ctrl-q
 
 ## Components
@@ -35,5 +36,6 @@ A barebones cross between an ASCII "roguelike" and MMORPG / MUD written in Rust.
 ## Assets
 Currently, the following functionality is defined entirely by text or json files located in the `assets` directory:
 - **maps** - *.map plain-text* - Map definitions. All maps should be enclosed by a boundary of # characters in any shape, and end with a % character on the last line. See existing examples.
+- **map_exits** - *.json* - Map exit locations, and where they lead.
 - **monsters** - *.json* - Types of monsters, their stats and inventory etc.
 - **spawns** - *.json* - Spawn locations of monsters. There should be one spawn file per map.

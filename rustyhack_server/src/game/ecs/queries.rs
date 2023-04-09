@@ -1,3 +1,4 @@
+pub(crate) mod change_map;
 pub(crate) mod common_player;
 pub(crate) mod drop_item;
 pub(crate) mod increase_stat;

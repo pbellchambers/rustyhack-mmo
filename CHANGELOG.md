@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 🧰 Maintenance
 - .
 
+## [v0.3.2]
+### 🚀 Features and Improvements
+- player can now change maps when standing on map exit locations by pressing 'm'
+
+### 🐛 Bug Fixes
+- graphical glitch showing caret after window resize resolved by dependency update
+
+### 🧰 Maintenance
+- dependencies updated
+
 ## [v0.3.1]
 ### 🚀 Features and Improvements
 - server now backs up the world every 60 seconds
@@ -142,7 +152,8 @@ The monsters update!
 ### 🚀 Features and Improvements
 - first version of working code
 
-[Unreleased]: https://github.com/pbellchambers/rustyhack-mmo/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/pbellchambers/rustyhack-mmo/compare/v0.3.2...HEAD
+[v0.3.2]: https://github.com/pbellchambers/rustyhack-mmo/compare/v0.3.1...v0.3.2
 [v0.3.1]: https://github.com/pbellchambers/rustyhack-mmo/compare/v0.3.0...v0.3.1
 [v0.3.0]: https://github.com/pbellchambers/rustyhack-mmo/compare/v0.2.2...v0.3.0
 [v0.2.2]: https://github.com/pbellchambers/rustyhack-mmo/compare/v0.2.1...v0.2.2

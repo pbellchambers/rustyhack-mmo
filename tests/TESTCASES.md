@@ -42,6 +42,12 @@ This file contains a bulleted list of functionality. In the absence of any autom
 * Player should level up when meeting the exp_next threshold
 * Player stat choice should be available on levelling up
 * Player stat choice should only be available for stats below 100
+* Player should be able to change map when standing on map exit position and pressing m
+* Player should not change map when not standing on map exit and pressing m
+* Message should be displayed on player client when no map exit present when pressing m
+* Player should disapper from other players screens after changing away from map
+* Player should appear on other players screens after entering same map
+* Player should disappear from other players screens when respawning after dying
 
 ### Monsters General
 * Monsters should move towards player when nearby
