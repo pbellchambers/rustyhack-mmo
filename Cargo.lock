@@ -144,9 +144,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-channel"
-version = "0.5.7"
+version = "0.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf2b3e8478797446514c91ef04bafcb59faba183e621ad488df88983cc14128c"
+checksum = "a33c2bf77f2df06183c3aa30d1e96c0695a313d4f9c453cc3762a6db39f99200"
 dependencies = [
  "cfg-if",
  "crossbeam-utils",
@@ -754,7 +754,7 @@ checksum = "4f3208ce4d8448b3f3e7d168a73f5e0c43a61e32930de3bceeccedb388b6bf06"
 
 [[package]]
 name = "rustyhack_client"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "bincode",
  "chrono",
@@ -773,7 +773,7 @@ dependencies = [
 
 [[package]]
 name = "rustyhack_lib"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "crossbeam-channel",
  "crossterm",
@@ -789,7 +789,7 @@ dependencies = [
 
 [[package]]
 name = "rustyhack_server"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "bincode",
  "crossbeam-channel",
