@@ -181,7 +181,7 @@ pub(super) fn resolve_combat(
             monster_target = monster_details.current_target;
             defender_is_monster = true;
         }
-        for (combat_parties_attacker, combat_parties_defender) in combat_parties.iter() {
+        for (combat_parties_attacker, combat_parties_defender) in combat_parties {
             if combat_parties_defender == &defender {
                 //combat detected
                 defender_stats.in_combat = true;

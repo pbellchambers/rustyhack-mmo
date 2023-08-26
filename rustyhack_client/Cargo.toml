@@ -2,7 +2,7 @@
 name = "rustyhack_client"
 version = "0.3.2"
 authors = ["pbellchambers <pbellchambers@users.noreply.github.com>"]
-edition = "2021"
+edition.workspace = true
 homepage = "https://github.com/pbellchambers/rustyhack-mmo"
 repository = "https://github.com/pbellchambers/rustyhack-mmo"
 license = "AGPL-3.0"
