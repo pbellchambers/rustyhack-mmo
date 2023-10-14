@@ -71,6 +71,7 @@ fn run(receiver: &Receiver<SocketEvent>, incoming_server_messages: &Sender<Serve
                             }
                         };
 
+                    #[allow(clippy::ignored_unit_patterns)]
                     match channel_send_status {
                         Ok(_) => {
                             //do nothing

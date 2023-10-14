@@ -114,6 +114,8 @@ pub(super) fn deserialize_player_request(msg: &[u8], address: SocketAddr) -> Pla
 
 fn send_channel_message(message: PlayerRequest, channel_sender: &Sender<PlayerRequest>) {
     let send_result = channel_sender.send(message);
+
+    #[allow(clippy::ignored_unit_patterns)]
     match send_result {
         Ok(_) => {
             //send successful
