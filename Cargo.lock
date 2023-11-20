@@ -765,7 +765,7 @@ dependencies = [
  "serde",
  "simplelog",
  "strum_macros 0.25.3",
- "uuid 1.6.0",
+ "uuid 1.6.1",
 ]
 
 [[package]]
@@ -786,7 +786,7 @@ dependencies = [
  "serde",
  "serde_json",
  "simplelog",
- "uuid 1.6.0",
+ "uuid 1.6.1",
 ]
 
 [[package]]
@@ -1036,9 +1036,9 @@ dependencies = [
 
 [[package]]
 name = "uuid"
-version = "1.6.0"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c58fe91d841bc04822c9801002db4ea904b9e4b8e6bbad25127b46eff8dc516b"
+checksum = "5e395fcf16a7a3d8127ec99782007af141946b4795001f876d54fb0d55978560"
 dependencies = [
  "getrandom",
  "serde",
