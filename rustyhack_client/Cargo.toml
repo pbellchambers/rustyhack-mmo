@@ -8,7 +8,7 @@ repository = "https://github.com/pbellchambers/rustyhack-mmo"
 license = "AGPL-3.0"
 readme = "../README.md"
 description = "Client for Rustyhack MMO - An ASCII \"roguelike\" MMORPG"
-keywords = ["game", "games", "roguelike", "mmorpg", "ascii-art", "ascii-game", "console-game", "terminal-game", "terminal-based", "client"]
+keywords = ["game", "roguelike", "mmorpg", "ascii-art", "terminal-game"]
 categories = ["games"]
 publish = false
 
