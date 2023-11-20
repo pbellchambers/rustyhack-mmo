@@ -19,7 +19,7 @@ crossterm = { version = "0.26.1", features = ["serde"] }
 laminar = "0.5.0"
 legion = "0.4.0"
 log = "0.4.20"
-message-io = { version = "0.17.0", default-features = false, features = ["tcp"] }
+message-io = { version = "0.18.0", default-features = false, features = ["tcp"] }
 ndarray = { version = "0.15.6", features = ["rayon", "serde"] }
 rand = "0.8.5"
 rayon = "1.8.0"
@@ -27,5 +27,5 @@ regex = "1.10.2"
 serde = { version = "1.0.192", features = ["derive"] }
 serde_json = "1.0.108"
 simplelog = "0.12.1"
-strum_macros = "0.24.3"
-uuid = { version = "1.5.0", features = ["serde", "v4"] }
+strum_macros = "0.25.3"
+uuid = { version = "1.6.0", features = ["serde", "v4"] }
