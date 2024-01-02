@@ -117,9 +117,9 @@ dependencies = [
 
 [[package]]
 name = "console_engine"
-version = "2.6.0"
+version = "2.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b05723615fd3ab8251764e161f1a6c65cce538d3d7902b94ee3290a0c5811e24"
+checksum = "14cf032d257f74a9cd6d64f6f4e42acc35e04187e5a4592c055aa1483c6fec3f"
 dependencies = [
  "crossterm",
  "unicode-width",
