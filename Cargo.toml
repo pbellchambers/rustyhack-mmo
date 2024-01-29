@@ -24,7 +24,7 @@ ndarray = { version = "0.15.6", features = ["rayon", "serde"] }
 rand = "0.8.5"
 rayon = "1.8.1"
 regex = "1.10.3"
-serde = { version = "1.0.195", features = ["derive"] }
+serde = { version = "1.0.196", features = ["derive"] }
 serde_json = "1.0.113"
 simplelog = "0.12.1"
 strum_macros = "0.25.3"
