@@ -39,3 +39,10 @@ Currently, the following functionality is defined entirely by text or json files
 - **map_exits** - *.json* - Map exit locations, and where they lead.
 - **monsters** - *.json* - Types of monsters, their stats and inventory etc.
 - **spawns** - *.json* - Spawn locations of monsters. There should be one spawn file per map.
+
+## Building from source
+1. Install latest version of [rust](https://www.rust-lang.org/) (most recently confirmed working `1.76.0`)
+2. Download this repository
+3. Run `cargo build` in the repository root directory
+4. Copy `assets` directory into `target/debug` directory
+5. Run `rustyhack_server` and `rustyhack_client` from `target/debug` directory
