@@ -26,7 +26,7 @@ pub(crate) fn join_player(
     for (player_details, display_details, position, stats, inventory) in query.iter_mut(world) {
         if player_details.player_name == name && !player_details.currently_online {
             player_details.currently_online = true;
-            player_details.client_addr = client_addr.clone();
+            player_details.client_addr.clone_from(&client_addr);
             display_details.collidable = true;
             display_details.visible = true;
             info!(

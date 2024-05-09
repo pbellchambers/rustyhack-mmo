@@ -21,7 +21,7 @@ pub(crate) fn set_player_logged_out(
             && player_details.player_name == originating_player_name
         {
             logged_out_id = player_details.id;
-            logged_out_map = position.current_map.clone();
+            logged_out_map.clone_from(&position.current_map);
             display_details.visible = false;
             display_details.collidable = false;
             player_details.currently_online = false;
@@ -44,7 +44,7 @@ pub(crate) fn set_player_disconnected(world: &mut World, address: &str) -> (Uuid
     for (player_details, display_details, position) in query.iter_mut(world) {
         if player_details.client_addr == address {
             logged_out_id = player_details.id;
-            logged_out_map = position.current_map.clone();
+            logged_out_map.clone_from(&position.current_map);
             display_details.visible = false;
             display_details.collidable = false;
             player_details.currently_online = false;

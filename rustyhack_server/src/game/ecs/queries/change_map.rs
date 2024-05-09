@@ -27,7 +27,7 @@ pub(crate) fn change_map_request(
                 if position_message.position.pos_x == exit.x
                     && position_message.position.pos_y == exit.y
                 {
-                    player_position.current_map = exit.new_map.clone();
+                    player_position.current_map.clone_from(&exit.new_map);
                     player_position.pos_x = exit.new_x;
                     player_position.pos_y = exit.new_y;
                     player_position.velocity_x = 0;
