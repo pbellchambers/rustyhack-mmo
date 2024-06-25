@@ -29,6 +29,7 @@ jobs:
           cargo fmt -- --check --verbose
       - name: Clippy Check
         run: |
+          cargo clippy
           cargo clippy --version
           cargo clippy -- --verbose -D warnings
 
