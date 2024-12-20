@@ -139,11 +139,11 @@ pub(crate) fn get_current_map_states<'a>(
     all_map_states: &'a mut AllMapStates,
     map: &str,
 ) -> &'a mut MapState {
-    return if all_map_states.contains_key(map) {
+    if all_map_states.contains_key(map) {
         all_map_states.get_mut(map).unwrap()
     } else {
         warn!("Tried to get map state for map that doesn't exist.");
         warn!("Will return default map, but things might break.");
         all_map_states.get_mut(DEFAULT_MAP).unwrap()
-    };
+    }
 }

@@ -65,7 +65,7 @@ pub(super) fn send_message_to_player(
     colour: Option<Color>,
     sender: &Sender<Packet>,
 ) {
-    if currently_online && !client_addr.eq("") {
+    if currently_online && !client_addr.is_empty() {
         debug!(
             "Sending system message to player {} at: {}",
             &player_name, &client_addr

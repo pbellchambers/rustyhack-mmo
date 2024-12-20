@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - .
 
 ### 🧰 Maintenance
-- .
+- updated dependencies
+- fixed new clippy warnings
 
 ## [v0.3.2]
 ### 🚀 Features and Improvements
