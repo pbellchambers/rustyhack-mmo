@@ -116,6 +116,7 @@ fn get_server_tcp_addr() -> String {
 
 fn get_player_name() -> String {
     let mut player_name;
+    let valid_name_regex = Regex::new(VALID_NAME_REGEX).expect("Player name regex is invalid.");
     loop {
         player_name = String::new();
         println!("3) What is your character name?");
@@ -140,8 +141,7 @@ fn get_player_name() -> String {
         }
 
         //must only contain letters
-        let regex = Regex::new(VALID_NAME_REGEX).expect("Player name regex is invalid.");
-        if !regex.is_match(&parsed_player_name) {
+        if !valid_name_regex.is_match(&parsed_player_name) {
             println!("Character name must only contain letters.");
             println!();
             continue;
