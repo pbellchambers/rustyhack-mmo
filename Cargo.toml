@@ -18,7 +18,7 @@ crossbeam-channel = "0.5.14"
 crossterm = { version = "0.26.1", features = ["serde"] }
 laminar = "0.5.0"
 legion = "0.4.0"
-log = "0.4.25"
+log = "0.4.26"
 message-io = { version = "0.18.3", default-features = false, features = ["tcp"] }
 ndarray = { version = "0.16.1", features = ["rayon", "serde"] }
 rand = "0.8.5"
