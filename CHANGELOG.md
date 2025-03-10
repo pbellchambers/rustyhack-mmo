@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🧰 Maintenance
 - updated dependencies
+- updated rust edition to 2024
 - fixed new clippy warnings
 
 ## [v0.3.2]

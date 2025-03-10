@@ -1,5 +1,5 @@
 use console_engine::screen::Screen;
-use console_engine::{pixel, ConsoleEngine};
+use console_engine::{ConsoleEngine, pixel};
 use rustyhack_lib::ecs::player::Player;
 use rustyhack_lib::utils::math::i32_from;
 

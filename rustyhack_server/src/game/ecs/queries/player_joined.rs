@@ -44,7 +44,10 @@ pub(crate) fn join_player(
             should_create_new_player = false;
             break;
         } else if player_details.player_name == name && player_details.currently_online {
-            warn!("Player join request from {} for existing player that's currently online ({} at {}).", &client_addr, &name, &player_details.client_addr);
+            warn!(
+                "Player join request from {} for existing player that's currently online ({} at {}).",
+                &client_addr, &name, &player_details.client_addr
+            );
             let response = serialize(&ServerMessage::PlayerAlreadyOnline).unwrap_or_else(|err| {
                 error!(
                     "Failed to serialize player already online response, error: {}",

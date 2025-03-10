@@ -1,5 +1,5 @@
-use console_engine::screen::Screen;
 use console_engine::ConsoleEngine;
+use console_engine::screen::Screen;
 use rustyhack_lib::ecs::item::get_item_name;
 use rustyhack_lib::ecs::player::Player;
 

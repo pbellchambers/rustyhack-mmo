@@ -1,13 +1,13 @@
 use crate::consts;
 use crate::game::map::spawns::{AllSpawnCounts, AllSpawnsMap, PositionWithoutMap};
-use legion::systems::CommandBuffer;
 use legion::World;
+use legion::systems::CommandBuffer;
 use rand::Rng;
+use rand::prelude::IndexedRandom;
 use rustyhack_lib::ecs::components::{DisplayDetails, Inventory, MonsterDetails, Position, Stats};
 use rustyhack_lib::ecs::monster::AllMonsterDefinitions;
 use std::collections::HashMap;
 use std::process;
-use rand::prelude::IndexedRandom;
 use uuid::Uuid;
 
 pub(crate) fn count_monsters_needing_respawn(

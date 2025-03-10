@@ -1,13 +1,13 @@
 use crate::game::map::state::EntityPositionMap;
 use crate::game::map::{state, tiles};
 use legion::systems::CommandBuffer;
-use legion::{maybe_changed, system, Entity};
+use legion::{Entity, maybe_changed, system};
 use rustyhack_lib::background_map::AllMaps;
 use rustyhack_lib::consts::DEAD_MAP;
 use rustyhack_lib::ecs::components::{
     Dead, DisplayDetails, ItemDetails, MonsterDetails, PlayerDetails, Position,
 };
-use rustyhack_lib::ecs::item::{get_item_name, Item};
+use rustyhack_lib::ecs::item::{Item, get_item_name};
 use rustyhack_lib::utils::math::{i32_from, u32_from};
 
 #[system(par_for_each)]

@@ -1,5 +1,5 @@
-use console_engine::screen::Screen;
 use console_engine::ConsoleEngine;
+use console_engine::screen::Screen;
 use rustyhack_lib::ecs::player::Player;
 
 pub(super) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32) -> Screen {
