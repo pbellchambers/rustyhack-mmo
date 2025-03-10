@@ -91,8 +91,8 @@ pub(super) fn resolve_combat(
 }
 
 fn calculate_damage_dealt(attacker_weapon_damage_range: &Range<f32>, attacker_str: f32) -> f32 {
-    let mut rng = rand::thread_rng();
-    let attacker_weapon_damage = rng.gen_range(attacker_weapon_damage_range.clone());
+    let mut rng = rand::rng();
+    let attacker_weapon_damage = rng.random_range(attacker_weapon_damage_range.clone());
     debug!(
         "Weapon damage before strength modifier: {}",
         attacker_weapon_damage
@@ -109,9 +109,9 @@ fn check_attack_success(
     attacker_weapon_accuracy: f32,
     defender_dex: f32,
 ) -> bool {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let combat_accuracy = attacker_weapon_accuracy
         + ((100.0 - attacker_weapon_accuracy) * (attacker_dex / 100.0))
         - ((100.0 - attacker_weapon_accuracy) * (defender_dex / 100.0));
-    combat_accuracy >= rng.gen_range(0.0..=100.0)
+    combat_accuracy >= rng.random_range(0.0..=100.0)
 }

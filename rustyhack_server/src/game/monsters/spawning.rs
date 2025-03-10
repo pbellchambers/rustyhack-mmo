@@ -2,12 +2,12 @@ use crate::consts;
 use crate::game::map::spawns::{AllSpawnCounts, AllSpawnsMap, PositionWithoutMap};
 use legion::systems::CommandBuffer;
 use legion::World;
-use rand::prelude::SliceRandom;
 use rand::Rng;
 use rustyhack_lib::ecs::components::{DisplayDetails, Inventory, MonsterDetails, Position, Stats};
 use rustyhack_lib::ecs::monster::AllMonsterDefinitions;
 use std::collections::HashMap;
 use std::process;
+use rand::prelude::IndexedRandom;
 use uuid::Uuid;
 
 pub(crate) fn count_monsters_needing_respawn(
@@ -88,8 +88,8 @@ pub(crate) fn respawn_monsters(
 
 fn should_respawn_this_tick() -> bool {
     //random chance for respawning each chick
-    let mut rng = rand::thread_rng();
-    consts::TICK_SPAWN_CHANCE_PERCENTAGE >= rng.gen_range(0..=101)
+    let mut rng = rand::rng();
+    consts::TICK_SPAWN_CHANCE_PERCENTAGE >= rng.random_range(0..=101)
 }
 
 pub(crate) fn spawn_initial_monsters(
@@ -165,7 +165,7 @@ fn spawn_single_monster(
         if monster_spawn_positions.monster_type.eq(monster_type) {
             random_spawn_position = *monster_spawn_positions
                 .spawn_positions
-                .choose(&mut rand::thread_rng())
+                .choose(&mut rand::rng())
                 .unwrap();
 
             let position = Position {
