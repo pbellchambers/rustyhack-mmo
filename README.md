@@ -41,7 +41,7 @@ Currently, the following functionality is defined entirely by text or json files
 - **spawns** - *.json* - Spawn locations of monsters. There should be one spawn file per map.
 
 ## Building from source
-1. Install latest version of [rust](https://www.rust-lang.org/) (most recently confirmed working `1.84.0`)
+1. Install latest version of [rust](https://www.rust-lang.org/) (most recently confirmed working `1.85.0`)
 2. Download this repository
 3. Run `cargo build` in the repository root directory
 4. Copy `assets` directory into `target/debug` directory
