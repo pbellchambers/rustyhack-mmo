@@ -17,28 +17,28 @@ pub(crate) fn move_towards_target(monster_position: &mut Position, target_positi
 
     if (diff_x.abs() >= 1 && diff_y.abs() >= 1) || (diff_x == 0 && diff_y == 0) {
         //far away, move randomly towards
-        let mut rng = rand::thread_rng();
-        if rng.gen::<bool>() {
+        let mut rng = rand::rng();
+        if rng.random::<bool>() {
             new_pos_x = move_towards(diff_x, monster_position_x);
         } else {
             new_pos_y = move_towards(diff_y, monster_position_y);
         }
     } else if diff_x.abs() > 1 && diff_y.abs() == 0 {
         //in line, should mostly move towards, but sometimes randomly
-        let mut rng = rand::thread_rng();
-        if rng.gen_range(1..=6) > 1 {
+        let mut rng = rand::rng();
+        if rng.random_range(1..=6) > 1 {
             new_pos_x = move_towards(diff_x, monster_position_x);
-        } else if rng.gen::<bool>() {
+        } else if rng.random::<bool>() {
             new_pos_y = move_towards(diff_y + 1, monster_position_y);
         } else {
             new_pos_y = move_towards(diff_y - 1, monster_position_y);
         }
     } else if diff_x.abs() == 0 && diff_y.abs() > 1 {
         //in line, should mostly move towards, but sometimes randomly
-        let mut rng = rand::thread_rng();
-        if rng.gen_range(1..=6) > 1 {
+        let mut rng = rand::rng();
+        if rng.random_range(1..=6) > 1 {
             new_pos_y = move_towards(diff_y, monster_position_y);
-        } else if rng.gen::<bool>() {
+        } else if rng.random::<bool>() {
             new_pos_x = move_towards(diff_x + 1, monster_position_x);
         } else {
             new_pos_x = move_towards(diff_x - 1, monster_position_x);
@@ -99,8 +99,8 @@ fn move_towards(diff: i32, position: i32) -> i32 {
 pub(crate) fn move_randomly(monster_position: &mut Position) {
     let mut velocity_x = 0;
     let mut velocity_y = 0;
-    let mut rng = rand::thread_rng();
-    let random_pick: u8 = rng.gen_range(1..=4);
+    let mut rng = rand::rng();
+    let random_pick: u8 = rng.random_range(1..=4);
 
     if random_pick == 1 {
         velocity_x = 1;

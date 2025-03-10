@@ -4,7 +4,7 @@ use crate::game::monsters::{movement, spawning};
 use crate::game::players::PlayersPositions;
 use legion::systems::CommandBuffer;
 use legion::world::SubWorld;
-use legion::{maybe_changed, system, Entity, Query};
+use legion::{Entity, Query, maybe_changed, system};
 use rustyhack_lib::consts::{DEAD_MAP, DEFAULT_ITEM_COLOUR, DEFAULT_ITEM_ICON};
 use rustyhack_lib::ecs::components::{
     Dead, DisplayDetails, Inventory, ItemDetails, MonsterDetails, Position, Stats,

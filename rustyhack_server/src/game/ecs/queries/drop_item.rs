@@ -6,7 +6,7 @@ use rustyhack_lib::consts::{DEFAULT_ITEM_COLOUR, DEFAULT_ITEM_ICON};
 use rustyhack_lib::ecs::components::{
     DisplayDetails, Inventory, ItemDetails, PlayerDetails, Position,
 };
-use rustyhack_lib::ecs::item::{get_item_name, Item};
+use rustyhack_lib::ecs::item::{Item, get_item_name};
 use rustyhack_lib::network::packets::PositionMessage;
 use uuid::Uuid;
 

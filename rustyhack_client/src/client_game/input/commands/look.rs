@@ -108,6 +108,6 @@ pub(super) fn return_visible_entity_at(
 
     match entity {
         None => entity_name,
-        Some(entity) => entity.1 .5.clone(),
+        Some(entity) => entity.1.5.clone(),
     }
 }

@@ -57,12 +57,12 @@ jobs:
         tar -cvzf rustyhack-client-ubuntu.tar.gz rustyhack-client
         tar -cvzf rustyhack-server-ubuntu.tar.gz rustyhack-server assets
     - name: Upload Artifact Client
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: rustyhack-client-ubuntu
         path: rustyhack-client-ubuntu.tar.gz
     - name: Upload Artifact Server
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: rustyhack-server-ubuntu
         path: rustyhack-server-ubuntu.tar.gz
@@ -89,12 +89,12 @@ jobs:
           tar -cvzf rustyhack-client-macos.tar.gz rustyhack-client
           tar -cvzf rustyhack-server-macos.tar.gz rustyhack-server assets
       - name: Upload Artifact Client
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: rustyhack-client-macos
           path: rustyhack-client-macos.tar.gz
       - name: Upload Artifact Server
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: rustyhack-server-macos
           path: rustyhack-server-macos.tar.gz
@@ -117,12 +117,12 @@ jobs:
           copy target\release\rustyhack_client.exe rustyhack-client.exe
           copy target\release\rustyhack_server.exe rustyhack-server.exe
       - name: Upload Artifact Client (win32)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: rustyhack-client-win32
           path: rustyhack-client.exe
       - name: Upload Artifact Server (win32)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: rustyhack-server-win32
           path: |
@@ -147,12 +147,12 @@ jobs:
           copy target\release\rustyhack_client.exe rustyhack-client.exe
           copy target\release\rustyhack_server.exe rustyhack-server.exe
       - name: Upload Artifact Client (win64)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: rustyhack-client-win64
           path: rustyhack-client.exe
       - name: Upload Artifact Server (win64)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: rustyhack-server-win64
           path: |

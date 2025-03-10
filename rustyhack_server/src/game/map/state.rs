@@ -58,7 +58,10 @@ pub(crate) fn remove_entity_at(map: &mut MapState, entity: &EntityType, x: u32, 
         }
         Some((index, _entity_type)) => match map.get_mut((y as usize, x as usize)) {
             None => {
-                warn!("Tried to remove entity at invalid position, x: {}, y: {}, will try to continue.", x, y);
+                warn!(
+                    "Tried to remove entity at invalid position, x: {}, y: {}, will try to continue.",
+                    x, y
+                );
             }
             Some(entity_vec) => {
                 entity_vec.remove(index);
@@ -85,7 +88,10 @@ pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> 
     } else {
         let defending_entity = match &map_state.get((y as usize, x as usize)) {
             None => {
-                warn!("Tried to check for entity collision at invalid position, x: {}, y: {}, will try to continue.", x, y);
+                warn!(
+                    "Tried to check for entity collision at invalid position, x: {}, y: {}, will try to continue.",
+                    x, y
+                );
                 None
             }
             Some(entity_vec) => entity_vec.par_iter().find_any(|entity_type| {

@@ -75,7 +75,9 @@ fn deserialize_all_maps_reply(data: &[u8]) -> Option<AllMaps> {
                 info!("AllMaps data downloaded successfully.");
                 Some(all_maps)
             } else {
-                warn!("Deserialized message from server was not valid AllMaps data, will request again.");
+                warn!(
+                    "Deserialized message from server was not valid AllMaps data, will request again."
+                );
                 None
             }
         }

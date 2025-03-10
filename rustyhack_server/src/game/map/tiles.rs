@@ -1,9 +1,9 @@
 use crate::consts;
 use crate::game::map::array_utils;
 use ndarray::Array2;
-use rustyhack_lib::background_map::tiles::{Collidable, Tile};
 use rustyhack_lib::background_map::AllMaps;
-use rustyhack_lib::background_map::{character_map, BackgroundMap};
+use rustyhack_lib::background_map::tiles::{Collidable, Tile};
+use rustyhack_lib::background_map::{BackgroundMap, character_map};
 use rustyhack_lib::utils::file;
 use std::collections::HashMap;
 use std::path::Path;

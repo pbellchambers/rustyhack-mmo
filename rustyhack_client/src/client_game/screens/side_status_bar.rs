@@ -1,6 +1,6 @@
 use crate::client_consts::DEFAULT_BG_COLOUR;
-use console_engine::screen::Screen;
 use console_engine::ConsoleEngine;
+use console_engine::screen::Screen;
 use crossterm::style::Color;
 use rustyhack_lib::ecs::item::get_item_name;
 use rustyhack_lib::ecs::player::Player;

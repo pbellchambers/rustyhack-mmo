@@ -3,7 +3,7 @@ use crossbeam_channel::Sender;
 use laminar::Packet;
 use legion::{IntoQuery, World};
 use rustyhack_lib::ecs::components::{Inventory, ItemDetails, PlayerDetails, Position};
-use rustyhack_lib::ecs::item::{get_item_name, Item};
+use rustyhack_lib::ecs::item::{Item, get_item_name};
 use rustyhack_lib::network::packets::PositionMessage;
 
 pub(crate) fn pickup_item(

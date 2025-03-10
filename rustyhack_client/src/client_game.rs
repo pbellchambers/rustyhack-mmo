@@ -14,7 +14,7 @@ use std::time::{Duration, Instant};
 use crate::client_consts::{
     CLIENT_CLEANUP_TICK, GAME_TITLE, INITIAL_CONSOLE_HEIGHT, INITIAL_CONSOLE_WIDTH, TARGET_FPS,
 };
-use crate::client_game::screens::{draw_screens, SidebarState};
+use crate::client_game::screens::{SidebarState, draw_screens};
 use input::commands::movement;
 
 use crate::client_network_messages::{
