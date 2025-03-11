@@ -1,4 +1,4 @@
-use bincode::serialize;
+use bincode::{config, encode_to_vec};
 use crossbeam_channel::Sender;
 use laminar::Packet;
 use legion::{IntoQuery, World};
@@ -75,20 +75,23 @@ pub(crate) fn broadcast_player_logged_out(
                 &logged_out_player_id, &player_details.client_addr
             );
 
-            let response = serialize(&ServerMessage::UpdateOtherEntities((
-                logged_out_player_id,
-                (
-                    0,
-                    0,
-                    "LoggedOut".to_string(),
-                    DEFAULT_PLAYER_ICON,
-                    DEFAULT_ITEM_COLOUR,
-                    logged_out_player_id.to_string(),
-                ),
-            )))
+            let response = encode_to_vec(
+                ServerMessage::UpdateOtherEntities((
+                    logged_out_player_id,
+                    (
+                        0,
+                        0,
+                        "LoggedOut".to_string(),
+                        DEFAULT_PLAYER_ICON,
+                        DEFAULT_ITEM_COLOUR,
+                        logged_out_player_id.to_string(),
+                    ),
+                )),
+                config::standard(),
+            )
             .unwrap_or_else(|err| {
                 error!(
-                    "Failed to serialize entity position broadcast to: {}, {}, @ map: {} error: {}",
+                    "Failed to encode entity position broadcast to: {}, {}, @ map: {} error: {}",
                     &player_details.player_name,
                     &player_details.client_addr,
                     &player_position.current_map,

@@ -1,5 +1,5 @@
 use crate::game::players;
-use bincode::serialize;
+use bincode::{config, encode_to_vec};
 use crossbeam_channel::Sender;
 use laminar::Packet;
 use legion::{IntoQuery, World};
@@ -48,13 +48,14 @@ pub(crate) fn join_player(
                 "Player join request from {} for existing player that's currently online ({} at {}).",
                 &client_addr, &name, &player_details.client_addr
             );
-            let response = serialize(&ServerMessage::PlayerAlreadyOnline).unwrap_or_else(|err| {
-                error!(
-                    "Failed to serialize player already online response, error: {}",
-                    err
-                );
-                process::exit(1);
-            });
+            let response = encode_to_vec(&ServerMessage::PlayerAlreadyOnline, config::standard())
+                .unwrap_or_else(|err| {
+                    error!(
+                        "Failed to encode player already online response, error: {}",
+                        err
+                    );
+                    process::exit(1);
+                });
             rustyhack_lib::network::send_packet(
                 Packet::reliable_ordered(client_addr.parse().unwrap(), response, Some(14)),
                 sender,

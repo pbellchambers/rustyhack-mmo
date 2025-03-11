@@ -3,13 +3,14 @@ use crate::consts::{
     DEFAULT_MONSTER_POSITION_Y, DEFAULT_MONSTER_TYPE,
 };
 use crate::ecs::components::{DisplayDetails, Inventory, MonsterDetails, Position, Stats};
+use bincode::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;
 
 pub type AllMonsterDefinitions = HashMap<String, Monster>;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Encode, Decode)]
 pub struct Monster {
     pub monster_details: MonsterDetails,
     pub display_details: DisplayDetails,

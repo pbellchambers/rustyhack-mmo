@@ -1,6 +1,6 @@
 use crate::client_game::input;
 use crate::client_game::screens::SidebarState;
-use bincode::serialize;
+use bincode::{config, encode_to_vec};
 use console_engine::ConsoleEngine;
 use crossbeam_channel::Sender;
 use crossterm::event::KeyCode;
@@ -31,10 +31,10 @@ fn send_stat_up_request(sender: &Sender<Packet>, player: &Player, server_addr: &
         server_addr
             .parse()
             .expect("Server address format is invalid."),
-        serialize(&PlayerRequest::StatUp((
-            stat.to_string(),
-            player.player_details.player_name.clone(),
-        )))
+        encode_to_vec(
+            PlayerRequest::StatUp((stat.to_string(), player.player_details.player_name.clone())),
+            config::standard(),
+        )
         .unwrap(),
         Some(13),
     );

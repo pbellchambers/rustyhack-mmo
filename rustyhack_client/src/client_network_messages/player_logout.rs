@@ -1,4 +1,4 @@
-use bincode::serialize;
+use bincode::{config, encode_to_vec};
 use crossbeam_channel::Sender;
 use laminar::Packet;
 use rustyhack_lib::ecs::player::Player;
@@ -9,10 +9,13 @@ pub(crate) fn send_logout_notification(sender: &Sender<Packet>, player: Player, 
         server_addr
             .parse()
             .expect("Server address format is invalid."),
-        serialize(&PlayerRequest::PlayerLogout(ClientDetails {
-            client_addr: player.player_details.client_addr,
-            player_name: player.player_details.player_name,
-        }))
+        encode_to_vec(
+            PlayerRequest::PlayerLogout(ClientDetails {
+                client_addr: player.player_details.client_addr,
+                player_name: player.player_details.player_name,
+            }),
+            config::standard(),
+        )
         .unwrap(),
     );
     rustyhack_lib::network::send_packet(logout_notification_packet, sender);

@@ -1,4 +1,4 @@
-use bincode::serialize;
+use bincode::{config, encode_to_vec};
 use crossbeam_channel::Sender;
 use laminar::Packet;
 use rustyhack_lib::ecs::components::Position;
@@ -11,11 +11,12 @@ use uuid::Uuid;
 pub(super) type PlayersPositions = HashMap<Uuid, Position>;
 
 pub(super) fn send_player_joined_response(player: &Player, sender: &Sender<Packet>) {
-    let response = serialize(&ServerMessage::PlayerJoined(player.clone())).unwrap_or_else(|err| {
-        error!(
-            "Failed to serialize player created response, error: {}",
-            err
-        );
+    let response = encode_to_vec(
+        ServerMessage::PlayerJoined(player.clone()),
+        config::standard(),
+    )
+    .unwrap_or_else(|err| {
+        error!("Failed to encode player created response, error: {}", err);
         process::exit(1);
     });
     rustyhack_lib::network::send_packet(

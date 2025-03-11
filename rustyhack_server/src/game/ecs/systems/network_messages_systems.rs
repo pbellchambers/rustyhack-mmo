@@ -1,5 +1,5 @@
 use crate::game::map::state::EntityPositionMap;
-use bincode::serialize;
+use bincode::{config, encode_to_vec};
 use crossbeam_channel::Sender;
 use laminar::Packet;
 use legion::{maybe_changed, system};
@@ -21,14 +21,17 @@ pub(super) fn send_player_position_updates(
             "Sending player position update for: {}",
             &player_details.player_name
         );
-        let response =
-            serialize(&ServerMessage::UpdatePosition(position.clone())).unwrap_or_else(|err| {
-                error!(
-                    "Failed to serialize player position: {:?}, error: {}",
-                    &position, err
-                );
-                process::exit(1);
-            });
+        let response = encode_to_vec(
+            ServerMessage::UpdatePosition(position.clone()),
+            config::standard(),
+        )
+        .unwrap_or_else(|err| {
+            error!(
+                "Failed to encode player position: {:?}, error: {}",
+                &position, err
+            );
+            process::exit(1);
+        });
         rustyhack_lib::network::send_packet(
             Packet::unreliable_sequenced(
                 player_details.client_addr.parse().unwrap(),
@@ -53,13 +56,14 @@ pub(super) fn send_player_stats_updates(
             "Sending player stats update for: {}",
             &player_details.player_name
         );
-        let response = serialize(&ServerMessage::UpdateStats(*stats)).unwrap_or_else(|err| {
-            error!(
-                "Failed to serialize player stats: {:?}, error: {}",
-                &stats, err
-            );
-            process::exit(1);
-        });
+        let response = encode_to_vec(ServerMessage::UpdateStats(*stats), config::standard())
+            .unwrap_or_else(|err| {
+                error!(
+                    "Failed to encode player stats: {:?}, error: {}",
+                    &stats, err
+                );
+                process::exit(1);
+            });
         rustyhack_lib::network::send_packet(
             Packet::unreliable_sequenced(
                 player_details.client_addr.parse().unwrap(),
@@ -84,14 +88,17 @@ pub(super) fn send_player_inventory_updates(
             "Sending player inventory update for: {}",
             &player_details.player_name
         );
-        let response = serialize(&ServerMessage::UpdateInventory(inventory.clone()))
-            .unwrap_or_else(|err| {
-                error!(
-                    "Failed to serialize player inventory: {:?}, error: {}",
-                    &inventory, err
-                );
-                process::exit(1);
-            });
+        let response = encode_to_vec(
+            ServerMessage::UpdateInventory(inventory.clone()),
+            config::standard(),
+        )
+        .unwrap_or_else(|err| {
+            error!(
+                "Failed to encode player inventory: {:?}, error: {}",
+                &inventory, err
+            );
+            process::exit(1);
+        });
         rustyhack_lib::network::send_packet(
             Packet::unreliable_sequenced(
                 player_details.client_addr.parse().unwrap(),
@@ -120,7 +127,7 @@ pub(super) fn broadcast_entity_updates(
                 || entity_position.current_map == player_position.current_map
             {
                 debug!("Sending entity update to: {}", &player_details.client_addr);
-                let response = serialize_entity_broadcast_packet(
+                let response = encode_entity_broadcast_packet(
                     entity_id,
                     entity_position,
                     entity_display_details,
@@ -144,7 +151,7 @@ pub(super) fn broadcast_entity_updates(
                     "Sending dead entity update: {}",
                     &player_details.client_addr
                 );
-                let response = serialize_entity_broadcast_packet(
+                let response = encode_entity_broadcast_packet(
                     entity_id,
                     entity_position,
                     entity_display_details,
@@ -172,7 +179,7 @@ pub(super) fn clear_entity_position_map(#[resource] entity_position_map: &mut En
     entity_position_map.clear();
 }
 
-fn serialize_entity_broadcast_packet(
+fn encode_entity_broadcast_packet(
     entity_id: Uuid,
     entity_position: Position,
     entity_display_details: DisplayDetails,
@@ -180,20 +187,23 @@ fn serialize_entity_broadcast_packet(
     player_details: &PlayerDetails,
     player_position: &Position,
 ) -> Vec<u8> {
-    serialize(&ServerMessage::UpdateOtherEntities((
-        entity_id,
-        (
-            entity_position.pos_x,
-            entity_position.pos_y,
-            entity_position.current_map,
-            entity_display_details.icon,
-            entity_display_details.colour,
-            entity_name_or_type,
-        ),
-    )))
+    encode_to_vec(
+        ServerMessage::UpdateOtherEntities((
+            entity_id,
+            (
+                entity_position.pos_x,
+                entity_position.pos_y,
+                entity_position.current_map,
+                entity_display_details.icon,
+                entity_display_details.colour,
+                entity_name_or_type,
+            ),
+        )),
+        config::standard(),
+    )
     .unwrap_or_else(|err| {
         error!(
-            "Failed to serialize entity position broadcast to: {}, {}, @ map: {} error: {}",
+            "Failed to encode entity position broadcast to: {}, {}, @ map: {} error: {}",
             &player_details.player_name,
             &player_details.client_addr,
             &player_position.current_map,

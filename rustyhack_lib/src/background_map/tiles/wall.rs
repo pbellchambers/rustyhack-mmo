@@ -1,7 +1,8 @@
 use crate::background_map::tiles::{Collidable, TilePosition};
+use bincode::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Copy, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Eq, PartialEq, Debug, Serialize, Deserialize, Encode, Decode)]
 pub struct Wall {
     pub tile_position: TilePosition,
     pub character_icon: char,

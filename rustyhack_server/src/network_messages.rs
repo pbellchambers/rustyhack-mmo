@@ -2,7 +2,7 @@ pub(super) mod combat_updates;
 pub(super) mod map_sender;
 pub(super) mod packet_receiver;
 
-use bincode::serialize;
+use bincode::{config, encode_to_vec};
 use crossbeam_channel::{Receiver, Sender};
 use crossterm::style::Color;
 use laminar::{Packet, Socket, SocketEvent};
@@ -74,14 +74,17 @@ pub(super) fn send_message_to_player(
             message: message.to_string(),
             colour,
         };
-        let response =
-            serialize(&ServerMessage::SystemMessage(system_message)).unwrap_or_else(|err| {
-                error!(
-                    "Failed to serialize system message: {}, error: {}",
-                    message, err
-                );
-                process::exit(1);
-            });
+        let response = encode_to_vec(
+            ServerMessage::SystemMessage(system_message),
+            config::standard(),
+        )
+        .unwrap_or_else(|err| {
+            error!(
+                "Failed to encode system message: {}, error: {}",
+                message, err
+            );
+            process::exit(1);
+        });
         rustyhack_lib::network::send_packet(
             Packet::reliable_ordered(client_addr.parse().unwrap(), response, Some(23)),
             sender,

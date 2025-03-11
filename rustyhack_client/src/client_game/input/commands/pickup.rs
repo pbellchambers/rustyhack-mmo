@@ -1,6 +1,6 @@
 use crate::client_consts::DEFAULT_FG_COLOUR;
 use crate::client_game::input::commands::look::return_visible_entity_at;
-use bincode::serialize;
+use bincode::{config, encode_to_vec};
 use chrono::{DateTime, Local};
 use crossbeam_channel::Sender;
 use crossterm::style::Color;
@@ -34,10 +34,13 @@ pub(crate) fn send_pickup_request(
             server_addr
                 .parse()
                 .expect("Server address format is invalid."),
-            serialize(&PlayerRequest::PickupItem(PositionMessage {
-                player_name: player.player_details.player_name.clone(),
-                position: player.position.clone(),
-            }))
+            encode_to_vec(
+                PlayerRequest::PickupItem(PositionMessage {
+                    player_name: player.player_details.player_name.clone(),
+                    position: player.position.clone(),
+                }),
+                config::standard(),
+            )
             .unwrap(),
             Some(12),
         );

@@ -1,5 +1,5 @@
-use crate::network_messages::packet_receiver::deserialize_player_request;
-use bincode::serialize;
+use crate::network_messages::packet_receiver::decode_player_request;
+use bincode::{config, encode_to_vec};
 use message_io::network::NetEvent;
 use message_io::node::{NodeHandler, NodeListener};
 use rustyhack_lib::background_map::AllMaps;
@@ -22,13 +22,13 @@ fn run(tcp_handler: NodeHandler<()>, tcp_listener: NodeListener<()>, all_maps: &
             info!("Client {} connected via tcp.", endpoint.addr());
         }
         NetEvent::Message(endpoint, data) => {
-            let deserialized_data = deserialize_player_request(data, endpoint.addr());
-            match deserialized_data {
+            let decoded_data = decode_player_request(data, endpoint.addr());
+            match decoded_data {
                 PlayerRequest::GetAllMaps => {
                     info!("Sending all_maps data to {}.", endpoint.addr());
                     tcp_handler
                         .network()
-                        .send(endpoint, &serialize_all_maps(all_maps.clone()));
+                        .send(endpoint, &encode_all_maps(all_maps.clone()));
                 }
                 _ => {
                     warn!("Ignoring unexpected player request type on tcp connection.");
@@ -42,6 +42,7 @@ fn run(tcp_handler: NodeHandler<()>, tcp_listener: NodeListener<()>, all_maps: &
     });
 }
 
-fn serialize_all_maps(all_maps: AllMaps) -> Vec<u8> {
-    serialize(&ServerMessage::AllMaps(all_maps)).expect("Error serializing AllMaps data.")
+fn encode_all_maps(all_maps: AllMaps) -> Vec<u8> {
+    encode_to_vec(ServerMessage::AllMaps(all_maps), config::standard())
+        .expect("Error encoding AllMaps data.")
 }

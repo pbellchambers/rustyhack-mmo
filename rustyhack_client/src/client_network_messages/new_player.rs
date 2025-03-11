@@ -1,4 +1,4 @@
-use bincode::serialize;
+use bincode::{config, encode_to_vec};
 use crossbeam_channel::{Receiver, Sender};
 use laminar::Packet;
 use rustyhack_lib::ecs::player::Player;
@@ -17,10 +17,13 @@ pub(crate) fn send_new_player_request(
         server_addr
             .parse()
             .expect("Server address format is invalid."),
-        serialize(&PlayerRequest::PlayerJoin(ClientDetails {
-            client_addr: client_addr.to_string(),
-            player_name: player_name.to_string(),
-        }))
+        encode_to_vec(
+            PlayerRequest::PlayerJoin(ClientDetails {
+                client_addr: client_addr.to_string(),
+                player_name: player_name.to_string(),
+            }),
+            config::standard(),
+        )
         .unwrap(),
     );
     rustyhack_lib::network::send_packet(create_player_request_packet, sender);

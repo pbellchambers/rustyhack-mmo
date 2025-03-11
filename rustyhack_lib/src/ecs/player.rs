@@ -1,9 +1,10 @@
 use crate::consts::{DEFAULT_MAP, DEFAULT_PLAYER_POSITION_X, DEFAULT_PLAYER_POSITION_Y};
 use crate::ecs::components::{DisplayDetails, Inventory, PlayerDetails, Position, Stats};
+use bincode::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Encode, Decode)]
 pub struct Player {
     pub player_details: PlayerDetails,
     pub display_details: DisplayDetails,
