@@ -1,7 +1,7 @@
 use crate::client_game::input;
 use crate::client_game::screens;
 use crate::client_game::screens::SidebarState;
-use bincode::serialize;
+use bincode::{config, encode_to_vec};
 use console_engine::ConsoleEngine;
 use crossbeam_channel::Sender;
 use crossterm::event::KeyCode;
@@ -45,13 +45,16 @@ fn send_drop_item_request(
         server_addr
             .parse()
             .expect("Server address format is invalid."),
-        serialize(&PlayerRequest::DropItem((
-            item_index,
-            PositionMessage {
-                player_name: player.player_details.player_name.clone(),
-                position: player.position.clone(),
-            },
-        )))
+        encode_to_vec(
+            PlayerRequest::DropItem((
+                item_index,
+                PositionMessage {
+                    player_name: player.player_details.player_name.clone(),
+                    position: player.position.clone(),
+                },
+            )),
+            config::standard(),
+        )
         .unwrap(),
         Some(13),
     );

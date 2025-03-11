@@ -1,7 +1,8 @@
 use crate::ecs::inventory::{Armour, Trinket, Weapon};
+use bincode::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Encode, Decode)]
 pub enum Item {
     Weapon(Weapon),
     Armour(Armour),

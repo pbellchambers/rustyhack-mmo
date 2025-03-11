@@ -2,12 +2,13 @@ pub mod character_map;
 pub mod tiles;
 
 use crate::background_map::tiles::Tile;
+use bincode::{Decode, Encode};
 use ndarray::Array2;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Encode, Decode)]
 pub struct BackgroundMap {
+    #[bincode(with_serde)]
     pub data: Array2<Tile>,
 }
 

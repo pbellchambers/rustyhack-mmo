@@ -1,4 +1,5 @@
-use bincode::deserialize;
+use bincode::config::Configuration;
+use bincode::{borrow_decode_from_slice, config};
 use crossbeam_channel::{Receiver, Sender};
 use laminar::SocketEvent;
 use rustyhack_lib::network::packets::ServerMessage;
@@ -24,12 +25,15 @@ fn run(receiver: &Receiver<SocketEvent>, incoming_server_messages: &Sender<Serve
                     let msg = packet.payload();
                     let address = packet.addr();
 
-                    let player_reply_result = deserialize::<ServerMessage>(msg);
+                    let player_reply_result = borrow_decode_from_slice::<
+                        ServerMessage,
+                        Configuration,
+                    >(msg, config::standard());
                     let player_reply = match player_reply_result {
                         Ok(_) => player_reply_result.unwrap(),
                         Err(error) => {
                             warn!(
-                                "Error when deserializing player reply packet from server: {}",
+                                "Error when decoding player reply packet from server: {}",
                                 error
                             );
                             //try again with next packet
@@ -39,7 +43,7 @@ fn run(receiver: &Receiver<SocketEvent>, incoming_server_messages: &Sender<Serve
                     debug!("Received {:?} from {:?}", player_reply, address);
 
                     let channel_send_status =
-                        match player_reply {
+                        match player_reply.0 {
                             ServerMessage::PlayerJoined(player) => {
                                 incoming_server_messages.send(ServerMessage::PlayerJoined(player))
                             }

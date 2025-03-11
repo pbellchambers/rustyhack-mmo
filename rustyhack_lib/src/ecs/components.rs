@@ -6,18 +6,19 @@ use crate::ecs::inventory::Equipment;
 use crate::ecs::item::Item;
 use crate::ecs::monster::Monster;
 use crate::ecs::player::Player;
+use bincode::{Decode, Encode};
 use crossterm::style::Color;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Encode, Decode)]
 pub enum EntityType {
     Monster(Monster),
     Player(Player),
     Item(Item),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Encode, Decode)]
 pub struct Position {
     pub update_available: bool,
     pub pos_x: u32,
@@ -57,9 +58,10 @@ impl Dead for Position {
     }
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize, Encode, Decode)]
 pub struct DisplayDetails {
     pub icon: char,
+    #[bincode(with_serde)]
     pub colour: Color,
     pub visible: bool,
     pub collidable: bool,
@@ -87,29 +89,33 @@ impl Dead for DisplayDetails {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Encode, Decode)]
 pub struct PlayerDetails {
+    #[bincode(with_serde)]
     pub id: Uuid,
     pub player_name: String,
     pub client_addr: String,
     pub currently_online: bool,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Encode, Decode)]
 pub struct MonsterDetails {
+    #[bincode(with_serde)]
     pub id: Uuid,
     pub monster_type: String,
     pub spawn_position: Position,
+    #[bincode(with_serde)]
     pub current_target: Option<Uuid>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Encode, Decode)]
 pub struct ItemDetails {
+    #[bincode(with_serde)]
     pub id: Uuid,
     pub has_been_picked_up: bool,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize, Encode, Decode)]
 pub struct Stats {
     pub update_available: bool,
     pub current_hp: f32,
@@ -124,7 +130,7 @@ pub struct Stats {
     pub in_combat: bool,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Encode, Decode, Default)]
 pub struct Inventory {
     pub update_available: bool,
     pub gold: u32,

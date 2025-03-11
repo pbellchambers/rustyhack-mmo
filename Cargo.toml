@@ -11,7 +11,7 @@ members = [
 lto = true
 
 [workspace.dependencies]
-bincode = "1.3.3"
+bincode = { version = "2.0.1", features = ["serde"] }
 chrono = "0.4.40"
 console_engine = "2.6.1"
 crossbeam-channel = "0.5.14"

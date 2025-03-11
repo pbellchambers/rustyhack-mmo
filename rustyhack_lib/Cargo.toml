@@ -15,6 +15,7 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bincode.workspace = true
 log.workspace = true
 simplelog.workspace = true
 serde.workspace = true
@@ -23,5 +24,4 @@ laminar.workspace = true
 crossbeam-channel.workspace = true
 uuid.workspace = true
 strum_macros.workspace = true
-rayon.workspace = true
 ndarray.workspace = true

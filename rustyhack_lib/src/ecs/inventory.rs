@@ -1,13 +1,14 @@
+use bincode::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 use std::ops::Range;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Encode, Decode, Default)]
 pub struct Equipment {
     pub weapon: Weapon,
     pub armour: Armour,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Encode, Decode)]
 pub struct Weapon {
     pub name: String,
     pub damage_range: Range<f32>,
@@ -24,7 +25,7 @@ impl Default for Weapon {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Encode, Decode)]
 pub struct Armour {
     pub name: String,
     pub damage_reduction_percentage: f32,
@@ -39,7 +40,7 @@ impl Default for Armour {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Encode, Decode)]
 pub struct Trinket {
     pub name: String,
 }

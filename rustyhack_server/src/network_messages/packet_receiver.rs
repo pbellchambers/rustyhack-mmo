@@ -1,4 +1,5 @@
-use bincode::deserialize;
+use bincode::config::Configuration;
+use bincode::{borrow_decode_from_slice, config};
 use crossbeam_channel::{Receiver, Sender};
 use laminar::SocketEvent;
 use rustyhack_lib::network::packets::PlayerRequest;
@@ -23,7 +24,7 @@ fn run(receiver: &Receiver<SocketEvent>, channel_sender: &Sender<PlayerRequest>)
                     let msg = packet.payload();
                     let address = packet.addr();
 
-                    let player_request = deserialize_player_request(msg, address);
+                    let player_request = decode_player_request(msg, address);
                     debug!("Received {:?} from {:?}", player_request, address);
 
                     handle_player_request(player_request, address, channel_sender);
@@ -98,13 +99,14 @@ fn handle_player_request(
     }
 }
 
-pub(super) fn deserialize_player_request(msg: &[u8], address: SocketAddr) -> PlayerRequest {
-    let player_request_result = deserialize::<PlayerRequest>(msg);
+pub(super) fn decode_player_request(msg: &[u8], address: SocketAddr) -> PlayerRequest {
+    let player_request_result =
+        borrow_decode_from_slice::<PlayerRequest, Configuration>(msg, config::standard());
     match player_request_result {
-        Ok(_) => player_request_result.unwrap(),
+        Ok(_) => player_request_result.unwrap().0,
         Err(error) => {
             warn!(
-                "Error when deserializing player request from client {}: {}",
+                "Error when decoding player request from client {}: {}",
                 &address, error
             );
             PlayerRequest::Undefined

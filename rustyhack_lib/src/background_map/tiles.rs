@@ -3,28 +3,29 @@ pub mod wall;
 
 use crate::background_map::tiles::door::Door;
 use crate::background_map::tiles::wall::Wall;
+use bincode::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 use strum_macros::Display;
 
-#[derive(Clone, Copy, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Eq, PartialEq, Debug, Serialize, Deserialize, Encode, Decode)]
 pub enum Collidable {
     True,
     False,
 }
 
-#[derive(Clone, Copy, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Eq, PartialEq, Debug, Serialize, Deserialize, Encode, Decode)]
 pub enum OpenState {
     Open,
     Closed,
 }
 
-#[derive(Clone, Copy, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Eq, PartialEq, Debug, Serialize, Deserialize, Encode, Decode)]
 pub struct TilePosition {
     pub x: u32,
     pub y: u32,
 }
 
-#[derive(Display, Clone, Copy, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Display, Clone, Copy, Eq, PartialEq, Debug, Serialize, Deserialize, Encode, Decode)]
 pub enum Tile {
     Wall(Wall),
     Door(Door),
