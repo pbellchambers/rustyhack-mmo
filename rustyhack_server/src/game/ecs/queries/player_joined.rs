@@ -50,10 +50,7 @@ pub(crate) fn join_player(
             );
             let response = encode_to_vec(&ServerMessage::PlayerAlreadyOnline, config::standard())
                 .unwrap_or_else(|err| {
-                    error!(
-                        "Failed to encode player already online response, error: {}",
-                        err
-                    );
+                    error!("Failed to encode player already online response, error: {err}");
                     process::exit(1);
                 });
             rustyhack_lib::network::send_packet(
@@ -89,6 +86,6 @@ fn create_player(world: &mut World, name: &str, client_addr: String, sender: &Se
         player.stats,
         player.inventory.clone(),
     ));
-    info!("New player \"{}\" created: {:?}", name, player_entity);
+    info!("New player \"{name}\" created: {player_entity:?}");
     players::send_player_joined_response(&player, sender);
 }

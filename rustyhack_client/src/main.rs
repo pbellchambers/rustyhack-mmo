@@ -20,7 +20,7 @@ fn main() {
 
     let previous_panic_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |panic_info| {
-        error!("{}", panic_info.to_string());
+        error!("{panic_info}");
         previous_panic_hook(panic_info);
         std::process::exit(1);
     }));

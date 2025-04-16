@@ -33,7 +33,7 @@ pub(super) fn resolve_monster_deaths(
         );
         //drop inventory items
         let mut items_vec: Vec<(ItemDetails, DisplayDetails, Position, Item)> = vec![];
-        debug!("Monster inventory was: {:?}", inventory);
+        debug!("Monster inventory was: {inventory:?}");
         for item in &inventory.carried {
             items_vec.push((
                 ItemDetails {
@@ -58,7 +58,7 @@ pub(super) fn resolve_monster_deaths(
             ));
         }
         //add dropped item entities to world
-        debug!("Items being added to world are: {:?}", items_vec);
+        debug!("Items being added to world are: {items_vec:?}");
         commands.extend(items_vec);
         let dead_position = Position {
             current_map: position.current_map.clone() + DEAD_MAP,

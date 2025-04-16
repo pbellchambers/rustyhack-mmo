@@ -59,10 +59,7 @@ fn send_drop_item_request(
         Some(13),
     );
     rustyhack_lib::network::send_packet(packet, sender);
-    info!(
-        "Sent drop item request packet to server for item {}.",
-        item_index
-    );
+    info!("Sent drop item request packet to server for item {item_index}.");
 }
 
 fn check_for_back(console: &ConsoleEngine, item_page_index: u16) -> bool {

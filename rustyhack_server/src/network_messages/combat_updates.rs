@@ -25,10 +25,7 @@ fn send_gold_messages_to_players(
     gold_gain: u32,
     sender: &Sender<Packet>,
 ) {
-    debug!(
-        "Sending gold gain message to players: {:?}, {}",
-        attacker, gold_gain
-    );
+    debug!("Sending gold gain message to players: {attacker:?}, {gold_gain}");
     if current_hp <= 0.0 && gold_gain > 0 {
         if defender.is_player && attacker.is_player {
             send_message_to_player(
@@ -68,10 +65,7 @@ fn send_exp_messages_to_players(
     exp_gain: u32,
     sender: &Sender<Packet>,
 ) {
-    debug!(
-        "Sending exp gain message to players: {:?}, {}",
-        attacker, exp_gain
-    );
+    debug!("Sending exp gain message to players: {attacker:?}, {exp_gain}");
     if attacker.is_player && current_hp <= 0.0 && exp_gain > 0 {
         send_message_to_player(
             &attacker.name,
@@ -95,10 +89,7 @@ fn send_combat_messages_to_players(
     current_hp: f32,
     sender: &Sender<Packet>,
 ) {
-    debug!(
-        "Sending combat message to players: {:?}, {:?}, {}",
-        defender, attacker, damage
-    );
+    debug!("Sending combat message to players: {defender:?}, {attacker:?}, {damage}");
     if damage > 0.0 {
         if defender.is_player {
             send_message_to_player(

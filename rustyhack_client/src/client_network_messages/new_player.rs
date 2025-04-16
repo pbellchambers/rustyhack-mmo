@@ -51,8 +51,7 @@ fn wait_for_new_player_response(channel_receiver: &Receiver<ServerMessage>) -> P
                 }
                 _ => {
                     info!(
-                        "Ignoring other message types until new player confirmed. {:?}",
-                        received_message
+                        "Ignoring other message types until new player confirmed. {received_message:?}"
                     );
                 }
             }

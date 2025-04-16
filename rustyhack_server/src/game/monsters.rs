@@ -38,18 +38,12 @@ pub(super) fn initialise_all_monster_definitions() -> AllMonsterDefinitions {
 
 fn get_monster_definition_from_path(path: &Path) -> Monster {
     let file = File::open(path).unwrap_or_else(|err| {
-        error!(
-            "Problem getting monster definition from file: {:?}, error: {}",
-            path, err
-        );
+        error!("Problem getting monster definition from file: {path:?}, error: {err}");
         process::exit(1);
     });
     let buf_reader = BufReader::new(file);
     serde_json::from_reader(buf_reader).unwrap_or_else(|err| {
-        error!(
-            "Problem deserializing monster definition from file: {:?}, error: {}",
-            path, err
-        );
+        error!("Problem deserializing monster definition from file: {path:?}, error: {err}");
         process::exit(1);
     })
 }

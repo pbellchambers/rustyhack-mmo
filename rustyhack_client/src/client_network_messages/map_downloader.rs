@@ -85,10 +85,7 @@ fn decode_all_maps_reply(data: &[u8]) -> Option<AllMaps> {
             }
         }
         Err(error) => {
-            error!(
-                "Error decoding AllMaps from server, will request again. {}",
-                error.to_string()
-            );
+            error!("Error decoding AllMaps from server, will request again. {error}");
             None
         }
     }

@@ -39,7 +39,7 @@ fn send_stat_up_request(sender: &Sender<Packet>, player: &Player, server_addr: &
         Some(13),
     );
     rustyhack_lib::network::send_packet(packet, sender);
-    info!("Sent stat up request packet to server for {}.", stat);
+    info!("Sent stat up request packet to server for {stat}.");
 }
 
 fn check_for_stat_up(console: &ConsoleEngine, stats: Stats) -> Option<&str> {

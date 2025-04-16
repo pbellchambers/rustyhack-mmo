@@ -35,8 +35,7 @@ pub(crate) fn insert_entity_at(map: &mut MapState, entity: EntityType, x: u32, y
     match map.get_mut((y as usize, x as usize)) {
         None => {
             warn!(
-                "Tried to insert entity at invalid position, x: {}, y: {}, will try to continue.",
-                x, y
+                "Tried to insert entity at invalid position, x: {x}, y: {y}, will try to continue."
             );
         }
         Some(entity_vec) => {
@@ -59,8 +58,7 @@ pub(crate) fn remove_entity_at(map: &mut MapState, entity: &EntityType, x: u32, 
         Some((index, _entity_type)) => match map.get_mut((y as usize, x as usize)) {
             None => {
                 warn!(
-                    "Tried to remove entity at invalid position, x: {}, y: {}, will try to continue.",
-                    x, y
+                    "Tried to remove entity at invalid position, x: {x}, y: {y}, will try to continue."
                 );
             }
             Some(entity_vec) => {
@@ -89,8 +87,7 @@ pub(crate) fn is_colliding_with_entity(x: u32, y: u32, map_state: &MapState) -> 
         let defending_entity = match &map_state.get((y as usize, x as usize)) {
             None => {
                 warn!(
-                    "Tried to check for entity collision at invalid position, x: {}, y: {}, will try to continue.",
-                    x, y
+                    "Tried to check for entity collision at invalid position, x: {x}, y: {y}, will try to continue."
                 );
                 None
             }

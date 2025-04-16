@@ -43,8 +43,7 @@ pub(super) fn handle_received_server_messages(
                 }
                 _ => {
                     warn!(
-                        "Unexpected message on channel from message handler: {:?}",
-                        received_message
+                        "Unexpected message on channel from message handler: {received_message:?}"
                     );
                 }
             }

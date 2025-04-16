@@ -35,10 +35,7 @@ pub(super) fn draw_screens(
     //this feels hacky...
     let viewport_width = console.get_width() * 100 / (10000 / VIEWPORT_WIDTH_PERCENTAGE);
     let viewport_height = console.get_height() * 100 / (10000 / VIEWPORT_HEIGHT_PERCENTAGE);
-    debug!(
-        "Viewport width and height is: {}, {}",
-        viewport_width, viewport_height
-    );
+    debug!("Viewport width and height is: {viewport_width}, {viewport_height}");
 
     //clear screen
     console.clear_screen();

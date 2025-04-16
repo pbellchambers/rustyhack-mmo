@@ -41,7 +41,7 @@ pub(crate) fn increase_stat(
                     }
                 }
                 _ => {}
-            };
+            }
 
             if updated_stat {
                 stats.update_available = true;

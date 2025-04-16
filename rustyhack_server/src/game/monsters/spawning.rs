@@ -29,10 +29,7 @@ pub(crate) fn count_monsters_needing_respawn(
         }
         monsters_needing_respawn.insert(map.clone(), map_monsters_needing_respawn);
     }
-    debug!(
-        "Monsters needing respawn are: {:?}",
-        monsters_needing_respawn
-    );
+    debug!("Monsters needing respawn are: {monsters_needing_respawn:?}");
     monsters_needing_respawn
 }
 
@@ -60,7 +57,7 @@ pub(crate) fn count_alive_monsters(
         monster_count.insert(monster.monster_type.clone(), 1);
         current_monsters_count.insert(position.current_map.clone(), monster_count);
     }
-    debug!("Current monsters alive are: {:?}", current_monsters_count);
+    debug!("Current monsters alive are: {current_monsters_count:?}");
     current_monsters_count
 }
 
@@ -152,10 +149,7 @@ fn spawn_single_monster(
     let mut current_monster = all_monster_definitions
         .get(monster_type)
         .unwrap_or_else(|| {
-            error!(
-                "Monster {} missing from all_monster_definitions.",
-                monster_type,
-            );
+            error!("Monster {monster_type} missing from all_monster_definitions.");
             process::exit(1);
         })
         .clone();

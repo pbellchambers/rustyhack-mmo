@@ -16,7 +16,7 @@ pub(super) fn send_player_joined_response(player: &Player, sender: &Sender<Packe
         config::standard(),
     )
     .unwrap_or_else(|err| {
-        error!("Failed to encode player created response, error: {}", err);
+        error!("Failed to encode player created response, error: {err}");
         process::exit(1);
     });
     rustyhack_lib::network::send_packet(

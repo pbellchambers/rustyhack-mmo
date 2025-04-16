@@ -25,22 +25,22 @@ fn run(receiver: &Receiver<SocketEvent>, channel_sender: &Sender<PlayerRequest>)
                     let address = packet.addr();
 
                     let player_request = decode_player_request(msg, address);
-                    debug!("Received {:?} from {:?}", player_request, address);
+                    debug!("Received {player_request:?} from {address:?}");
 
                     handle_player_request(player_request, address, channel_sender);
                 }
                 SocketEvent::Connect(connect_event) => {
-                    info!("Client connected from: {}", connect_event);
+                    info!("Client connected from: {connect_event}");
                 }
                 SocketEvent::Disconnect(address) => {
-                    info!("Client disconnected from: {}", address);
+                    info!("Client disconnected from: {address}");
                     send_channel_message(
                         PlayerRequest::Timeout(address.to_string()),
                         channel_sender,
                     );
                 }
                 SocketEvent::Timeout(address) => {
-                    info!("Client timed out from: {}", address);
+                    info!("Client timed out from: {address}");
                     send_channel_message(
                         PlayerRequest::Timeout(address.to_string()),
                         channel_sender,
@@ -90,11 +90,11 @@ fn handle_player_request(
             send_channel_message(PlayerRequest::PlayerLogout(client_details), channel_sender);
         }
         PlayerRequest::Timeout(_) => {
-            info!("Client timed out from: {}", address);
+            info!("Client timed out from: {address}");
             send_channel_message(PlayerRequest::Timeout(address.to_string()), channel_sender);
         }
         PlayerRequest::Undefined => {
-            warn!("Undefined message received from {}", address);
+            warn!("Undefined message received from {address}");
         }
     }
 }
@@ -123,7 +123,7 @@ fn send_channel_message(message: PlayerRequest, channel_sender: &Sender<PlayerRe
             //send successful
         }
         Err(message) => {
-            warn!("Error sending channel message: {}", message);
+            warn!("Error sending channel message: {message}");
             warn!("Will try to continue, but things may be broken.");
         }
     }

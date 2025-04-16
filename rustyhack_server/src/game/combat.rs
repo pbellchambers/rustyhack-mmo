@@ -82,7 +82,7 @@ pub(super) fn resolve_combat(
                 .armour
                 .damage_reduction_percentage,
         );
-        debug!("Damage taken: {}", actual_damage_received);
+        debug!("Damage taken: {actual_damage_received}");
         actual_damage_received
     } else {
         debug!("Attack missed...");
@@ -93,10 +93,7 @@ pub(super) fn resolve_combat(
 fn calculate_damage_dealt(attacker_weapon_damage_range: &Range<f32>, attacker_str: f32) -> f32 {
     let mut rng = rand::rng();
     let attacker_weapon_damage = rng.random_range(attacker_weapon_damage_range.clone());
-    debug!(
-        "Weapon damage before strength modifier: {}",
-        attacker_weapon_damage
-    );
+    debug!("Weapon damage before strength modifier: {attacker_weapon_damage}");
     attacker_weapon_damage * ((attacker_str / 100.0) + 1.0)
 }
 

@@ -32,15 +32,12 @@ fn run(receiver: &Receiver<SocketEvent>, incoming_server_messages: &Sender<Serve
                     let player_reply = match player_reply_result {
                         Ok(_) => player_reply_result.unwrap(),
                         Err(error) => {
-                            warn!(
-                                "Error when decoding player reply packet from server: {}",
-                                error
-                            );
+                            warn!("Error when decoding player reply packet from server: {error}");
                             //try again with next packet
                             continue;
                         }
                     };
-                    debug!("Received {:?} from {:?}", player_reply, address);
+                    debug!("Received {player_reply:?} from {address:?}");
 
                     let channel_send_status =
                         match player_reply.0 {
@@ -86,15 +83,15 @@ fn run(receiver: &Receiver<SocketEvent>, incoming_server_messages: &Sender<Serve
                     }
                 }
                 SocketEvent::Connect(connect_event) => {
-                    info!("Server connected at: {}", connect_event);
+                    info!("Server connected at: {connect_event}");
                 }
                 SocketEvent::Timeout(address) => {
-                    error!("Server connection timed out: {}", address);
+                    error!("Server connection timed out: {address}");
                     warn!("Please check that the server is online and the address is correct.");
                     process::exit(1);
                 }
                 SocketEvent::Disconnect(address) => {
-                    error!("Server connection disconnected: {}", address);
+                    error!("Server connection disconnected: {address}");
                     warn!("Please check that the server is online and the address is correct.");
                     process::exit(1);
                 }

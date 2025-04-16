@@ -12,7 +12,7 @@ pub fn send_packet(packet: Packet, sender: &Sender<Packet>) {
             //packet send successful
         }
         Err(message) => {
-            warn!("Error sending packet: {}", message);
+            warn!("Error sending packet: {message}");
             warn!("Will try to continue, but things may be broken.");
         }
     }

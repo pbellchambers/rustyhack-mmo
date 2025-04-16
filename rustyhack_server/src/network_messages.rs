@@ -79,10 +79,7 @@ pub(super) fn send_message_to_player(
             config::standard(),
         )
         .unwrap_or_else(|err| {
-            error!(
-                "Failed to encode system message: {}, error: {}",
-                message, err
-            );
+            error!("Failed to encode system message: {message}, error: {err}");
             process::exit(1);
         });
         rustyhack_lib::network::send_packet(
