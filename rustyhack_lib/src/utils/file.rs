@@ -13,7 +13,7 @@ pub fn current_exe_location() -> PathBuf {
 #[must_use]
 pub fn get_all_files_in_location(path: &Path) -> ReadDir {
     fs::read_dir(path).unwrap_or_else(|err| {
-        error!("Problem reading directory {path:?}, error: {err}");
+        error!("Problem reading directory {}, error: {err}", path.display());
         process::exit(1);
     })
 }

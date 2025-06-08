@@ -78,12 +78,18 @@ fn get_default_spawn_counts(all_spawns_map: &AllSpawnsMap) -> AllSpawnCounts {
 
 fn get_spawns_definition_from_path(path: &Path) -> Spawns {
     let file = File::open(path).unwrap_or_else(|err| {
-        error!("Problem getting spawns definition from file: {path:?}, error: {err}");
+        error!(
+            "Problem getting spawns definition from file: {}, error: {err}",
+            path.display()
+        );
         process::exit(1);
     });
     let buf_reader = BufReader::new(file);
     serde_json::from_reader(buf_reader).unwrap_or_else(|err| {
-        error!("Problem deserializing spawns definition from file: {path:?}, error: {err}");
+        error!(
+            "Problem deserializing spawns definition from file: {}, error: {err}",
+            path.display()
+        );
         process::exit(1);
     })
 }

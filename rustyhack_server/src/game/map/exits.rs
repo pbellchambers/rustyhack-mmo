@@ -52,12 +52,18 @@ pub(crate) fn initialise_all_map_exit_definitions() -> AllMapExits {
 
 fn get_map_exits_from_map_exit_file(path: &Path) -> MapExits {
     let file = File::open(path).unwrap_or_else(|err| {
-        error!("Problem getting map exits definition from file: {path:?}, error: {err}");
+        error!(
+            "Problem getting map exits definition from file: {}, error: {err}",
+            path.display()
+        );
         process::exit(1);
     });
     let buf_reader = BufReader::new(file);
     serde_json::from_reader(buf_reader).unwrap_or_else(|err| {
-        error!("Problem deserializing map exits definition from file: {path:?}, error: {err}");
+        error!(
+            "Problem deserializing map exits definition from file: {}, error: {err}",
+            path.display()
+        );
         process::exit(1);
     })
 }

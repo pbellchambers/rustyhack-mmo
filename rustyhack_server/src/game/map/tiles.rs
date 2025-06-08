@@ -43,9 +43,12 @@ fn initialise_map(path: &Path) -> BackgroundMap {
 }
 
 fn load_map_data_from_file(path: &Path) -> String {
-    info!("Loading map data from file: {:?}", &path);
+    info!("Loading map data from file: {}", &path.display());
     fs::read_to_string(path).unwrap_or_else(|err| {
-        error!("Problem getting map data from file: {path:?}, error: {err}");
+        error!(
+            "Problem getting map data from file: {}, error: {err}",
+            path.display()
+        );
         process::exit(1);
     })
 }
