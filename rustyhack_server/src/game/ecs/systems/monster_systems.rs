@@ -92,12 +92,12 @@ pub(super) fn update_monster_velocities(
         movement::check_if_outside_spawn_range(&monster.spawn_position, position);
 
     //check if current target within range and move towards it
-    if let Some(target) = monster.current_target {
-        if nearby_players.contains_key(&target) {
-            debug!("Monster moving towards existing target.");
-            movement::move_towards_target(position, nearby_players.get(&target).unwrap());
-            moving_towards_existing_target = true;
-        }
+    if let Some(target) = monster.current_target
+        && nearby_players.contains_key(&target)
+    {
+        debug!("Monster moving towards existing target.");
+        movement::move_towards_target(position, nearby_players.get(&target).unwrap());
+        moving_towards_existing_target = true;
     }
 
     //else either return to spawn, pick a new target, or move randomly
