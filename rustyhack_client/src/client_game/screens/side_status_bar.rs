@@ -25,7 +25,7 @@ pub(super) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32
     let gold_string = "Gold: ".to_owned() + &player.inventory.gold.to_string();
 
     let equipped_title_string = "Equipped:";
-    let weapon_string = player.inventory.equipped.weapon.name.to_string()
+    let weapon_string = player.inventory.equipped.weapon.name.clone()
         + " ("
         + &player
             .inventory
@@ -43,7 +43,7 @@ pub(super) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32
             .end
             .to_string()
         + " dmg)";
-    let armour_string = player.inventory.equipped.armour.name.to_string()
+    let armour_string = player.inventory.equipped.armour.name.clone()
         + " ("
         + &player
             .inventory

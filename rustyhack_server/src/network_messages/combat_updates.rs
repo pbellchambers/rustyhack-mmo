@@ -96,7 +96,7 @@ fn send_combat_messages_to_players(
                 &defender.name,
                 &defender.client_addr,
                 defender.currently_online,
-                &(attacker.name.to_string() + " hit you for " + &damage.to_string() + " damage."),
+                &(attacker.name.clone() + " hit you for " + &damage.to_string() + " damage."),
                 Some(Color::DarkRed),
                 sender,
             );
@@ -121,7 +121,7 @@ fn send_combat_messages_to_players(
                 &defender.name,
                 &defender.client_addr,
                 defender.currently_online,
-                &(attacker.name.to_string() + " attacks you, but missed."),
+                &(attacker.name.clone() + " attacks you, but missed."),
                 Some(Color::Grey),
                 sender,
             );
@@ -143,7 +143,7 @@ fn send_combat_messages_to_players(
                 &defender.name,
                 &defender.client_addr,
                 defender.currently_online,
-                &(attacker.name.to_string() + " killed you."),
+                &(attacker.name.clone() + " killed you."),
                 Some(Color::DarkRed),
                 sender,
             );
