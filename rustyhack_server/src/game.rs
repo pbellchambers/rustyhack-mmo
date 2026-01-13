@@ -149,7 +149,9 @@ pub(super) fn run(
             loop_tick_time = Instant::now();
             continue;
         }
-        let duration_to_sleep = consts::LOOP_TICK - loop_tick_time_elapsed;
+        let duration_to_sleep = consts::LOOP_TICK
+            .checked_sub(loop_tick_time_elapsed)
+            .unwrap();
         if duration_to_sleep.as_nanos() > 0 {
             //sleep here for LOOP_TICK so we don't hammer the CPU unnecessarily
             thread::sleep(duration_to_sleep);
