@@ -2,7 +2,7 @@ use crate::consts;
 use crate::game::map::spawns::{AllSpawnCounts, AllSpawnsMap, PositionWithoutMap};
 use legion::World;
 use legion::systems::CommandBuffer;
-use rand::Rng;
+use rand::RngExt;
 use rand::prelude::IndexedRandom;
 use rustyhack_lib::ecs::components::{DisplayDetails, Inventory, MonsterDetails, Position, Stats};
 use rustyhack_lib::ecs::monster::AllMonsterDefinitions;

@@ -1,4 +1,4 @@
-use rand::Rng;
+use rand::RngExt;
 use rustyhack_lib::ecs::components::{Inventory, Stats};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

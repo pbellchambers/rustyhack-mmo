@@ -1,6 +1,6 @@
 use crate::consts::MONSTER_DISTANCE_ACTIVATION;
 use crate::game::players::PlayersPositions;
-use rand::Rng;
+use rand::RngExt;
 use rayon::prelude::*;
 use rustyhack_lib::ecs::components::Position;
 use rustyhack_lib::utils::math::i32_from;
