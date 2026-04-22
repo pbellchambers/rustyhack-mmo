@@ -75,14 +75,12 @@ pub(super) fn draw(player: &Player, console: &ConsoleEngine, viewport_width: u32
     screen.print(1, y + 14, &armour_string);
     screen.print(1, y + 16, inventory_title_string);
 
-    let mut line_count = y + 17;
-    for item in &player.inventory.carried {
+    for (line_count, item) in (y + 17..).zip(player.inventory.carried.iter()) {
         if line_count > max_y {
             break;
         }
         let item_text = get_item_name(item);
         screen.print(1, line_count, &item_text);
-        line_count += 1;
     }
 
     screen

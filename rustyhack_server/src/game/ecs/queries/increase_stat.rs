@@ -16,29 +16,23 @@ pub(crate) fn increase_stat(
         if player_details.player_name == player_name && stats.stat_points > 0 {
             let mut updated_stat = false;
             match stat {
-                "Str" => {
-                    if stats.str < 100.0 {
-                        stats.str += 1.0;
-                        stats.stat_points -= 1;
-                        updated_stat = true;
-                    }
+                "Str" if stats.str < 100.0 => {
+                    stats.str += 1.0;
+                    stats.stat_points -= 1;
+                    updated_stat = true;
                 }
-                "Dex" => {
-                    if stats.dex < 100.0 {
-                        stats.dex += 1.0;
-                        stats.stat_points -= 1;
-                        updated_stat = true;
-                    }
+                "Dex" if stats.dex < 100.0 => {
+                    stats.dex += 1.0;
+                    stats.stat_points -= 1;
+                    updated_stat = true;
                 }
-                "Con" => {
-                    if stats.con < 100.0 {
-                        stats.con += 1.0;
-                        stats.stat_points -= 1;
-                        stats.max_hp = (BASE_HP_TABLE[(stats.level - 1) as usize]
-                            * (1.0 + (stats.con / 100.0)))
-                            .round();
-                        updated_stat = true;
-                    }
+                "Con" if stats.con < 100.0 => {
+                    stats.con += 1.0;
+                    stats.stat_points -= 1;
+                    stats.max_hp = (BASE_HP_TABLE[(stats.level - 1) as usize]
+                        * (1.0 + (stats.con / 100.0)))
+                        .round();
+                    updated_stat = true;
                 }
                 _ => {}
             }
